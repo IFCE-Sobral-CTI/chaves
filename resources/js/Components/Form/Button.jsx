@@ -1,6 +1,7 @@
+import { Link } from "@inertiajs/inertia-react";
 import React from "react";
 
-function Button({ children, type, processing, className, onClick, color }) {
+function Button({ children, type = 'button', processing, className, onClick, color, href }) {
     const handleClick = (event) => {
         if ((typeof onClick) == 'function' )
             onClick(event)
@@ -10,6 +11,8 @@ function Button({ children, type, processing, className, onClick, color }) {
         switch(color) {
             case 'green':
                 return 'bg-green hover:bg-green-dark focus:ring-green-300 ';
+            case 'lime':
+                return 'bg-lime-500 hover:bg-lime-600 focus:ring-lime-300 ';
             case 'blue':
                 return 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-300 ';
             case 'fuchsia':
@@ -29,8 +32,17 @@ function Button({ children, type, processing, className, onClick, color }) {
 
     return (
         <>
-            <button
-                type={type?? 'button'}
+            {href
+            ?<Link
+                href={href}
+                className={`inline-flex items-center px-4 py-2 border border-transparent tracking-widest text-sm rounded-lg text-white transition ease-in-out duration-150 focus:ring-2 ${
+                    processing && 'opacity-25 '
+                } ${colorize(color)}` + className}
+            >
+                {children}
+            </Link>
+            :<button
+                type={type}
                 className={`inline-flex items-center px-4 py-2 border border-transparent tracking-widest text-sm rounded-lg text-white transition ease-in-out duration-150 focus:ring-2 ${
                     processing && 'opacity-25 '
                 } ${colorize(color)}` + className}
@@ -38,7 +50,7 @@ function Button({ children, type, processing, className, onClick, color }) {
                 onClick={handleClick}
             >
                 {children}
-            </button>
+            </button>}
         </>
     )
 }

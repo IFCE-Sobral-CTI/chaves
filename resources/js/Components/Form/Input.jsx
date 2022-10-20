@@ -8,7 +8,8 @@ function Input({
     isFocused,
     handleChange,
     required,
-    autoComplete
+    autoComplete,
+    placeholder = '',
 }) {
 
     const input = useRef();
@@ -24,15 +25,17 @@ function Input({
             <input
                 type={type}
                 name={name}
+                id={name}
                 value={value?? ''}
                 className={
-                    `w-full border-gray-300 focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 rounded-lg shadow-sm ` +
+                    `w-full border-neutral-400 focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 rounded-lg shadow-sm ` +
                     className
                 }
                 ref={input}
                 onChange={(e) => handleChange(e)}
                 required={required}
                 autoComplete={autoComplete}
+                placeholder={placeholder}
             />
         </>
     )

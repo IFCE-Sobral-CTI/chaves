@@ -17,6 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->decimal('registry', 11, 0)->unique();
+            $table->boolean('status')->default(0); // 0 - Inactive | 1 - Active
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

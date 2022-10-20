@@ -12,6 +12,9 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    const ACTIVE = 1;
+    const INACTIVE = 0;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -21,6 +24,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'registry',
+        'status',
+        'permission_id',
     ];
 
     /**
@@ -39,17 +45,35 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
+        'email_verified_at' => 'datetime:d/m/Y H:i:s',
+        'created_at' => 'datetime:d/m/Y H:i:s',
+        'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
+
+    public function permission()
+    {
+        return $this->belongsTo(Permission::class);
+    }
+
+    public function isAdmin()
+    {
+        return $this->permission->description === 'Administrador';
+    }
+
+    public function hasRule($rule)
+    {
+        return $this->permission->rules()->get()->contains($rule);
+    }
 
     public function scopeSearch($query, $term = '')
     {
-        $query->where('name', 'like', "%{$term}%")
-              ->orWhere('email', 'like', "%{$term}%");
-              
+        $query->with('permission')
+            ->where('name', 'like', "%{$term}%")
+            ->orWhere('email', 'like', "%{$term}%");
+
         return [
             'count' => $query->count(),
-            'data' => $query->orderBy('name', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $term]),
+            'data' => $query->orderBy('name', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $term]),
         ];
     }
 }

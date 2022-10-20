@@ -21,9 +21,10 @@ function Select({
         <>
             <select
                 name={name}
+                id={name}
                 value={value?? ''}
                 className={
-                    `w-full border-gray-300 focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 rounded-lg shadow-sm ` +
+                    `w-full border-neutral-400 focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 rounded-lg shadow-sm ` +
                     className
                 }
                 ref={select}

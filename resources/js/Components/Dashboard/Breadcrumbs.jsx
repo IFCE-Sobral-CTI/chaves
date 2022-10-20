@@ -25,9 +25,9 @@ function Breadcrumbs({ href = [] }) {
     }
     return (
         <>
-            <Panel className={'px-3 hidden md:block font-light'}>
+            <div className={'px-3 md:block font-light'}>
                 {result()}
-            </Panel>
+            </div>
         </>
     )
 }
