@@ -24,7 +24,7 @@ class StoreUpdatePermissionsRulesRequest extends FormRequest
     public function rules()
     {
         return [
-            'rules' => 'required|array',
+            'rules' => 'array',
             'rules.*' => 'exists:rules,id',
         ];
     }

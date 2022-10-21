@@ -31,7 +31,12 @@ class Rule extends Model
 
         return [
             'count' => $query->count(),
-            'data' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $term]),
+            'data' => $query->orderBy('control', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $term]),
         ];
+    }
+
+    public function scopeHasControl($query, $control)
+    {
+        return (bool) $query->where('control', $control)->count();
     }
 }

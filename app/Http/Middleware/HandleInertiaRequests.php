@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Rule;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tightenco\Ziggy\Ziggy;
@@ -46,6 +47,24 @@ class HandleInertiaRequests extends Middleware
             },
             'flash' => function () use ($request) {
                 return ['flash' => fn () => $request->session()->get('flash')];
+            },
+            'authorizations' => function () use ($request) {
+                if (!$request->user())
+                    return [];
+
+                $rules = [];
+
+                if ($request->user()->isAdmin()) {
+                    foreach(Rule::where('control', 'like', '%viewAny%')->get() as $rule) {
+                        $rules[str_replace('.', '_', $rule->control)] = true;
+                    }
+                } else {
+                    foreach($request->user()->permission->rules()->where('control', 'like', '%viewAny%')->get() as $rule) {
+                        $rules[str_replace('.', '_', $rule->control)] = true;
+                    }
+                }
+
+                return $rules;
             },
         ]);
     }

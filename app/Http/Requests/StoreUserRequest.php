@@ -30,6 +30,7 @@ class StoreUserRequest extends FormRequest
             'email' => 'required|email|unique:users,email',
             'status' => 'required|in:0,1',
             'password' => ['required', 'confirmed', Password::defaults()],
+            'permission_id' => 'required|exists:permissions,id',
         ];
     }
 }

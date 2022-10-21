@@ -12,7 +12,7 @@ function Create({ permissions }) {
         name: "",
         email: "",
         password: "",
-        confirm_password: "",
+        password_confirmation: "",
         status: "0",
         registry: "",
         permission_id: "",
@@ -42,15 +42,15 @@ function Create({ permissions }) {
                             <InputError message={errors.status} />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="permissions_id" className="font-light">Permissão de acesso</label>
-                            <Select value={data.permissions_id} name={'permissions_id'} handleChange={onHandleChange} required={true} placeholder="Digite a matricula">
+                            <label htmlFor="permission_id" className="font-light">Permissão de acesso</label>
+                            <Select value={data.permission_id} name={'permission_id'} handleChange={onHandleChange} required={true} placeholder="Digite a matricula">
                                 {permissions.map((item, index) => {
                                     return (
                                         <option value={item.id} key={index}>{item.description}</option>
                                     );
                                 })}
                             </Select>
-                            <InputError message={errors.permissions_id} />
+                            <InputError message={errors.permission_id} />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="name" className="font-light">Nome</label>
@@ -73,9 +73,9 @@ function Create({ permissions }) {
                             <InputError message={errors.password} />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="confirm_password" className="font-light">Confirmação de senha</label>
-                            <Input type={'password'} value={data.confirm_password} name={'confirm_password'} handleChange={onHandleChange} required={true} placeholder="Digite a confirmação de senha" />
-                            <InputError message={errors.confirm_password} />
+                            <label htmlFor="password_confirmation" className="font-light">Confirmação de senha</label>
+                            <Input type={'password'} value={data.password_confirmation} name={'password_confirmation'} handleChange={onHandleChange} required={true} placeholder="Digite a confirmação de senha" />
+                            <InputError message={errors.password_confirmation} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>

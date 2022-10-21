@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Head } from '@inertiajs/inertia-react';
+import { Head } from '@inertiajs/inertia-react';
 import Footer from '@/Components/Public/Footer';
 import Panel from '@/Components/Public/Panel';
 import Navbar from '@/Components/Public/Navbar';
@@ -8,7 +8,7 @@ import Button from '@/Components/Form/Button';
 import Input from '@/Components/Form/Input';
 import Select from '@/Components/Form/Select';
 
-function Welcome(props) {
+function Welcome() {
     return (
         <>
             <Head title="Principal" />

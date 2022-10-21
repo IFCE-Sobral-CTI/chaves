@@ -29,6 +29,7 @@ class UpdateUserRequest extends FormRequest
             'registry' => ['required', 'digits_between:3,11', 'unique:users,registry,'.$this->user->id],
             'email' => ['required', 'email', 'unique:users,email,'.$this->user->id],
             'status' => 'required|in:0,1',
+            'permission_id' => 'required|exists:permissions,id',
         ];
     }
 }

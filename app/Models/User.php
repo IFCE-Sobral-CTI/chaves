@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -50,22 +52,22 @@ class User extends Authenticatable
         'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
 
-    public function permission()
+    public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class);
     }
 
-    public function isAdmin()
+    public function isAdmin(): bool
     {
         return $this->permission->description === 'Administrador';
     }
 
-    public function hasRule($rule)
+    public function hasRule($rule): bool
     {
-        return $this->permission->rules()->get()->contains($rule);
+        return $this->permission->rules()->hasControl($rule);
     }
 
-    public function scopeSearch($query, $term = '')
+    public function scopeSearch($query, $term = ''): array
     {
         $query->with('permission')
             ->where('name', 'like', "%{$term}%")

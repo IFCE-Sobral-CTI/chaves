@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Models\Rule;
 use App\Models\User;
+use App\Policies\RulePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        // Rule::class => RulePolicy::class,
     ];
 
     /**
@@ -30,18 +31,22 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
+
         if (Schema::hasTable('rules')) {
             $rules = $rule->with('permissions')->get();
 
             foreach($rules as $rule) {
                 Gate::define($rule->control, function(User $user) use ($rule) {
-                    return $user->hasRule($rule);
+                    return $user->hasRule($rule->control);
                 });
             }
 
             Gate::before(function($user, $ability) {
-                return $user->isAdmin();
+                if ($user->isAdmin())
+                    return true;
             });
         }
+
+
     }
 }
