@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static search(mixed $term)
+ * @property string description
+ */
 class Permission extends Model
 {
     use HasFactory;

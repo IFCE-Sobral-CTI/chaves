@@ -9,7 +9,7 @@ function Show({ rule, can }) {
     return (
         <>
             <Head title="Detalhes do usuário" />
-            <AuthenticatedLayout titleChildren={'Detalhes da Regra'} breadcrumbs={[{ label: 'Regras', url: route('rules.index') }, { label: rule.name, url: route('rules.show', rule.id) }]}>
+            <AuthenticatedLayout titleChildren={'Detalhes da Regra'} breadcrumbs={[{ label: 'Regras', url: route('rules.index') }, { label: rule.description, url: route('rules.show', rule.id) }]}>
                 <Panel className={'flex flex-col gap-4'}>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Descrição</div>

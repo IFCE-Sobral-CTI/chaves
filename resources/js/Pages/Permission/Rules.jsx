@@ -30,6 +30,19 @@ function Rules({ permission, rules }) {
         put(route('permissions.rules.sync', permission.id), {data});
     };
 
+    //const el = [{value, items:[]}];
+    let el = []
+
+    const groups = rules.reduce((g, i) => {
+        let value = i.control.split('.')[0]
+
+        
+
+        return g;
+    }, [[]]);
+
+    console.log(groups);
+
     const items = rules.map((item, index) => {
         return (
             <div className="flex gap-2" key={index}>

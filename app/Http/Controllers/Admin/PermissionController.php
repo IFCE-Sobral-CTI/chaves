@@ -9,18 +9,23 @@ use App\Http\Requests\UpdatePermissionRequest;
 use App\Models\Permission;
 use App\Models\Rule;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class PermissionController extends Controller
 {
     /**
      * Display a listing of the resource.
-     * 
-     * @return \Inertia\Response
+     *
+     * @param Request $request
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $this->authorize('permissions.viewAny', Permission::class);
 
@@ -42,9 +47,10 @@ class PermissionController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Inertia\Response
+     * @throws AuthorizationException
+     * @return Response
      */
-    public function create()
+    public function create(): Response
     {
         $this->authorize('permissions.create', Permission::class);
 
@@ -54,10 +60,11 @@ class PermissionController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StorePermissionRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @throws AuthorizationException
+     * @param StorePermissionRequest $request
+     * @return RedirectResponse
      */
-    public function store(StorePermissionRequest $request)
+    public function store(StorePermissionRequest $request): RedirectResponse
     {
         $this->authorize('permissions.create', Permission::class);
 
@@ -74,10 +81,11 @@ class PermissionController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Permission  $permission
-     * @return \Inertia\Response
+     * @throws AuthorizationException
+     * @param Permission $permission
+     * @return Response
      */
-    public function show(Permission $permission)
+    public function show(Permission $permission): Response
     {
         $this->authorize('permissions.view', $permission);
 
@@ -94,10 +102,11 @@ class PermissionController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Permission  $permission
-     * @return \Inertia\Response
+     * @throws AuthorizationException
+     * @param Permission $permission
+     * @return Response
      */
-    public function edit(Permission $permission)
+    public function edit(Permission $permission): Response
     {
         $this->authorize('permissions.update', $permission);
 
@@ -109,11 +118,12 @@ class PermissionController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdatePermissionRequest  $request
-     * @param  \App\Models\Permission  $permission
-     * @return \Illuminate\Http\RedirectResponse
+     * @throws AuthorizationException
+     * @param UpdatePermissionRequest $request
+     * @param Permission $permission
+     * @return RedirectResponse
      */
-    public function update(UpdatePermissionRequest $request, Permission $permission)
+    public function update(UpdatePermissionRequest $request, Permission $permission): RedirectResponse
     {
         $this->authorize('permissions.update', $permission);
 
@@ -130,10 +140,11 @@ class PermissionController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Permission  $permission
-     * @return \Illuminate\Http\RedirectResponse
+     * @throws AuthorizationException
+     * @param Permission $permission
+     * @return RedirectResponse
      */
-    public function destroy(Permission $permission)
+    public function destroy(Permission $permission): RedirectResponse
     {
         $this->authorize('permissions.delete', $permission);
 
@@ -145,7 +156,14 @@ class PermissionController extends Controller
         }
     }
 
-    public function rules(Permission $permission)
+    /**
+     * Show the form for editing rules the specified resource.
+     *
+     * @param Permission $permission
+     * @return Response
+     * @throws AuthorizationException
+     */
+    public function rules(Permission $permission): Response
     {
         $this->authorize('permissions.rules', $permission);
 
@@ -158,7 +176,17 @@ class PermissionController extends Controller
         ]);
     }
 
-    public function syncRules(StoreUpdatePermissionsRulesRequest $request, Permission $permission)
+
+
+    /**
+     * Update rules the specified resource in storage.
+     *
+     * @throws AuthorizationException
+     * @param StoreUpdatePermissionsRulesRequest $request
+     * @param Permission $permission
+     * @return RedirectResponse
+     */
+    public function syncRules(StoreUpdatePermissionsRulesRequest $request, Permission $permission): RedirectResponse
     {
         $this->authorize('permissions.rules', $permission);
 

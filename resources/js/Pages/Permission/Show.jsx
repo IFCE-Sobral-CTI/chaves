@@ -24,7 +24,7 @@ function Show({ permission, can }) {
     return (
         <>
             <Head title="Detalhes da Permissão" />
-            <AuthenticatedLayout titleChildren={'Detalhes da Permissão'} breadcrumbs={[{ label: 'Permissões', url: route('permissions.index') }, { label: permission.name, url: route('permissions.show', permission.id) }]}>
+            <AuthenticatedLayout titleChildren={'Detalhes da Permissão'} breadcrumbs={[{ label: 'Permissões', url: route('permissions.index') }, { label: permission.description, url: route('permissions.show', permission.id) }]}>
                 <Panel className={'flex flex-col gap-4'}>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Descrição</div>
