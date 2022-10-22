@@ -4,14 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @method static search(mixed $term)
- * @property string description
- */
-class Permission extends Model
+class Group extends Model
 {
     use HasFactory;
 
@@ -24,28 +19,12 @@ class Permission extends Model
         'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
 
-    /**
-     * @return BelongsToMany
-     */
-    public function rules(): BelongsToMany
+    public function rules(): HasMany
     {
-        return $this->belongsToMany(Rule::class);
+        return $this->hasMany(Rule::class);
     }
 
-    /**
-     * @return HasMany
-     */
-    public function users(): HasMany
-    {
-        return $this->hasMany(User::class);
-    }
-
-    /**
-     * @param $query
-     * @param $term
-     * @return array
-     */
-    public function scopeSearch($query, $term): array
+    public function scopeSearch($query, $term = ''): array
     {
         $query->where('description', 'like', "%{$term}%");
 

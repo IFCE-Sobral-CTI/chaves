@@ -52,21 +52,36 @@ class User extends Authenticatable
         'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
 
+    /**
+     * @return BelongsTo
+     */
     public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class);
     }
 
+    /**
+     * @return bool
+     */
     public function isAdmin(): bool
     {
         return $this->permission->description === 'Administrador';
     }
 
+    /**
+     * @param $rule
+     * @return bool
+     */
     public function hasRule($rule): bool
     {
         return $this->permission->rules()->hasControl($rule);
     }
 
+    /**
+     * @param $query
+     * @param string $term
+     * @return array
+     */
     public function scopeSearch($query, $term = ''): array
     {
         $query->with('permission')

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePermissionRequest;
 use App\Http\Requests\StoreUpdatePermissionsRulesRequest;
 use App\Http\Requests\UpdatePermissionRequest;
+use App\Models\Group;
 use App\Models\Permission;
 use App\Models\Rule;
 use Exception;
@@ -166,12 +167,11 @@ class PermissionController extends Controller
     public function rules(Permission $permission): Response
     {
         $this->authorize('permissions.rules', $permission);
-
-        $rules = Rule::orderBy('description', 'ASC')->get();
+        
         $permission = Permission::with('rules')->find($permission->id);
 
         return Inertia::render('Permission/Rules', [
-            'rules' => $rules,
+            'groups' => Group::with('rules')->get(),
             'permission' => $permission,
         ]);
     }

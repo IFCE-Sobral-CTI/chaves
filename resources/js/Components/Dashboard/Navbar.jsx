@@ -12,9 +12,9 @@ function Navbar() {
     return (
         <nav className="relative w-full flex flex-wrap items-center justify-between py-0.5 md:py-1 bg-green text-white shadow-lg transition">
             <div className="w-full sm:hidden">
-                <h1 className="font-semibold text-xl text-center">{title}</h1>
+                <h1 className="text-xl font-semibold text-center">{title}</h1>
             </div>
-            <div className="w-full flex flex-wrap items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between w-full">
                 <div className="flex">
                     <button type="button" className="p-2" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="false" aria-controls="sidebar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-7 w-7" viewBox="0 0 16 16">
@@ -26,7 +26,7 @@ function Navbar() {
                     </Link>
                 </div>
                 <div className="hidden md:block">
-                    <h1 className="font-semibold text-xl">{title}</h1>
+                    <h1 className="text-xl font-semibold">{title}</h1>
                 </div>
                 <div className="px-4">
                     <button className="flex items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
@@ -37,20 +37,21 @@ function Navbar() {
                         {auth.user.name.split(' ')[0]}
                     </button>
                     <ul
-                        className="w-36 dropdown-menu min-w-max absolute hidden bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 m-0 bg-clip-padding border-none"
+                        className="absolute z-50 hidden float-left py-2 m-0 mt-1 text-base text-left list-none bg-white border-none rounded-lg shadow-lg w-36 dropdown-menu min-w-max bg-clip-padding"
                         aria-labelledby="dropdownMenuButton2"
                     >
                         <li>
-                            <button
-                                className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                            <Link
+                                href={route('profile')}
+                                className="block w-full px-4 py-2 text-sm font-normal text-center text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100"
                             >
                                 Perfil
-                            </button>
+                            </Link>
                         </li>
                         <li>
                             <button
                                 onClick={onHandleLogout}
-                                className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
+                                className="block w-full px-4 py-2 text-sm font-normal text-gray-700 bg-transparent dropdown-item whitespace-nowrap hover:bg-gray-100"
                             >
                                 Sair
                             </button>

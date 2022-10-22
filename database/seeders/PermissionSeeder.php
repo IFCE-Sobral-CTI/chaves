@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Permission;
+use App\Models\Rule;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -16,6 +17,8 @@ class PermissionSeeder extends Seeder
     public function run()
     {
         Permission::create(['description' => 'Administrador']);
-        Permission::factory()->count(11)->create();
+        $viewer = Permission::create(['description' => 'Visualizador']);
+
+        $viewer->rules()->sync(Rule::where('control', 'like', '%viewAny')->pluck('id')->all());
     }
 }

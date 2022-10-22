@@ -5,13 +5,10 @@ import Panel from "@/Components/Dashboard/Panel";
 import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
-import Select from "@/Components/Form/Select";
 
-function Edit({ rule, groups }) {
+function Edit({ group }) {
     const { data, setData, put, processing, errors } = useForm({
-        description: rule.description,
-        control: rule.control,
-        group_id: rule.group_id,
+        description: group.description,
     });
 
     const onHandleChange = (event) => {
@@ -20,35 +17,19 @@ function Edit({ rule, groups }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route('rules.update', rule.id), {data});
+        put(route('groups.update', group.id), {data});
     };
 
     return (
         <>
-            <Head title="Editar Usuário" />
-            <AuthenticatedLayout titleChildren={'Editar Usuário'} breadcrumbs={[{ label: 'Usuários', url: route('rules.index') }, { label: rule.name, url: route('rules.show', rule.id) }, { label: 'Editar'}]}>
+            <Head title="Editar Grupo" />
+            <AuthenticatedLayout titleChildren={'Editar Grupo'} breadcrumbs={[{ label: 'Grupos', url: route('groups.index') }, { label: group.description, url: route('groups.show', group.id) }, { label: 'Editar'}]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="mb-4">
                             <label htmlFor="description" className="font-light">Descrição</label>
-                            <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da regra" />
+                            <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da grupo" />
                             <InputError message={errors.description} />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="group" className="font-light">Grupo de páginas</label>
-                            <Select value={data.group} name={'group_id'} handleChange={onHandleChange} required={true}>
-                                {groups.map((item, i) => {
-                                    return (
-                                        <option value={item.id}>{item.description}</option>
-                                    );
-                                })}
-                            </Select>
-                            <InputError message={errors.group} />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="control" className="font-light">Controle</label>
-                            <Input value={data.control} name={'control'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da regra" />
-                            <InputError message={errors.control} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
@@ -57,7 +38,7 @@ function Edit({ rule, groups }) {
                                 </svg>
                                 <span>Enviar</span>
                             </Button>
-                            <Button href={route('rules.show', rule.id)} className={'gap-2'}>
+                            <Button href={route('groups.show', group.id)} className={'gap-2'}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                     <path fillRule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
                                 </svg>

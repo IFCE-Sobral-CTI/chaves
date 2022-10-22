@@ -9,19 +9,24 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\Permission;
 use App\Models\User;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-    * @return \Inertia\Response
+     * @param Request $request
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $this->authorize('users.viewAny', User::class);
 
@@ -42,9 +47,10 @@ class UserController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Inertia\Response
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function create()
+    public function create(): Response
     {
         $this->authorize('users.create', User::class);
 
@@ -55,11 +61,12 @@ class UserController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     * Qwer@1234
-     * @param  StoreUserRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @param StoreUserRequest $request
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request): RedirectResponse
     {
         $this->authorize('users.create', User::class);
 
@@ -77,10 +84,11 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  User $user
-     * @return \Inertia\Response
+     * @param User $user
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function show(User $user)
+    public function show(User $user): Response
     {
         $this->authorize('users.view', $user);
 
@@ -94,12 +102,30 @@ class UserController extends Controller
     }
 
     /**
+     * Display profile user.
+     *
+     * @return Response
+     * @throws AuthorizationException
+     */
+    public function profile(): Response
+    {
+        $this->authorize('users.profile', User::class);
+
+        $user = Auth::user();
+
+        return Inertia::render('User/Profile', [
+            'user' => User::with('permission')->find($user->id),
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified resource.
      *
-     * @param  User $user
-     * @return \Inertia\Response
+     * @param User $user
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function edit(User $user)
+    public function edit(User $user): Response
     {
         $this->authorize('users.update', $user);
 
@@ -111,10 +137,11 @@ class UserController extends Controller
     /**
      * Show the form for editing password the specified resource.
      *
-     * @param  User $user
-     * @return \Inertia\Response
+     * @param User $user
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function editPassword(User $user)
+    public function editPassword(User $user): Response
     {
         $this->authorize('users.update.password', $user);
 
@@ -126,11 +153,12 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  User $user
-     * @return \Illuminate\Http\RedirectResponse
+     * @param UpdateUserRequest $request
+     * @param User $user
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         $this->authorize('users.update', $user);
 
@@ -147,11 +175,12 @@ class UserController extends Controller
     /**
      * Update password the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  User $user
-     * @return \Illuminate\Http\RedirectResponse
+     * @param UpdateUserPasswordRequest $request
+     * @param User $user
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function updatePassword(UpdateUserPasswordRequest $request, User $user)
+    public function updatePassword(UpdateUserPasswordRequest $request, User $user): RedirectResponse
     {
         $this->authorize('users.update.password', $user);
 
@@ -168,10 +197,11 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  User $user
-     * @return \Illuminate\Http\RedirectResponse
+     * @param User $user
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function destroy(User $user)
+    public function destroy(User $user): RedirectResponse
     {
         $this->authorize('users.delete', $user);
 

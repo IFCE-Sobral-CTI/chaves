@@ -5,20 +5,26 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRuleRequest;
 use App\Http\Requests\UpdateRuleRequest;
+use App\Models\Group;
 use App\Models\Rule;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class RuleController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Inertia\Response
+     * @param Request $request
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $this->authorize('rules.viewAny', Rule::class);
 
@@ -40,22 +46,26 @@ class RuleController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Inertia\Response
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function create()
+    public function create(): Response
     {
         $this->authorize('rules.create', Rule::class);
 
-        return Inertia::render('Rule/Create');
+        return Inertia::render('Rule/Create', [
+            'groups' => Group::select('id', 'description')->get(),
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreRuleRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @param StoreRuleRequest $request
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function store(StoreRuleRequest $request)
+    public function store(StoreRuleRequest $request): RedirectResponse
     {
         $this->authorize('rules.create', Rule::class);
 
@@ -72,15 +82,16 @@ class RuleController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Rule  $rule
-     * @return \Inertia\Response
+     * @param Rule $rule
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function show(Rule $rule)
+    public function show(Rule $rule): Response
     {
         $this->authorize('rules.view', $rule);
 
         return Inertia::render('Rule/Show', [
-            'rule' => $rule,
+            'rule' => Rule::with('group')->find($rule->id),
             'can' => [
                 'update' => Auth::user()->can('rules.update'),
                 'delete' => Auth::user()->can('rules.delete'),
@@ -91,15 +102,17 @@ class RuleController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Rule  $rule
-     * @return \Inertia\Response
+     * @param Rule $rule
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function edit(Rule $rule)
+    public function edit(Rule $rule): Response
     {
         $this->authorize('rules.update', $rule);
 
         return Inertia::render('Rule/Edit', [
             'rule' => $rule,
+            'groups' => Group::select('id', 'description')->get(),
             'can' => [
                 'rules_update' => Auth::user()->can('rules.update'),
             ],
@@ -109,11 +122,12 @@ class RuleController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateRuleRequest  $request
-     * @param  \App\Models\Rule  $rule
-     * @return \Illuminate\Http\RedirectResponse
+     * @param UpdateRuleRequest $request
+     * @param Rule $rule
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function update(UpdateRuleRequest $request, Rule $rule)
+    public function update(UpdateRuleRequest $request, Rule $rule): RedirectResponse
     {
         $this->authorize('rules.update', $rule);
 
@@ -130,10 +144,11 @@ class RuleController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Rule  $rule
-     * @return \Illuminate\Http\RedirectResponse
+     * @param Rule $rule
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function destroy(Rule $rule)
+    public function destroy(Rule $rule): RedirectResponse
     {
         $this->authorize('rules.delete', $rule);
 

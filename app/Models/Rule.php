@@ -4,7 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * @method static search(mixed $term)
+ * @property string description
+ * @property string control
+ * @property string group
+ */
 class Rule extends Model
 {
     use HasFactory;
@@ -12,6 +20,7 @@ class Rule extends Model
     protected $fillable = [
         'description',
         'control',
+        'group_id',
     ];
 
     protected $casts = [
@@ -19,12 +28,28 @@ class Rule extends Model
         'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
 
-    public function permissions()
+    /**
+     * @return BelongsToMany
+     */
+    public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class);
     }
 
-    public function scopeSearch($query, $term)
+    /**
+     * @return BelongsTo
+     */
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(Group::class);
+    }
+
+    /**
+     * @param $query
+     * @param $term
+     * @return array
+     */
+    public function scopeSearch($query, $term): array
     {
         $query->where('description', 'like', "%{$term}%")
             ->orWhere('control', 'like', "%{$term}%");
@@ -35,7 +60,12 @@ class Rule extends Model
         ];
     }
 
-    public function scopeHasControl($query, $control)
+    /**
+     * @param $query
+     * @param $control
+     * @return bool
+     */
+    public function scopeHasControl($query, $control): bool
     {
         return (bool) $query->where('control', $control)->count();
     }

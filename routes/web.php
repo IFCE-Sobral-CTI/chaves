@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\GroupController;
+use App\Http\Controllers\Admin\HomeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,13 +31,13 @@ Route::get('/', function () {
 
 
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function() {
-    Route::get('/home', function () {
-        return Inertia::render('Dashboard');
-    })->name('admin');
+    Route::get('/', [HomeController::class, 'index'])->name('admin');
     Route::resource('users', UserController::class);
     Route::get('users/{user}/edit/password', [UserController::class, 'editPassword'])->name('users.edit.password');
     Route::put('users/{user}/edit/password', [UserController::class, 'updatePassword'])->name('users.update.password');
+    Route::get('profile', [UserController::class, 'profile'])->name('profile');
     Route::resource('rules', RuleController::class);
+    Route::resource('groups', GroupController::class);
     Route::resource('permissions', PermissionController::class);
     Route::get('permissions/{permission}/rules', [PermissionController::class, 'rules'])->name('permissions.rules');
     Route::put('permissions/{permission}/rules', [PermissionController::class, 'syncRules'])->name('permissions.rules.sync');

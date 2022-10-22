@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateRuleRequest extends FormRequest
+class StoreGroupRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,8 +25,6 @@ class UpdateRuleRequest extends FormRequest
     {
         return [
             'description' => 'required|min:3',
-            'control' => 'required|min:3',
-            'group_id' => 'exists:groups,id',
         ];
     }
 }

@@ -37,7 +37,7 @@ export default function AuthenticatedLayout({breadcrumbs, children, titleChildre
                     <Sidebar can={authorizations} />
                     <main className="flex flex-col gap-2 md:gap-4 w-full px-0.5 md:pr-2 py-2 md:py-4">
                         {breadcrumbs && <Breadcrumbs href={breadcrumbs} />}
-                        {titleChildren && <Panel><h1 className="text-xl font-semibold text-neutral-500 text-center">{titleChildren}</h1></Panel>}
+                        {titleChildren && <Panel><h1 className="text-xl font-semibold text-center text-neutral-500">{titleChildren}</h1></Panel>}
                         {children}
                     </main>
                 </div>

@@ -26,6 +26,7 @@ class StoreRuleRequest extends FormRequest
         return [
             'description' => 'required|min:3',
             'control' => 'required|min:3',
+            'group_id' => 'exists:groups,id',
         ];
     }
 }

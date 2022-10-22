@@ -3,11 +3,14 @@ import { Link } from "@inertiajs/inertia-react";
 
 function Sidebar({ can }) {
     const [width, setWidth] = useState(window.innerWidth);
+
     const [accessCollapse, setAccessCollapse] = useState(
         route().current('users.*') ||
         route().current('permissions.*') ||
-        route().current('rules.*')
+        route().current('rules.*') ||
+        route().current('groups.*')
     );
+
     const [chevronAccess, setChevronAccess] = useState(accessCollapse);
 
     const toggleChevronAccess = () => {
@@ -21,18 +24,18 @@ function Sidebar({ can }) {
     return (
         <>
             <nav id="sidebar" className={"collapse collapse-horizontal mr-2 p-2 " + (width >= 1024? 'show': '')}>
-                <div className="flex flex-col gap-3 w-48 md:w-64">
+                <div className="flex flex-col w-48 gap-3 md:w-64">
                     <Link
                         href={route('admin')}
                         className={((route().current('admin'))? 'bg-gray-50 shadow-md ': '') + `text-gray-600 p-2 rounded-lg hover:bg-white hover:shadow-md transition flex gap-4`}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-6" viewBox="0 0 16 16">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-6 h-5" viewBox="0 0 16 16">
                             <path fillRule="evenodd" d="M2 13.5V7h1v6.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V7h1v6.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5zm11-11V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z"/>
                             <path fillRule="evenodd" d="M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z"/>
                         </svg>
                         Principal
                     </Link>
-                    {(can.users_viewAny || can.permissions_viewAny || can.rules_viewAny) && <>
+                    {(can.users_viewAny || can.permissions_viewAny || can.rules_viewAny || can.groups_viewAny) && <>
                         <button
                             className={
                                 (
@@ -47,7 +50,7 @@ function Sidebar({ can }) {
                             aria-controls="accessCollapse"
                             onClick={toggleChevronAccess}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-5" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                 <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
                             </svg>
                             Acesso
@@ -65,7 +68,7 @@ function Sidebar({ can }) {
                             </span>
                         </button>
                         <div
-                            className={'flex flex-col gap-1 collapse pl-2 ' + ((route().current('users.*') || route().current('permissions.*') || route().current('rules.*'))? 'show': '')}
+                            className={'flex flex-col gap-1 collapse pl-2 ' + (chevronAccess? 'show': '')}
                             id="accessCollapse"
                         >
                             {can.users_viewAny && <Link
@@ -77,11 +80,21 @@ function Sidebar({ can }) {
                                 </svg>
                                 Usuários
                             </Link>}
+                            {can.groups_viewAny && <Link
+                                href={route('groups.index', {term: '', page: 1})}
+                                className={(route().current('groups.*')? 'bg-gray-50 shadow-md ': '') + `text-gray-600 p-3 rounded-lg hover:bg-white hover:shadow-md transition flex gap-4`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
+                                    <path d="M2 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v11.5a.5.5 0 0 1-.777.416L7 13.101l-4.223 2.815A.5.5 0 0 1 2 15.5V4zm2-1a1 1 0 0 0-1 1v10.566l3.723-2.482a.5.5 0 0 1 .554 0L11 14.566V4a1 1 0 0 0-1-1H4z"/>
+                                    <path d="M4.268 1H12a1 1 0 0 1 1 1v11.768l.223.148A.5.5 0 0 0 14 13.5V2a2 2 0 0 0-2-2H6a2 2 0 0 0-1.732 1z"/>
+                                </svg>
+                                Grupos
+                            </Link>}
                             {can.permissions_viewAny && <Link
                                 href={route('permissions.index', {term: '', page: 1})}
                                 className={(route().current('permissions.*')? 'bg-gray-50 shadow-md ': '') + `text-gray-600 p-3 rounded-lg hover:bg-white hover:shadow-md transition flex gap-4`}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-5" viewBox="0 0 16 16">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                     <path d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H4Zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
                                     <path d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.373 5.373 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2H2Z"/>
                                 </svg>
@@ -91,7 +104,7 @@ function Sidebar({ can }) {
                                 href={route('rules.index', {term: '', page: 1})}
                                 className={(route().current('rules.*')? 'bg-gray-50 shadow-md ': '') + `text-gray-600 p-3 rounded-lg hover:bg-white hover:shadow-md transition flex gap-4`}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-5" viewBox="0 0 16 16">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                     <path d="M2 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v11.5a.5.5 0 0 1-.777.416L7 13.101l-4.223 2.815A.5.5 0 0 1 2 15.5V4zm2-1a1 1 0 0 0-1 1v10.566l3.723-2.482a.5.5 0 0 1 .554 0L11 14.566V4a1 1 0 0 0-1-1H4z"/>
                                     <path d="M4.268 1H12a1 1 0 0 1 1 1v11.768l.223.148A.5.5 0 0 0 14 13.5V2a2 2 0 0 0-2-2H6a2 2 0 0 0-1.732 1z"/>
                                 </svg>
