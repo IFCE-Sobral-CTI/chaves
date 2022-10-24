@@ -36,7 +36,7 @@ function Create({ groups }) {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="group" className="font-light">Grupo de páginas</label>
-                            <Select value={data.group} name={'group_id'} handleChange={onHandleChange} required={true}>
+                            <Select value={data.group_id} name={'group_id'} handleChange={onHandleChange} required={true}>
                                 {groups.map((item, i) => {
                                     return (
                                         <option value={item.id}>{item.description}</option>
