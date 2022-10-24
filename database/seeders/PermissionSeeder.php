@@ -19,6 +19,6 @@ class PermissionSeeder extends Seeder
         Permission::create(['description' => 'Administrador']);
         $viewer = Permission::create(['description' => 'Visualizador']);
 
-        $viewer->rules()->sync(Rule::where('control', 'like', '%viewAny')->pluck('id')->all());
+        $viewer->rules()->sync(Rule::where('control', 'like', '%viewAny')->orWhere('control', 'users.profile')->pluck('id')->all());
     }
 }

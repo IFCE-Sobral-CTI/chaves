@@ -34,6 +34,7 @@ class RuleSeeder extends Seeder
             ['description' => 'Atualizar', 'control' => 'users.update', 'group_id' => $users->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Atualizar de senha', 'control' => 'users.update.password', 'group_id' => $users->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Apagar', 'control' => 'users.delete', 'group_id' => $users->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Perfil', 'control' => 'users.profile', 'group_id' => $users->id, 'created_at' => now(), 'updated_at' => now()],
 
             ['description' => 'Página inicial', 'control' => 'rules.viewAny', 'group_id' => $rules->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Detalhar', 'control' => 'rules.view', 'group_id' => $rules->id, 'created_at' => now(), 'updated_at' => now()],
