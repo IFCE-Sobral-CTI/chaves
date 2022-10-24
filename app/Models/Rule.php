@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * @method static search(mixed $term)
+ * @method search(mixed $term)
  * @property string description
  * @property string control
  * @property string group
@@ -51,7 +51,8 @@ class Rule extends Model
      */
     public function scopeSearch($query, $term): array
     {
-        $query->where('description', 'like', "%{$term}%")
+        $query->with('group')
+            ->where('description', 'like', "%{$term}%")
             ->orWhere('control', 'like', "%{$term}%");
 
         return [

@@ -22,13 +22,13 @@ function Edit({ group }) {
 
     return (
         <>
-            <Head title="Editar Grupo" />
-            <AuthenticatedLayout titleChildren={'Editar Grupo'} breadcrumbs={[{ label: 'Grupos', url: route('groups.index') }, { label: group.description, url: route('groups.show', group.id) }, { label: 'Editar'}]}>
+            <Head title="Editar Página" />
+            <AuthenticatedLayout titleChildren={'Editar Página'} breadcrumbs={[{ label: 'Páginas', url: route('groups.index') }, { label: group.description, url: route('groups.show', group.id) }, { label: 'Editar'}]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="mb-4">
                             <label htmlFor="description" className="font-light">Descrição</label>
-                            <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da grupo" />
+                            <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da página" />
                             <InputError message={errors.description} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">

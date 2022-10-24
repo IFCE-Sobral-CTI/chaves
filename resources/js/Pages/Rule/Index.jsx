@@ -21,6 +21,7 @@ function Index({ rules, count, page, termSearch, can }) {
     const table = rules.data.map((item, index) => {
         return (
             <tr key={index} className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')}>
+                <td className="font-light px-1 py-3"><Link href={can.view? route('rules.show', item.id): route('rules.index', {term: term, page: currentPage})}>{item.group.description}</Link></td>
                 <td className="font-light px-1 py-3"><Link href={can.view? route('rules.show', item.id): route('rules.index', {term: term, page: currentPage})}>{item.description}</Link></td>
                 <td className="font-light px-1 py-3"><Link href={can.view? route('rules.show', item.id): route('rules.index', {term: term, page: currentPage})}>{item.control}</Link></td>
                 <td className="py-3 flex justify-end pr-2 text-neutral-400">
@@ -58,6 +59,7 @@ function Index({ rules, count, page, termSearch, can }) {
                     <table className="table-auto w-full text-neutral-600">
                         <thead>
                             <tr className="border-b">
+                                <th className="font-semibold text-left px-1 pt-3">Página</th>
                                 <th className="font-semibold text-left px-1 pt-3">Descrição</th>
                                 <th className="font-semibold text-left px-1 pt-3">Controle</th>
                                 <th></th>

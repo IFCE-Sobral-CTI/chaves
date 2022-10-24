@@ -16,7 +16,7 @@ class GroupSeeder extends Seeder
     public function run()
     {
         Group::insert([
-            ['description' => 'Grupos', 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Páginas', 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Permissões', 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Regras', 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Usuários', 'created_at' => now(), 'updated_at' => now()],

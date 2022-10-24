@@ -35,14 +35,14 @@ function Index({ groups, count, page, termSearch, can }) {
 
     return (
         <>
-            <AuthenticatedLayout titleChildren={'Gerenciamento de Grupos'} breadcrumbs={[{ label: 'Grupos', url: route('groups.index') }]}>
+            <AuthenticatedLayout titleChildren={'Gerenciamento de Páginas'} breadcrumbs={[{ label: 'Páginas', url: route('groups.index') }]}>
                 <div className="flex gap-2 md:flex-row md:gap-4">
                     {can.create && <Panel className={'inline-flex'}>
                         <Link href={route('groups.create')} className="inline-flex items-center justify-between gap-2 px-3 py-2 font-light text-white transition bg-blue-500 border border-transparent rounded-md focus:ring hover:bg-blue-600 focus:ring-sky-300">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                 <path fillRule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
                             </svg>
-                            <span>Novo</span>
+                            <span>Nova</span>
                         </Link>
                     </Panel>}
                     <Panel className={'flex-1 relative'}>

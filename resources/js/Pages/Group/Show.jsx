@@ -8,8 +8,8 @@ import DeleteModal from "@/Components/Dashboard/DeleteModal";
 function Show({ group, can }) {
     return (
         <>
-            <Head title="Detalhes do Grupo" />
-            <AuthenticatedLayout titleChildren={'Detalhes do Grupo'} breadcrumbs={[{ label: 'Grupos', url: route('groups.index') }, { label: group.description, url: route('groups.show', group.id) }]}>
+            <Head title="Detalhes da Página" />
+            <AuthenticatedLayout titleChildren={'Detalhes da Página'} breadcrumbs={[{ label: 'Páginas', url: route('groups.index') }, { label: group.description, url: route('groups.show', group.id) }]}>
                 <Panel className={'flex flex-col gap-4'}>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Descrição</div>

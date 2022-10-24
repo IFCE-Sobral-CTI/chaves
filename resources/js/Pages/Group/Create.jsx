@@ -23,12 +23,12 @@ function Create() {
     return (
         <>
             <Head title="Nova Grupo de pagina" />
-            <AuthenticatedLayout titleChildren={'Cadastro de novo Groupo de páginas'} breadcrumbs={[{ label: 'Grupos', url: route('groups.index') }, { label: 'Novo', url: route('groups.create') }]}>
+            <AuthenticatedLayout titleChildren={'Cadastro de nova Página'} breadcrumbs={[{ label: 'Páginas', url: route('groups.index') }, { label: 'Nova', url: route('groups.create') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="mb-4">
                             <label htmlFor="description" className="font-light">Descrição</label>
-                            <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da grupo" />
+                            <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da página" />
                             <InputError message={errors.description} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">
