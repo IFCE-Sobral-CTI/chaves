@@ -7,7 +7,7 @@ export default function Dashboard({breadcrumbs, children}) {
     return (
         <>
             <AuthenticatedLayout breadcrumbs={[{label: 'Minha Página', url: route('admin')}]}>
-                <Panel>Teste</Panel>
+                <Panel>Página inicial</Panel>
             </AuthenticatedLayout>
         </>
     )

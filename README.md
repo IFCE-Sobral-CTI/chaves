@@ -7,6 +7,7 @@
 * ReactJS
 
 ## INSTALAÇÃO
+
 Para instalar faça um clone do projeto:
 
 ```git clone https://github.com/CTI-Sobral-IFCE/skeleton.git meu-projeto```
@@ -45,3 +46,14 @@ Para executar o projeto depois das configurações:
 
 ```npm run dev```
 
+### CRÉDITOS
+
+Projeto desenvolvido pela Coordenadoria de Tecnologia da Informção do IFCE - *Campus* Sobral.
+
+### CONTATO
+
+<ti.sobral@ifce.edu.br>
+
+### LICENÇA
+
+Este é um software de código aberto licenciado sob a licença do [MIT](https://opensource.org/licenses/MIT).
