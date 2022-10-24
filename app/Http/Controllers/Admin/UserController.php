@@ -96,6 +96,7 @@ class UserController extends Controller
             'user' => User::with('permission')->find($user->id),
             'can' => [
                 'update' => Auth::user()->can('users.update'),
+                'update_password' => Auth::user()->can('users.update.password'),
                 'delete' => Auth::user()->can('users.delete'),
             ]
         ]);
