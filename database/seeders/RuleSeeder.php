@@ -16,12 +16,47 @@ class RuleSeeder extends Seeder
      */
     public function run()
     {
-        $groups = Group::where('description', 'Páginas')->first();
-        $permissions = Group::where('description', 'Permissões')->first();
-        $rules = Group::where('description', 'Regras')->first();
-        $users = Group::where('description', 'Usuários')->first();
+        $groups = Group::firstOrCreate(['description' => 'Páginas']);
+        $permissions = Group::firstOrCreate(['description' => 'Permissões']);
+        $rules = Group::firstOrCreate(['description' => 'Regras']);
+        $users = Group::firstOrCreate(['description' => 'Usuários']);
+        $blocks = Group::firstOrCreate(['description' => 'Blocos']);
+        $employees = Group::firstOrCreate(['description' => 'Servidores']);
+        $rooms = Group::firstOrCreate(['description' => 'Salas']);
+        $keys = Group::firstOrCreate(['description' => 'Chaves']);
+        $borrows = Group::firstOrCreate(['description' => 'Empréstimos']);
 
         $data = [
+            ['description' => 'Página inicial', 'control' => 'borrows.viewAny', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Detalhar', 'control' => 'borrows.view', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Criar', 'control' => 'borrows.create', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Atualizar', 'control' => 'borrows.update', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Apagar', 'control' => 'borrows.delete', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
+
+            ['description' => 'Página inicial', 'control' => 'keys.viewAny', 'group_id' => $keys->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Detalhar', 'control' => 'keys.view', 'group_id' => $keys->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Criar', 'control' => 'keys.create', 'group_id' => $keys->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Atualizar', 'control' => 'keys.update', 'group_id' => $keys->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Apagar', 'control' => 'keys.delete', 'group_id' => $keys->id, 'created_at' => now(), 'updated_at' => now()],
+
+            ['description' => 'Página inicial', 'control' => 'employees.viewAny', 'group_id' => $employees->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Detalhar', 'control' => 'employees.view', 'group_id' => $employees->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Criar', 'control' => 'employees.create', 'group_id' => $employees->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Atualizar', 'control' => 'employees.update', 'group_id' => $employees->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Apagar', 'control' => 'employees.delete', 'group_id' => $employees->id, 'created_at' => now(), 'updated_at' => now()],
+
+            ['description' => 'Página inicial', 'control' => 'rooms.viewAny', 'group_id' => $rooms->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Detalhar', 'control' => 'rooms.view', 'group_id' => $rooms->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Criar', 'control' => 'rooms.create', 'group_id' => $rooms->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Atualizar', 'control' => 'rooms.update', 'group_id' => $rooms->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Apagar', 'control' => 'rooms.delete', 'group_id' => $rooms->id, 'created_at' => now(), 'updated_at' => now()],
+
+            ['description' => 'Página inicial', 'control' => 'blocks.viewAny', 'group_id' => $blocks->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Detalhar', 'control' => 'blocks.view', 'group_id' => $blocks->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Criar', 'control' => 'blocks.create', 'group_id' => $blocks->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Atualizar', 'control' => 'blocks.update', 'group_id' => $blocks->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Apagar', 'control' => 'blocks.delete', 'group_id' => $blocks->id, 'created_at' => now(), 'updated_at' => now()],
+
             ['description' => 'Página inicial', 'control' => 'groups.viewAny', 'group_id' => $groups->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Detalhar', 'control' => 'groups.view', 'group_id' => $groups->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Criar', 'control' => 'groups.create', 'group_id' => $groups->id, 'created_at' => now(), 'updated_at' => now()],

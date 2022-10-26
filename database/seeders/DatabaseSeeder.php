@@ -22,13 +22,16 @@ class DatabaseSeeder extends Seeder
             GroupSeeder::class,
             RuleSeeder::class,
             PermissionSeeder::class,
+            BlockSeeder::class,
+            EmployeeSeeder::class,
+            RoomSeeder::class,
+            KeySeeder::class,
+            BorrowSeeder::class,
         ]);
 
-        User::factory(23)->create();
-
         User::factory()->create([
-            'name' => 'Alan Freire',
-            'email' => 'alan.freire@ifce.edu.br',
+            'name' => 'Coordenação de Tecnologia da Informação',
+            'email' => 'ti.sobral@ifce.edu.br',
             'password' => Hash::make('qwe123'),
             'status' => 1,
             'registry' => 3024033,

@@ -8,6 +8,11 @@ use Inertia\Inertia;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RuleController;
+use App\Http\Controllers\Admin\BlockController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\KeyController;
+use App\Http\Controllers\Admin\RoomController;
+use App\Http\Controllers\Admin\BorrowController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +46,12 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function() {
     Route::resource('permissions', PermissionController::class);
     Route::get('permissions/{permission}/rules', [PermissionController::class, 'rules'])->name('permissions.rules');
     Route::put('permissions/{permission}/rules', [PermissionController::class, 'syncRules'])->name('permissions.rules.sync');
+
+    Route::resource('blocks', BlockController::class);
+    Route::resource('employees', EmployeeController::class);
+    Route::resource('rooms', RoomController::class);
+    Route::resource('keys', KeyController::class);
+    Route::resource('borrows', BorrowController::class);
 });
 
 require __DIR__.'/auth.php';
