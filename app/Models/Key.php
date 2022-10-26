@@ -32,7 +32,7 @@ class Key extends Model
 
     public function borrows(): BelongsToMany
     {
-        return $this->belongsToMany(Key::class);
+        return $this->belongsToMany(Borrow::class);
     }
 
     public function scopeSearch($query, Request $request): array

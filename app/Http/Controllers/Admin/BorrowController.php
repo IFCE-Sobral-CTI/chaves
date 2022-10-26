@@ -41,9 +41,13 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.create', Borrow::class);
 
+        $keysInBorrows = Key::whereHas('borrows', function($query) {
+            return $query->where('devolution', null);
+        })->pluck('id')->toArray();
+
         return Inertia::render('Keys/Borrow/Create', [
             'employees' => Employee::select('id', 'name')->orderBy('name', 'ASC')->get(),
-            'keys' => Key::with('room')->get(),
+            'keys' => Key::with('room')->whereNotIn('id', $keysInBorrows)->get(),
         ]);
     }
 

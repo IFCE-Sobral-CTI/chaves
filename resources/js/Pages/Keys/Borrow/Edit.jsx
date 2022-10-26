@@ -7,11 +7,13 @@ import Button from "@/Components/Form/Button";
 import Textarea from "@/Components/Form/Textarea";
 import Select from "@/Components/Form/Select";
 import Search from "./Components/Search";
+import Input from "@/Components/Form/Input";
 
 function Edit({ borrow, employees, keys, borrowKeys }) {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         observation: borrow.observation,
         employee_id: borrow.employee_id,
+        devolution: borrow.devolution,
         keys: borrowKeys,
     });
 
@@ -25,7 +27,7 @@ function Edit({ borrow, employees, keys, borrowKeys }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('borrows.store'), {data});
+        put(route('borrows.update', borrow.id), {data});
     };
 
     return (
@@ -51,7 +53,12 @@ function Edit({ borrow, employees, keys, borrowKeys }) {
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o empréstimo" />
                             <InputError message={errors.observation} />
                         </div>
-                        <Search data={keys} onChange={onChangeKeys} />
+                        <div className="mb-4">
+                            <label htmlFor="devolution" className="font-light">Número</label>
+                            <Input value={data.devolution} type={'datetime-local'} name={'devolution'} handleChange={onHandleChange} required={false} />
+                            <InputError message={errors.devolution} />
+                        </div>
+                        <Search data={keys} onChange={onChangeKeys} values={data.keys} />
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">

@@ -24,20 +24,14 @@ function Index({ borrows, count, page, termSearch, can }) {
         let end = moment(created_at, "DD/MM/YYYY hh:mm:ss").add(1, 'd');
         let now = moment();
 
-        console.log("Start", start.format('DD/MM/YYYY hh:mm:ss'))
-        console.log("End", end.format('DD/MM/YYYY hh:mm:ss'))
-        console.log("Now", now.format('DD/MM/YYYY hh:mm:ss'))
-        console.log("Em aberto", now.isBetween(start, end));
-        console.log("-----------------------------");
+        if (devolution)
+            return <span className="px-2 py-1 text-xs text-white rounded-lg bg-green">Devolvido</span>
 
         if (now.isBetween(start, end) && !devolution)
-            return <span className="bg-yellow-500 px-2 py-1 text-white text-xs rounded-lg">Em aberto</span>
+            return <span className="px-2 py-1 text-xs text-white bg-yellow-500 rounded-lg">Aberto</span>
 
         if (now.isAfter(end) && !devolution)
-            return <span className="bg-red-500 px-2 py-1 text-white text-xs rounded-lg">Devolvido</span>
-
-        if (devolution)
-            return <span className="bg-green px-2 py-1 text-white text-xs rounded-lg">Devolvido</span>
+            return <span className="px-2 py-1 text-xs text-white bg-red-500 rounded-lg">Atrasado</span>
     }
 
     const table = borrows.data.map((item, index) => {
@@ -45,7 +39,7 @@ function Index({ borrows, count, page, termSearch, can }) {
             <tr key={index} className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')}>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.created_at}</Link></td>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.employee.name}</Link></td>
-                <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.devolution?? '-'}</Link></td>
+                <td className="hidden px-1 py-3 font-light md:inline-table"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.devolution?? '-'}</Link></td>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{status(item.created_at, item.devolution)}</Link></td>
                 <td className="flex justify-end py-3 pr-2 text-neutral-400">
                     <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
@@ -85,7 +79,7 @@ function Index({ borrows, count, page, termSearch, can }) {
                             <tr className="border-b">
                                 <th className="px-1 pt-3 font-semibold text-left">Data</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Servidor</th>
-                                <th className="px-1 pt-3 font-semibold text-left">Devolução</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:inline-table">Devolução</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Situação</th>
                                 <th></th>
                             </tr>

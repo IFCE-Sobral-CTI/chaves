@@ -33,16 +33,16 @@ function Show({ borrow, can }) {
                     </div>
                 </Panel>
                 <Panel>
-                    <h3 className="font-semibold text-lg">Chaves</h3>
+                    <h3 className="text-lg font-semibold">Chaves</h3>
                     <div className="flex flex-wrap gap-4">
                         {borrow.keys.map((item, i) => {
                             return (
-                                <div className="flex gap-2 transition py-2 px-4 bg-neutral-200 rounded-lg">
+                                <div className="flex gap-2 px-4 py-2 transition rounded-lg bg-neutral-200" key={i}>
                                     <div className="">
                                         <span className="text-xs font-light">Número</span>
                                         <p>{item.number}</p>
                                     </div>
-                                    <div className="border-l border-neutral-700 pl-2">
+                                    <div className="pl-2 border-l border-neutral-700">
                                         <span className="text-xs font-light">Sala</span>
                                         <p>{item.room.description}</p>
                                     </div>

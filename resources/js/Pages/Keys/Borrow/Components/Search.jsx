@@ -6,6 +6,8 @@ export default function Search({ data, onChange, values = [] }) {
     const [term, setTerm] = useState('');
     const [add, setAdd] = useState(values);
 
+    
+
     useEffect(() => {
         onChange(add);
         const debounce = setTimeout(() => {
@@ -32,11 +34,11 @@ export default function Search({ data, onChange, values = [] }) {
         if (!add.includes(item.id))
             return (
                 <tr className="border-t cursor-pointer" onClick={() => toggleItemHandler(item.id)} key={i}>
-                    <td className="p-2 w-1/6">{item.number}</td>
-                    <td className="p-2 w-4/6">{item.room.description}</td>
-                    <td className="p-2 w-1/6">
+                    <td className="w-1/6 p-2">{item.number}</td>
+                    <td className="w-4/6 p-2">{item.room.description}</td>
+                    <td className="w-1/6 p-2">
                         <div className="flex justify-end">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-5" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                 <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
                             </svg>
                         </div>
@@ -49,11 +51,11 @@ export default function Search({ data, onChange, values = [] }) {
         if (add.includes(item.id))
             return (
                 <tr className="border-t cursor-pointer" onClick={() => toggleItemHandler(item.id)} key={i}>
-                    <td className="p-2 w-1/6">{item.number}</td>
-                    <td className="p-2 w-4/6">{item.room.description}</td>
-                    <td className="p-2 w-1/6">
+                    <td className="w-1/6 p-2">{item.number}</td>
+                    <td className="w-4/6 p-2">{item.room.description}</td>
+                    <td className="w-1/6 p-2">
                         <div className="flex justify-end">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-5" viewBox="0 0 16 16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                 <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
                             </svg>
                         </div>
@@ -66,19 +68,19 @@ export default function Search({ data, onChange, values = [] }) {
         <div className="flex flex-col gap-0">
             <span className="font-light">Chaves</span>
             <div className="flex gap-4">
-                <div className="flex-1 flex flex-col gap-2">
+                <div className="flex flex-col flex-1 gap-2">
                     <Input
                         value={term}
                         type={'search'}
                         handleChange={onHandleChange}
                         placeholder={'Pesquise sua chave'}
                     />
-                    <div className="max-h-96 border border-neutral-400 rounded-lg p-2 overflow-auto scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
-                        <table className="table table-auto w-full">
+                    <div className="p-2 overflow-auto border rounded-lg max-h-96 border-neutral-400 scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+                        <table className="table w-full table-auto">
                             <thead>
                                 <tr className="">
-                                    <th className="font-normal text-left px-1 pt-2">Número</th>
-                                    <th className="font-normal text-left px-1 pt-2">Sala</th>
+                                    <th className="px-1 pt-2 font-normal text-left">Número</th>
+                                    <th className="px-1 pt-2 font-normal text-left">Sala</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -88,14 +90,14 @@ export default function Search({ data, onChange, values = [] }) {
                         </table>
                     </div>
                 </div>
-                <div className="flex-1 border border-neutral-400 rounded-lg">
-                    <div className="font-light border-b border-neutral-400 mt-2 mx-2">Item selecionados</div>
-                    <div className="max-h-96 ml-2 overflow-auto scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
-                        <table className="table table-auto w-full">
+                <div className="flex-1 border rounded-lg border-neutral-400">
+                    <div className="mx-2 mt-2 font-light border-b border-neutral-400">Item selecionados</div>
+                    <div className="ml-2 overflow-auto max-h-96 scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+                        <table className="table w-full table-auto">
                             <thead className="">
                                 <tr className="">
-                                    <th className="font-normal text-left px-1 pt-2">Número</th>
-                                    <th className="font-normal text-left px-1 pt-2">Sala</th>
+                                    <th className="px-1 pt-2 font-normal text-left">Número</th>
+                                    <th className="px-1 pt-2 font-normal text-left">Sala</th>
                                     <th></th>
                                 </tr>
                             </thead>

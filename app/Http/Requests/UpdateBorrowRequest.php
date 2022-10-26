@@ -13,7 +13,7 @@ class UpdateBorrowRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,7 @@ class UpdateBorrowRequest extends FormRequest
     public function rules()
     {
         return [
-            'devolution' => 'nullable|datetime',
+            'devolution' => 'nullable|date',
             'observation' => 'nullable',
             'employee_id' => 'required|exists:employees,id',
             'keys' => 'array',
