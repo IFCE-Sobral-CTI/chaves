@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "@inertiajs/inertia-react";
+import 'tw-elements';
 
 function Sidebar({ can }) {
     const [width, setWidth] = useState(window.innerWidth);
@@ -24,6 +25,7 @@ function Sidebar({ can }) {
     return (
         <>
             <nav id="sidebar" className={"collapse collapse-horizontal mr-2 p-2 " + (width >= 1024? 'show': '')}>
+            {/* <nav id="sidebar" className={"mr-2 p-2"}> */}
                 <div className="flex flex-col w-48 gap-3 md:w-64">
                     <Link
                         href={route('admin')}

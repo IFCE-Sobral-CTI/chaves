@@ -4,6 +4,7 @@ import { Head } from "@inertiajs/inertia-react";
 import Panel from "@/Components/Dashboard/Panel";
 import Button from "@/Components/Form/Button";
 import DeleteModal from "@/Components/Dashboard/DeleteModal";
+import Receive from "./Components/Receive";
 
 function Show({ borrow, can }) {
     return (
@@ -65,6 +66,7 @@ function Show({ borrow, can }) {
                         <span>Editar</span>
                     </Button>}
                     {can.delete && <DeleteModal url={route('borrows.destroy', borrow.id)} />}
+                    {(can.receive && !borrow.devolution) && <Receive url={route('borrows.receive', borrow.id)} />}
                 </Panel>
             </AuthenticatedLayout>
         </>

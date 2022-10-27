@@ -7,12 +7,14 @@ import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
 import Select from "@/Components/Form/Select";
 import Textarea from "@/Components/Form/Textarea";
+import Search from "./Components/Search";
 
 function Edit({ room, blocks }) {
     const { data, setData, put, processing, errors } = useForm({
         description: room.description,
         observation: room.observation,
         block_id: room.block_id,
+        employees: room.employees.map(item => item.id),
     });
 
     const onHandleChange = (event) => {
@@ -51,6 +53,7 @@ function Edit({ room, blocks }) {
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Digite a descrição da página" />
                             <InputError message={errors.observation} />
                         </div>
+                        <Search data={employees} onChange={onChangeEmployees} values={[]} />
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -30,6 +32,11 @@ class Employee extends Model
     public function borrows(): HasMany
     {
         return $this->hasMany(Borrow::class);
+    }
+
+    public function rooms(): BelongsToMany
+    {
+        return $this->belongsToMany(Room::class);
     }
 
     public function scopeSearch($query, $request)

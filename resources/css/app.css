@@ -15,3 +15,7 @@
     height:100px;
     transition: width 0.5s, height 0.5s, opacity 0.5s 0.5s;
 }
+
+.collapse {
+    visibility: visible;
+}

@@ -8,12 +8,13 @@ import Textarea from "@/Components/Form/Textarea";
 import Select from "@/Components/Form/Select";
 import Search from "./Components/Search";
 import Input from "@/Components/Form/Input";
+import moment from "moment";
 
 function Edit({ borrow, employees, keys, borrowKeys }) {
     const { data, setData, put, processing, errors } = useForm({
         observation: borrow.observation,
         employee_id: borrow.employee_id,
-        devolution: borrow.devolution,
+        devolution: borrow.devolution? moment(borrow.devolution, 'DD/MM/YYYY hh:mm:ss').format('yyyy-MM-DDThh:mm'): null,
         keys: borrowKeys,
     });
 
@@ -54,7 +55,7 @@ function Edit({ borrow, employees, keys, borrowKeys }) {
                             <InputError message={errors.observation} />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="devolution" className="font-light">Número</label>
+                            <label htmlFor="devolution" className="font-light">Devolução</label>
                             <Input value={data.devolution} type={'datetime-local'} name={'devolution'} handleChange={onHandleChange} required={false} />
                             <InputError message={errors.devolution} />
                         </div>

@@ -52,6 +52,7 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function() {
     Route::resource('rooms', RoomController::class);
     Route::resource('keys', KeyController::class);
     Route::resource('borrows', BorrowController::class);
+    Route::put('borrows/{borrow}/receive/keys', [BorrowController::class, 'receive'])->name('borrows.receive');
 });
 
 require __DIR__.'/auth.php';

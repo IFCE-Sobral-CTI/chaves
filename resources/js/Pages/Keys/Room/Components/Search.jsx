@@ -7,13 +7,11 @@ export default function Search({ data, onChange, values = [] }) {
     const [term, setTerm] = useState('');
     const [add, setAdd] = useState(values);
 
-
-
     useEffect(() => {
         onChange(add);
         const debounce = setTimeout(() => {
             setList(data.filter((item) => {
-                return item.number.toString().includes(term) || item.room.description.toLowerCase().includes(term.toLowerCase());
+                return item.registry.toString().includes(term) || item.name.toLowerCase().includes(term.toLowerCase());
             }, term));
         }, 300);
 
@@ -35,8 +33,8 @@ export default function Search({ data, onChange, values = [] }) {
         if (!add.includes(item.id))
             return (
                 <tr className="border-t cursor-pointer" onClick={() => toggleItemHandler(item.id)} key={i}>
-                    <td className="w-1/6 p-2">{item.number}</td>
-                    <td className="w-4/6 p-2">{item.room.description}</td>
+                    <td className="w-1/6 p-2">{item.registry}</td>
+                    <td className="w-4/6 p-2">{item.name}</td>
                     <td className="w-1/6 p-2">
                         <div className="flex justify-end">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
@@ -52,8 +50,8 @@ export default function Search({ data, onChange, values = [] }) {
         if (add.includes(item.id))
             return (
                 <tr className="border-t cursor-pointer" onClick={() => toggleItemHandler(item.id)} key={i}>
-                    <td className="w-1/6 p-2">{item.number}</td>
-                    <td className="w-4/6 p-2">{item.room.description}</td>
+                    <td className="w-1/6 p-2">{item.registry}</td>
+                    <td className="w-4/6 p-2">{item.name}</td>
                     <td className="w-1/6 p-2">
                         <div className="flex justify-end">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
@@ -67,7 +65,7 @@ export default function Search({ data, onChange, values = [] }) {
 
     return (
         <div className="flex flex-col gap-0">
-            <span className="font-light">Chaves</span>
+            <span className="font-light">Servidores</span>
             <div className="flex gap-4">
                 <div className="flex flex-col flex-1 gap-2">
                     <Input
@@ -80,8 +78,8 @@ export default function Search({ data, onChange, values = [] }) {
                         <table className="table w-full table-auto">
                             <thead>
                                 <tr className="">
-                                    <th className="px-1 pt-2 font-normal text-left">Número</th>
-                                    <th className="px-1 pt-2 font-normal text-left">Sala</th>
+                                    <th className="px-1 pt-2 font-normal text-left">Matrícula</th>
+                                    <th className="px-1 pt-2 font-normal text-left">Nome</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -97,8 +95,8 @@ export default function Search({ data, onChange, values = [] }) {
                         <table className="table w-full table-auto">
                             <thead className="">
                                 <tr className="">
-                                    <th className="px-1 pt-2 font-normal text-left">Número</th>
-                                    <th className="px-1 pt-2 font-normal text-left">Sala</th>
+                                    <th className="px-1 pt-2 font-normal text-left">Matrícula</th>
+                                    <th className="px-1 pt-2 font-normal text-left">Nome</th>
                                     <th></th>
                                 </tr>
                             </thead>

@@ -35,6 +35,13 @@ class Key extends Model
         return $this->belongsToMany(Borrow::class);
     }
 
+    public function scopeBorrowed(Builder $query): Builder
+    {
+        return $query->whereHas('borrows', function($query) {
+            return $query->where('devolution', null);
+        });
+    }
+
     public function scopeSearch($query, Request $request): array
     {
         $query->with('room')

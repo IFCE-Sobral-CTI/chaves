@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use App\Models\Block;
+use App\Models\Employee;
 use App\Models\Room;
 use Exception;
 use Illuminate\Http\Request;
@@ -42,6 +43,7 @@ class RoomController extends Controller
 
         return Inertia::render('Keys/Room/Create', [
             'blocks' => Block::select('id', 'description')->orderBy('description', 'ASC')->get(),
+            'employees' => Employee::orderBy('name')->get()
         ]);
     }
 
@@ -93,8 +95,9 @@ class RoomController extends Controller
         $this->authorize('rooms.update', $room);
 
         return Inertia::render('Keys/Room/Edit', [
-            'room' => $room,
+            'room' => Room::with('employees')->find($room->id),
             'blocks' => Block::select('id', 'description')->orderBy('description', 'ASC')->get(),
+            'employees' => Employee::orderBy('name')->get(),
         ]);
     }
 
