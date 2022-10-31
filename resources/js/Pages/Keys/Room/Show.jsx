@@ -31,6 +31,18 @@ function Show({ room, can }) {
                         <div className="text-sm font-light">Atualizado em</div>
                         <div className="">{room.updated_at}</div>
                     </div>
+                    <div className="flex flex-col">
+                        <div className="text-sm font-light">Servidor(es) responsável(eis)</div>
+                        <div className="flex flex-wrap gap-4">
+                            {room.employees.map((item, i) => {
+                                return (
+                                    <div className="px-2 py-1 rounded-lg bg-neutral-200">
+                                        {item.name}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
                 </Panel>
                 <Panel className={'flex flex-wrap items-center justify-center gap-1 md:gap-4'}>
                     <Button href={route('rooms.index')} className={'gap-2'}>

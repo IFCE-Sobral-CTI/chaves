@@ -59,6 +59,7 @@ class RoomController extends Controller
 
         try {
             $room = Room::create($request->validated());
+            $room->employees()->sync($request->employees);
             return redirect()->route('rooms.show', $room)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('rooms.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -76,7 +77,7 @@ class RoomController extends Controller
         $this->authorize('rooms.view', $room);
 
         return Inertia::render('Keys/Room/Show', [
-            'room' => Room::with('block')->find($room->id),
+            'room' => Room::with(['block', 'employees'])->find($room->id),
             'can' => [
                 'update' => Auth::user()->can('rooms.update'),
                 'delete' => Auth::user()->can('rooms.delete'),
@@ -114,6 +115,7 @@ class RoomController extends Controller
 
         try {
             $room->update($request->validated());
+            $room->employees()->sync($request->employees);
             return redirect()->route('rooms.show', $room)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('rooms.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

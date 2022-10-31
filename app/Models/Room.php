@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,7 +42,14 @@ class Room extends Model
 
     public function scopeSearch($query, Request $request)
     {
-        $query->with('block')->where('description', 'like', "%{$request->term}%");
+        $query->with('block')
+            ->whereHas('employees', function(Builder $query) use ($request) {
+                return $query->where('name', 'like', "%{$request->term}%");
+            })
+            ->orWhereHas('block', function(Builder $query) use ($request) {
+                return $query->where('description', 'like', "%{$request->term}%");
+            })
+            ->orWhere('description', 'like', "%{$request->term}%");
 
         return [
             'count' => $query->count(),

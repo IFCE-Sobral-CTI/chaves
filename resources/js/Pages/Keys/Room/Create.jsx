@@ -39,6 +39,7 @@ function Create({ blocks, employees }) {
                         <div className="mb-4">
                             <label htmlFor="block_id" className="font-light">Sala</label>
                             <Select value={data.block_id} name={'block_id'} handleChange={onHandleChange} required={true}>
+                                <option>Selecione um bloco</option>
                                 {blocks.map((block, index) => {
                                     return (
                                         <option value={block.id} key={index}>{block.description}</option>

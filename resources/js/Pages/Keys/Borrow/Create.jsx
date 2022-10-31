@@ -1,4 +1,3 @@
-import React, { useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/inertia-react";
 import Panel from "@/Components/Dashboard/Panel";
@@ -14,7 +13,7 @@ function Create({ employees, keys }) {
         employee_id: "",
         keys: [],
     });
-    
+
     const onHandleChange = (event) => {
         setData(event.target.name, event.target.value);
     };
@@ -27,10 +26,6 @@ function Create({ employees, keys }) {
         e.preventDefault();
         post(route('borrows.store'), {data});
     };
-
-    const options = keys.map((key) => {
-        return {value: key.id, label: `${key.number} - ${key.description} - ${key.room.description}`}
-    });
 
     return (
         <>

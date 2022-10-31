@@ -65,7 +65,7 @@ export default function Search({ data, onChange, values = [] }) {
 
     return (
         <div className="flex flex-col gap-0">
-            <span className="font-light">Servidores</span>
+            <span className="font-light">Servidores responsáveis</span>
             <div className="flex gap-4">
                 <div className="flex flex-col flex-1 gap-2">
                     <Input

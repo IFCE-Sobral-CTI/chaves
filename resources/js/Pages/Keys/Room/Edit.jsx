@@ -9,7 +9,7 @@ import Select from "@/Components/Form/Select";
 import Textarea from "@/Components/Form/Textarea";
 import Search from "./Components/Search";
 
-function Edit({ room, blocks }) {
+function Edit({ room, blocks, employees }) {
     const { data, setData, put, processing, errors } = useForm({
         description: room.description,
         observation: room.observation,
@@ -26,6 +26,10 @@ function Edit({ room, blocks }) {
         put(route('rooms.update', room.id), {data});
     };
 
+    const onChangeEmployees = (value) => {
+        setData("employees", value);
+    }
+
     return (
         <>
             <Head title="Editar Sala" />
@@ -35,6 +39,7 @@ function Edit({ room, blocks }) {
                         <div className="mb-4">
                             <label htmlFor="block_id" className="font-light">Sala</label>
                             <Select value={data.block_id} name={'block_id'} handleChange={onHandleChange} required={true}>
+                                <option>Selecione um bloco</option>
                                 {blocks.map((block, index) => {
                                     return (
                                         <option value={block.id} key={index}>{block.description}</option>
@@ -53,7 +58,7 @@ function Edit({ room, blocks }) {
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Digite a descrição da página" />
                             <InputError message={errors.observation} />
                         </div>
-                        <Search data={employees} onChange={onChangeEmployees} values={[]} />
+                        <Search data={employees} onChange={onChangeEmployees} values={data.employees} />
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
