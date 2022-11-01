@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class Borrow extends Model
 {
@@ -48,5 +50,26 @@ class Borrow extends Model
             'page' => $request->page?? 1,
             'termSearch' => $request->term,
         ];
+    }
+
+    public function scopeDataChart(Builder $query): array
+    {
+        $dayOfWeek = [
+            'Domingo',
+            'Segunda',
+            'Terça',
+            'Quarta',
+            'Quinta',
+            'Sexta',
+            'Sábado',
+        ];
+
+        $data = [];
+        $labels = [];
+        foreach($query->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))->groupBy('date')->take(5)->get() as $borrow) {
+            $data[] = [Carbon::parse($borrow->date)->format('d/m/y'), $borrow->count];
+        }
+
+        return array_merge([['Data', 'Empréstimos']], $data);
     }
 }
