@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->decimal('registry', 11, 0)->unique();
+            $table->text('observation')->nullable();
+            $table->date('valid_until')->nullable();
             $table->timestamps();
         });
     }

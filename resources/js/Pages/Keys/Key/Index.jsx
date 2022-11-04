@@ -62,7 +62,7 @@ function Index({ keys, count, page, termSearch, can }) {
                             <tr className="border-b">
                                 <th className="px-1 pt-3 font-semibold text-left">Número</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Descrição</th>
-                                <th className="px-1 pt-3 font-semibold text-left">Bloco</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Sala</th>
                                 <th></th>
                             </tr>
                         </thead>

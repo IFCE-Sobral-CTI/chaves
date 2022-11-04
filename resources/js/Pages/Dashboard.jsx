@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
 import Chart from 'react-google-charts';
 import Panel from '@/Components/Dashboard/Panel';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -6,8 +6,51 @@ import { Link } from '@inertiajs/inertia-react';
 import moment from 'moment';
 import 'tw-elements';
 
-export default function Dashboard({ borrows, can, countRooms, countKeys, countBlocks, countEmployees, countBorrows, dataBorrow }) {
-    console.log(dataBorrow);
+export default function Dashboard({ borrows, can, countRooms, countKeys, countBlocks, countEmployees, countBorrows, dataBorrow, dataKeys }) {
+    const [isPendingChart1, startTransitionChart1] = useTransition();
+    const [isPendingChart2, startTransitionChart2] = useTransition();
+    const [chart1, setChart1] = useState('');
+    const [chart2, setChart2] = useState('');
+
+    console.log("Borrow", dataBorrow);
+    console.log("Keys", dataKeys);
+
+    useEffect(() => {
+        startTransitionChart1(() => {
+            setChart1(
+                <Chart
+                    chartType='Bar'
+                    data={dataBorrow}
+                    width={'100%'}
+                    height={'100%'}
+                    options={{
+                        chart: {
+                            title: "Empréstimos",
+                            subtitle: 'Últimos 7 dias'
+                        }
+                    }}
+                />
+            )
+        });
+
+        startTransitionChart2(() => {
+            setChart2(
+                <Chart
+                    chartType='Bar'
+                    data={dataKeys}
+                    width={'100%'}
+                    height={'100%'}
+                    options={{
+                        chart: {
+                            title: "Chaves emprestadas",
+                            subtitle: 'Últimos 7 dias',
+                        },
+                        colors: ['#54b74f']
+                    }}
+                />
+            )
+        });
+    }, []);
 
     const status = (created_at, devolution) => {
         let start = moment(created_at, "DD/MM/YYYY hh:mm:ss");
@@ -73,25 +116,27 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <Panel className={'flex-1 h-96'}>
-                        <Chart
-                            chartType='Bar'
-                            data={dataBorrow}
-                            width={'100%'}
-                            height={'100%'}
-                            options={{
-                                chart: {
-                                    title: "Empréstimos",
-                                    subtitle: 'últimos 7 dias'
-                                }
-                            }}
-                        />
+                        {isPendingChart1
+                        ?<div className="w-full h-full flex justify-center items-center transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="animate-spin w-10 h-10" viewBox="0 0 16 16">
+                                <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                            </svg>
+                        </div>
+                        :chart1}
                     </Panel>
                     <Panel className={'flex-1 h-96'}>
-                        <h1>Gráfico 2</h1>
-                        <div id="chart2"></div>
+                        {isPendingChart2
+                        ?<div className="w-full h-full flex justify-center items-center transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="animate-spin w-10 h-10" viewBox="0 0 16 16">
+                                <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                            </svg>
+                        </div>
+                        :chart2}
                     </Panel>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="">
                     <Panel className={'col-span-2 min-h-52'}>
                         <h1>Últimos empréstimos</h1>
                         <table className="table w-full table-auto">
@@ -107,9 +152,6 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
                                 {list}
                             </tbody>
                         </table>
-                    </Panel>
-                    <Panel>
-                        <h1>Atualizações</h1>
                     </Panel>
                 </div>
             </AuthenticatedLayout>

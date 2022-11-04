@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Input from "@/Components/Form/Input";
 import 'tw-elements';
+import InputError from "@/Components/InputError";
 
-export default function Search({ data, onChange, values = [] }) {
+export default function Search({ data, onChange, values = [], error = '' }) {
     const [list, setList] = useState(data);
     const [term, setTerm] = useState('');
     const [add, setAdd] = useState(values);
@@ -117,6 +118,7 @@ export default function Search({ data, onChange, values = [] }) {
                     </div>
                 </div>
             </div>
+            <InputError message={error} />
         </div>
     )
 }

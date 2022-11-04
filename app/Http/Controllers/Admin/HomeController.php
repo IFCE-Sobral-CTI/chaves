@@ -21,8 +21,6 @@ class HomeController extends Controller
      */
     public function index(Request $request): Response
     {
-        // dd(Borrow::dataChart());
-
         return Inertia::render('Dashboard', [
             'borrows' => Borrow::with('employee')->orderBy('id', 'DESC')->take(5)->get(),
             'countRooms' => Room::count(),
@@ -31,6 +29,7 @@ class HomeController extends Controller
             'countEmployees' => Employee::count(),
             'countBorrows' => Borrow::count(),
             'dataBorrow' => Borrow::dataChart(),
+            'dataKeys' => Borrow::dataChart2(),
             'can' => [
                 'borrowView' => Auth::user()->can('borrows.view'),
             ]

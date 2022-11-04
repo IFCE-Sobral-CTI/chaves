@@ -43,14 +43,14 @@ function Create({ employees, keys }) {
                                     );
                                 })}
                             </Select>
-                            <InputError message={errors.borrow_id} />
+                            <InputError message={errors.employee_id} />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="observation" className="font-light">Observações</label>
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o empréstimo" />
                             <InputError message={errors.observation} />
                         </div>
-                        <Search data={keys} onChange={onChangeKeys} />
+                        <Search data={keys} onChange={onChangeKeys} error={errors.keys} />
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">

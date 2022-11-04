@@ -18,29 +18,29 @@ function Alert() {
 
     switch (type) {
         case 'success':
-            textColor = "text-white";
-            bgColor = "bg-green";
-            borderColor = "border-white";
+            textColor = " text-white";
+            bgColor = " bg-green";
+            borderColor = " border-white";
             break;
         case 'danger':
-            textColor = "text-white";
-            bgColor = "bg-red-500";
-            borderColor = "border-white";
+            textColor = " text-white";
+            bgColor = " bg-red-500";
+            borderColor = " border-white";
             break;
         case 'warning':
-            textColor = "text-white";
-            bgColor = "bg-yellow-500";
-            borderColor = "border-white";
+            textColor = " text-white";
+            bgColor = " bg-yellow-500";
+            borderColor = " border-white";
             break;
         case 'info':
-            textColor = "text-white";
-            bgColor = "bg-sky-500";
-            borderColor = "border-white";
+            textColor = " text-white";
+            bgColor = " bg-sky-500";
+            borderColor = " border-white";
             break;
         default:
-            textColor = 'text-grey-700';
-            bgColor = 'bg-neutral-200';
-            borderColor = 'border-neutral-500'
+            textColor = ' text-grey-700';
+            bgColor = ' bg-neutral-200';
+            borderColor = ' border-neutral-500'
     }
 
     const handleClose = () => {
@@ -58,7 +58,7 @@ function Alert() {
                 </div>
                 <div className="flex-1">
                     <h2 className={"text-xl border-b " + borderColor}>Atenção!</h2>
-                    <p className="font-light">{message}</p>
+                    <p className="font-light">{message?? 'Nenhuma mensagem.'}</p>
                 </div>
                 <div>
                     <button onClick={handleClose}>

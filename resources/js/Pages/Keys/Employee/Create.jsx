@@ -5,12 +5,15 @@ import Panel from "@/Components/Dashboard/Panel";
 import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
+import Textarea from "@/Components/Form/Textarea";
 
 function Create() {
     const { data, setData, post, processing, errors } = useForm({
         name: "",
         email: "",
         registry: "",
+        valid_until: "",
+        observation: "",
     });
 
     const onHandleChange = (event) => {
@@ -42,6 +45,16 @@ function Create() {
                             <label htmlFor="email" className="font-light">E-mail</label>
                             <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do servidor" />
                             <InputError message={errors.email} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="valid_until" className="font-light">Válido até</label>
+                            <Input value={data.valid_until} type={'date'} name={'valid_until'} handleChange={onHandleChange} />
+                            <InputError message={errors.valid_until} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="observation" className="font-light">Observações</label>
+                            <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o servidor" />
+                            <InputError message={errors.observation} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>

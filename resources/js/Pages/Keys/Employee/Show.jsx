@@ -24,6 +24,14 @@ function Show({ employee, can }) {
                         <div className="">{employee.email}</div>
                     </div>
                     <div className="flex flex-col">
+                        <div className="text-sm font-light">Observações</div>
+                        <div className="">{employee.observation?? '-'}</div>
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="text-sm font-light">Válido até</div>
+                        <div className="">{employee.valid_until?? '-'}</div>
+                    </div>
+                    <div className="flex flex-col">
                         <div className="text-sm font-light">Criado em</div>
                         <div className="">{employee.created_at}</div>
                     </div>

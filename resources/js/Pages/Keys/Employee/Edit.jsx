@@ -5,12 +5,16 @@ import Panel from "@/Components/Dashboard/Panel";
 import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
+import Textarea from "@/Components/Form/Textarea";
+import moment from "moment";
 
 function Edit({ employee }) {
     const { data, setData, put, processing, errors } = useForm({
         name: employee.name,
         email: employee.email,
         registry: employee.registry,
+        observation: employee.observation,
+        valid_until: employee.valid_until? moment(employee.valid_until, 'DD/MM/YYYY').format('yyyy-MM-DD'): null,
     });
 
     const onHandleChange = (event) => {
@@ -42,6 +46,16 @@ function Edit({ employee }) {
                             <label htmlFor="email" className="font-light">E-mail</label>
                             <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do servidor" />
                             <InputError message={errors.email} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="valid_until" className="font-light">Válido até</label>
+                            <Input value={data.valid_until} type={'date'} name={'valid_until'} handleChange={onHandleChange} />
+                            <InputError message={errors.valid_until} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="observation" className="font-light">Observações</label>
+                            <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o servidor" />
+                            <InputError message={errors.observation} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>

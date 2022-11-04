@@ -46,7 +46,7 @@ class BorrowController extends Controller
         })->pluck('id')->toArray();
 
         return Inertia::render('Keys/Borrow/Create', [
-            'employees' => Employee::select('id', 'name')->orderBy('name', 'ASC')->get(),
+            'employees' => Employee::select('id', 'name')->where('valid_until', '>=', now())->orWhere('valid_until', null)->orderBy('name', 'ASC')->get(),
             'keys' => Key::with('room')->whereNotIn('id', $keysInBorrows)->get(),
         ]);
     }

@@ -22,11 +22,14 @@ class Employee extends Model
         'name',
         'email',
         'registry',
+        'valid_until',
+        'observation',
     ];
 
     protected $casts = [
         'created_at' => 'datetime:d/m/Y H:i:s',
         'updated_at' => 'datetime:d/m/Y H:i:s',
+        'valid_until' => 'datetime:d/m/Y',
     ];
 
     public function borrows(): HasMany

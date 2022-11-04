@@ -23,9 +23,17 @@ class Borrow extends Model
 
     protected $casts = [
         'devolution' => 'datetime:d/m/Y H:i:s',
-        'created_at' => 'datetime:d/m/Y H:i:s',
-        'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
+
+    public function getCreatedAtAttribute($date)
+    {
+        return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
+    }
+
+    public function getUpdatedAtAttribute($date)
+    {
+        return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
+    }
 
     public function employee(): BelongsTo
     {
@@ -54,22 +62,28 @@ class Borrow extends Model
 
     public function scopeDataChart(Builder $query): array
     {
-        $dayOfWeek = [
-            'Domingo',
-            'Segunda',
-            'Terça',
-            'Quarta',
-            'Quinta',
-            'Sexta',
-            'Sábado',
-        ];
-
         $data = [];
-        $labels = [];
         foreach($query->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))->groupBy('date')->take(5)->get() as $borrow) {
             $data[] = [Carbon::parse($borrow->date)->format('d/m/y'), $borrow->count];
         }
 
-        return array_merge([['Data', 'Empréstimos']], $data);
+        return array_merge([['Datas', 'Empréstimos']], $data);
+    }
+
+    public function scopeDataChart2(Builder $query): array
+    {
+        $data = [];
+        $start = now()->subDays(6)->startOfDay();
+        $end = now()->subDays(6)->endOfDay();
+
+        for($i = $count = 0; $i <= 6; $i++, $start->addDay(), $end->addDay(), $count = 0) {
+            foreach($query->whereBetween('created_at', [$start, $end])->get() as $borrow) {
+                $count += $borrow->keys->count();
+            }
+
+            $data[] = [$start->format('d/m'), $count];
+        }
+
+        return array_merge([['Datas', 'Chaves']], $data);
     }
 }
