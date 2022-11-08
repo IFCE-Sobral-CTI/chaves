@@ -25,8 +25,11 @@ class RuleSeeder extends Seeder
         $rooms = Group::firstOrCreate(['description' => 'Salas']);
         $keys = Group::firstOrCreate(['description' => 'Chaves']);
         $borrows = Group::firstOrCreate(['description' => 'Empréstimos']);
+        $reports = Group::firstOrCreate(['description' => 'Relatórios']);
 
         $data = [
+            ['description' => 'Página inicial', 'control' => 'reports.viewAny', 'group_id' => $reports->id, 'created_at' => now(), 'updated_at' => now()],
+
             ['description' => 'Página inicial', 'control' => 'borrows.viewAny', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Detalhar', 'control' => 'borrows.view', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Criar', 'control' => 'borrows.create', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],

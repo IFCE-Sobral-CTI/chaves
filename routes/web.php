@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\KeyController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\BorrowController;
+use App\Http\Controllers\Admin\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function() {
     Route::resource('keys', KeyController::class);
     Route::resource('borrows', BorrowController::class);
     Route::put('borrows/{borrow}/receive/keys', [BorrowController::class, 'receive'])->name('borrows.receive');
+
+    Route::get('reports/index', [ReportController::class, 'index'])->name('reports.index');
 });
 
 require __DIR__.'/auth.php';

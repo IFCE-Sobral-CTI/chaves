@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,7 @@ class BorrowFactory extends Factory
             'devolution' => $rand? now(): null,
             'observation' => fake()->sentence(),
             'employee_id' => Employee::all()->random()->id,
+            'user_id' => 1,
             'created_at' => now()->subHours(6)->format('Y-m-d H:i:s'),
         ];
     }
