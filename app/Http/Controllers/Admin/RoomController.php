@@ -100,7 +100,7 @@ class RoomController extends Controller
         return Inertia::render('Keys/Room/Edit', [
             'room' => Room::with('employees')->find($room->id),
             'blocks' => Block::select('id', 'description')->orderBy('description', 'ASC')->get(),
-            'employees' => Employee::orderBy('name')->get(),
+            'employees' => Employee::where('type', Employee::EMPLOYEE)->orderBy('name')->get(),
         ]);
     }
 

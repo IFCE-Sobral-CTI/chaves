@@ -7,6 +7,7 @@ import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
 import Textarea from "@/Components/Form/Textarea";
 import Select from "@/Components/Form/Select";
+import SelectRoom from "./Components/SelectRoom";
 
 function Create({ rooms }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -31,18 +32,7 @@ function Create({ rooms }) {
             <AuthenticatedLayout titleChildren={'Cadastro de nova Chave'} breadcrumbs={[{ label: 'Salas', url: route('keys.index') }, { label: 'Nova', url: route('keys.create') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
-                        <div className="mb-4">
-                            <label htmlFor="room_id" className="font-light">Sala</label>
-                            <Select value={data.room_id} name={'room_id'} handleChange={onHandleChange} required={true}>
-                                <option>Selecione um valor</option>
-                                {rooms.map((room, index) => {
-                                    return (
-                                        <option value={room.id} key={index}>{room.description}</option>
-                                    );
-                                })}
-                            </Select>
-                            <InputError message={errors.room_id} />
-                        </div>
+                        <SelectRoom  value={data.room_id} data={rooms} onChange={(id) => setData('room_id', id)}  error={errors.room_id} />
                         <div className="mb-4">
                             <label htmlFor="number" className="font-light">Número</label>
                             <Input value={data.number} type={'number'} name={'number'} handleChange={onHandleChange} required={true} placeholder="Digite o número da chave" />

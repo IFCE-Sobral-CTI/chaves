@@ -13,7 +13,7 @@ function Show({ borrow, can }) {
             <AuthenticatedLayout titleChildren={'Detalhes da Sala'} breadcrumbs={[{ label: 'Salas', url: route('borrows.index') }, { label: borrow.description, url: route('borrows.show', borrow.id) }]}>
                 <Panel className={'flex flex-col gap-4'}>
                     <div className="flex flex-col">
-                        <div className="text-sm font-light">Servidor</div>
+                        <div className="text-sm font-light">Mutuário</div>
                         <div className="">{borrow.employee.name}</div>
                     </div>
                     <div className="flex flex-col">

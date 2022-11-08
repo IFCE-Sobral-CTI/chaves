@@ -28,7 +28,7 @@ class ReportController extends Controller
 
         return Inertia::render('Keys/Report/Index', array_merge(Borrow::ReportByDate($request), [
             'users' => User::select('id', 'name')->where('status', User::ACTIVE)->get(),
-            'employees' => Employee::select('id', 'name')->get(),
+            'employees' => Employee::select('id', 'registry', 'name')->get(),
             'filters' => [
                 'start' => $request->start,
                 'end' => $request->end,

@@ -5,8 +5,8 @@ import Panel from "@/Components/Dashboard/Panel";
 import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
-import Select from "@/Components/Form/Select";
 import Textarea from "@/Components/Form/Textarea";
+import SelectRoom from "./Components/SelectRoom";
 
 function Edit({ _key, rooms }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -31,18 +31,7 @@ function Edit({ _key, rooms }) {
             <AuthenticatedLayout titleChildren={'Editar Chave'} breadcrumbs={[{ label: 'Chaves', url: route('keys.index') }, { label: _key.description, url: route('keys.show', _key.id) }, { label: 'Editar'}]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
-                        <div className="mb-4">
-                            <label htmlFor="room_id" className="font-light">Sala</label>
-                            <Select value={data.room_id} name={'room_id'} handleChange={onHandleChange} required={true}>
-                                <option>Selecione um valor</option>
-                                {rooms.map((room, index) => {
-                                    return (
-                                        <option value={room.id} key={index}>{room.description}</option>
-                                    );
-                                })}
-                            </Select>
-                            <InputError message={errors.room_id} />
-                        </div>
+                        <SelectRoom value={data.room_id} data={rooms} onChange={(id) => setData('room_id', id)}  error={errors.room_id} />
                         <div className="mb-4">
                             <label htmlFor="number" className="font-light">Número</label>
                             <Input value={data.number} type={'number'} name={'number'} handleChange={onHandleChange} required={true} placeholder="Digite o número da chave" />

@@ -6,6 +6,7 @@ import Button from "@/Components/Form/Button";
 import Textarea from "@/Components/Form/Textarea";
 import Select from "@/Components/Form/Select";
 import Search from "./Components/Search";
+import SelectEmployee from "./Components/SelectEmployee";
 
 function Create({ employees, keys }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -13,6 +14,8 @@ function Create({ employees, keys }) {
         employee_id: "",
         keys: [],
     });
+
+    console.log('Data', data);
 
     const onHandleChange = (event) => {
         setData(event.target.name, event.target.value);
@@ -33,18 +36,7 @@ function Create({ employees, keys }) {
             <AuthenticatedLayout titleChildren={'Cadastro de nova Empréstimo'} breadcrumbs={[{ label: 'Empréstimos', url: route('borrows.index') }, { label: 'Novo', url: route('borrows.create') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
-                        <div className="mb-4">
-                            <label htmlFor="employee_id" className="font-light">Mutuário</label>
-                            <Select value={data.employee_id} name={'employee_id'} handleChange={onHandleChange} required={true}>
-                                <option>Selecione um Mutuário</option>
-                                {employees.map((employee, index) => {
-                                    return (
-                                        <option value={employee.id} key={index}>{employee.name}</option>
-                                    );
-                                })}
-                            </Select>
-                            <InputError message={errors.employee_id} />
-                        </div>
+                        <SelectEmployee data={employees} onChange={(id) => setData('employee_id', id)}  error={errors.employee_id} />
                         <div className="mb-4">
                             <label htmlFor="observation" className="font-light">Observações</label>
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o empréstimo" />

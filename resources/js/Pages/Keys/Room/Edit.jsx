@@ -8,6 +8,7 @@ import Button from "@/Components/Form/Button";
 import Select from "@/Components/Form/Select";
 import Textarea from "@/Components/Form/Textarea";
 import Search from "./Components/Search";
+import SelectBlock from "./Components/SelectBlock";
 
 function Edit({ room, blocks, employees }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -36,18 +37,7 @@ function Edit({ room, blocks, employees }) {
             <AuthenticatedLayout titleChildren={'Editar Sala'} breadcrumbs={[{ label: 'Salas', url: route('rooms.index') }, { label: room.description, url: route('rooms.show', room.id) }, { label: 'Editar'}]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
-                        <div className="mb-4">
-                            <label htmlFor="block_id" className="font-light">Sala</label>
-                            <Select value={data.block_id} name={'block_id'} handleChange={onHandleChange} required={true}>
-                                <option>Selecione um bloco</option>
-                                {blocks.map((block, index) => {
-                                    return (
-                                        <option value={block.id} key={index}>{block.description}</option>
-                                    );
-                                })}
-                            </Select>
-                            <InputError message={errors.room_id} />
-                        </div>
+                        <SelectBlock value={data.block_id} data={blocks} onChange={(id) => setData('block_id', id)}  error={errors.block_id} />
                         <div className="mb-4">
                             <label htmlFor="description" className="font-light">Descrição</label>
                             <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da página" />

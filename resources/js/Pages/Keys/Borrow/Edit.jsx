@@ -9,6 +9,7 @@ import Select from "@/Components/Form/Select";
 import Search from "./Components/Search";
 import Input from "@/Components/Form/Input";
 import moment from "moment";
+import SelectEmployee from "./Components/SelectEmployee";
 
 function Edit({ borrow, employees, keys, borrowKeys }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -37,18 +38,7 @@ function Edit({ borrow, employees, keys, borrowKeys }) {
             <AuthenticatedLayout titleChildren={'Cadastro de nova Empréstimo'} breadcrumbs={[{ label: 'Empréstimos', url: route('borrows.index') }, { label: 'Novo', url: route('borrows.create') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
-                        <div className="mb-4">
-                            <label htmlFor="employee_id" className="font-light">Servidor</label>
-                            <Select value={data.employee_id} name={'employee_id'} handleChange={onHandleChange} required={true}>
-                                <option>Selecione um Servidor</option>
-                                {employees.map((employee, index) => {
-                                    return (
-                                        <option value={employee.id} key={index}>{employee.name}</option>
-                                    );
-                                })}
-                            </Select>
-                            <InputError message={errors.borrow_id} />
-                        </div>
+                        <SelectEmployee value={data.employee_id} data={employees} onChange={(id) => setData('employee_id', id)}  error={errors.employee_id} />
                         <div className="mb-4">
                             <label htmlFor="observation" className="font-light">Observações</label>
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o empréstimo" />
@@ -67,7 +57,7 @@ function Edit({ borrow, employees, keys, borrowKeys }) {
                                 </svg>
                                 <span>Enviar</span>
                             </Button>
-                            <Button href={route('borrows.index')} className={'gap-2'}>
+                            <Button href={route('borrows.show', borrow.id)} className={'gap-2'}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                     <path fillRule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
                                 </svg>

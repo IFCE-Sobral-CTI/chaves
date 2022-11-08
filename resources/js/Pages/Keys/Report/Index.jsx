@@ -7,6 +7,7 @@ import InputError from "@/Components/InputError";
 import moment from "moment";
 import Pagination from "@/Components/Dashboard/Pagination";
 import Select from "@/Components/Form/Select";
+import SelectEmployee from "./Components/SelectEmployee";
 
 function Index({ errors, borrows, count, filter, filters, users, employees }) {
     const { data, setData, get, processing } = useForm({
@@ -86,18 +87,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                         <div className="w-2/3 flex justify-between gap-4">
                             <div className="flex-1 border p-2 rounded-lg">
                                 <div className="">Por Mutuário</div>
-                                <div className="">
-                                    <label htmlFor="employee" className="font-light">Mutuário</label>
-                                    <Select value={data.employee} name={'employee'} handleChange={onHandleChange}>
-                                        <option>Selecione um Mutuário</option>
-                                        {employees.map((employee, index) => {
-                                            return (
-                                                <option value={employee.id} key={index}>{employee.name}</option>
-                                            );
-                                        })}
-                                    </Select>
-                                    <InputError message={errors.employee} />
-                                </div>
+                                <SelectEmployee value={data.employee} data={employees} onChange={(id) => setData('employee', id)}  error={errors.employee} />
                             </div>
                             <div className="flex-1 border p-2 rounded-lg">
                                 <div className="">Por Usuário</div>

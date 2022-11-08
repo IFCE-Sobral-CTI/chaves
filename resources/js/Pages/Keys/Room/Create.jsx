@@ -8,6 +8,7 @@ import Button from "@/Components/Form/Button";
 import Textarea from "@/Components/Form/Textarea";
 import Select from "@/Components/Form/Select";
 import Search from "./Components/Search";
+import SelectBlock from "./Components/SelectBlock";
 
 function Create({ blocks, employees }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -36,18 +37,7 @@ function Create({ blocks, employees }) {
             <AuthenticatedLayout titleChildren={'Cadastro de nova Sala'} breadcrumbs={[{ label: 'Salas', url: route('rooms.index') }, { label: 'Nova', url: route('rooms.create') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
-                        <div className="mb-4">
-                            <label htmlFor="block_id" className="font-light">Bloco</label>
-                            <Select value={data.block_id} name={'block_id'} handleChange={onHandleChange} required={true}>
-                                <option>Selecione um bloco</option>
-                                {blocks.map((block, index) => {
-                                    return (
-                                        <option value={block.id} key={index}>{block.description}</option>
-                                    );
-                                })}
-                            </Select>
-                            <InputError message={errors.room_id} />
-                        </div>
+                        <SelectBlock data={blocks} onChange={(id) => setData('block_id', id)}  error={errors.block_id} />
                         <div className="mb-4">
                             <label htmlFor="description" className="font-light">Descrição</label>
                             <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da página" />
