@@ -1,10 +1,9 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\Admin\HomeController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RuleController;
@@ -26,8 +25,14 @@ use App\Http\Controllers\Admin\ReportController;
 |
 */
 
-Route::redirect('/', 'admin')->name('home');
 
+URL::forceRootUrl(config('app.url'));
+
+if (config('app.env') !== 'local') {
+    URL::forceScheme('https');
+}
+
+Route::redirect('/', 'admin')->name('home');
 
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function() {
     Route::get('/', [HomeController::class, 'index'])->name('admin');
