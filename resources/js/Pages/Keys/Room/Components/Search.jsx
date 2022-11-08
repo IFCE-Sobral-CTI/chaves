@@ -72,7 +72,7 @@ export default function Search({ data, onChange, values = [] }) {
                         value={term}
                         type={'search'}
                         handleChange={onHandleChange}
-                        placeholder={'Pesquise sua chave'}
+                        placeholder={'Digite sua pesquisa'}
                     />
                     <div className="p-2 overflow-auto border rounded-lg max-h-96 border-neutral-400 scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
                         <table className="table w-full table-auto">

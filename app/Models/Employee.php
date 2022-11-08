@@ -18,12 +18,17 @@ class Employee extends Model
 {
     use HasFactory;
 
+    const EMPLOYEE = 1;
+    const COLLABORATOR = 2;
+    const STUDENT = 3;
+
     protected $fillable = [
         'name',
         'email',
         'registry',
         'valid_until',
         'observation',
+        'type',
     ];
 
     protected $casts = [

@@ -26,9 +26,10 @@ class UpdateEmployeeRequest extends FormRequest
         return [
             'name' => 'required|min:3',
             'email' => 'required|email|unique:employees,email,'.$this->employee->id,
-            'registry' => 'required|digits_between:3,11|unique:employees,registry,'.$this->employee->id,
+            'registry' => 'required|digits_between:3,20|unique:employees,registry,'.$this->employee->id,
             'observation' => 'nullable|min:3',
             'valid_until' => 'nullable|date',
+            'type' => 'required|in:1,2,3',
         ];
     }
 }

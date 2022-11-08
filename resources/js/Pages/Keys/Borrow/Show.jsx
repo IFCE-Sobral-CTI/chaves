@@ -25,6 +25,10 @@ function Show({ borrow, can }) {
                         <div className="">{borrow.observation}</div>
                     </div>
                     <div className="flex flex-col">
+                        <div className="text-sm font-light">Usuário</div>
+                        <div className="">{borrow.user.name}</div>
+                    </div>
+                    <div className="flex flex-col">
                         <div className="text-sm font-light">Criado em</div>
                         <div className="">{borrow.created_at}</div>
                     </div>

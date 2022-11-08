@@ -45,7 +45,7 @@ class RoomController extends Controller
 
         return Inertia::render('Keys/Room/Create', [
             'blocks' => Block::select('id', 'description')->orderBy('description', 'ASC')->get(),
-            'employees' => Employee::orderBy('name')->get()
+            'employees' => Employee::where('type', Employee::EMPLOYEE)->orderBy('name')->get()
         ]);
     }
 

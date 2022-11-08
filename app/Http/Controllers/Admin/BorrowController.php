@@ -62,7 +62,8 @@ class BorrowController extends Controller
         $this->authorize('borrows.create', Borrow::class);
 
         try {
-            $borrow = Borrow::create($request->validated());
+            //$borrow = Borrow::create($request->validated());
+            $borrow = Auth::user()->borrows()->create($request->validated());
             $borrow->keys()->sync($request->keys);
             return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
@@ -80,7 +81,7 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.view', $borrow);
 
-        $borrow = Borrow::with(['employee', 'keys' => ['room']])->find($borrow->id);
+        $borrow = Borrow::with(['employee', 'keys' => ['room'], 'user'])->find($borrow->id);
 
         return Inertia::render('Keys/Borrow/Show', [
             'borrow' => $borrow,

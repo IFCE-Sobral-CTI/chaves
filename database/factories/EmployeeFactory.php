@@ -20,6 +20,7 @@ class EmployeeFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'registry' => fake()->numberBetween(1000, 99999999999),
+            'type' => fake()->numberBetween(1, 3),
         ];
     }
 }

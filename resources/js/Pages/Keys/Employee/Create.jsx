@@ -6,14 +6,16 @@ import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
 import Textarea from "@/Components/Form/Textarea";
+import Select from "@/Components/Form/Select";
 
-function Create() {
+function Create({ employeeType }) {
     const { data, setData, post, processing, errors } = useForm({
         name: "",
         email: "",
         registry: "",
         valid_until: "",
         observation: "",
+        type: "",
     });
 
     const onHandleChange = (event) => {
@@ -27,10 +29,22 @@ function Create() {
 
     return (
         <>
-            <Head title="Novo Servidor" />
-            <AuthenticatedLayout titleChildren={'Cadastro de novo Servidor'} breadcrumbs={[{ label: 'Servidores', url: route('employees.index') }, { label: 'Novo', url: route('employees.create') }]}>
+            <Head title="Novo Mutuário" />
+            <AuthenticatedLayout titleChildren={'Cadastro de novo Mutuário'} breadcrumbs={[{ label: 'Mutuários', url: route('employees.index') }, { label: 'Novo', url: route('employees.create') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
+                        <div className="mb-4">
+                            <label htmlFor="type" className="font-light">Classe do Mutuário</label>
+                            <Select value={data.type} name={'type'} handleChange={onHandleChange} required={true}>
+                                <option>Selecione uma classe</option>
+                                {employeeType.map((item, index) => {
+                                    return (
+                                        <option value={item.value} key={index}>{item.label}</option>
+                                    );
+                                })}
+                            </Select>
+                            <InputError message={errors.type} />
+                        </div>
                         <div className="mb-4">
                             <label htmlFor="registry" className="font-light">Matricula</label>
                             <Input value={data.registry} type={'number'} name={'registry'} handleChange={onHandleChange} required={true} placeholder="Digite a matricula" />
@@ -38,12 +52,12 @@ function Create() {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="name" className="font-light">Nome</label>
-                            <Input value={data.name} name={'name'} handleChange={onHandleChange} required={true} placeholder="Digite o nome do servidor" />
+                            <Input value={data.name} name={'name'} handleChange={onHandleChange} required={true} placeholder="Digite o nome do mutuário" />
                             <InputError message={errors.name} />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="email" className="font-light">E-mail</label>
-                            <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do servidor" />
+                            <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do mutuário" />
                             <InputError message={errors.email} />
                         </div>
                         <div className="mb-4">
@@ -53,7 +67,7 @@ function Create() {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="observation" className="font-light">Observações</label>
-                            <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o servidor" />
+                            <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o mutuário" />
                             <InputError message={errors.observation} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">
@@ -65,7 +79,7 @@ function Create() {
                             </Button>
                             <Button href={route('employees.index')} className={'gap-2'}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
-                                    <path fillemployee="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
+                                    <path fillRule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
                                 </svg>
                                 <span>Voltar</span>
                             </Button>

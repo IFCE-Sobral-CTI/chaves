@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('registry', 11, 0)->unique();
             $table->text('observation')->nullable();
             $table->date('valid_until')->nullable();
+            $table->boolean('type')->default(1); // 1 - Servidor | 2 - Colaborador | 3 - Discente
             $table->timestamps();
         });
     }

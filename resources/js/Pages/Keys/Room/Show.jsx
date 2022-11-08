@@ -32,7 +32,7 @@ function Show({ room, can }) {
                         <div className="">{room.updated_at}</div>
                     </div>
                     <div className="flex flex-col">
-                        <div className="text-sm font-light">Servidor(es) responsável(eis)</div>
+                        <div className="text-sm font-light">Mutuário(s) responsável(eis)</div>
                         <div className="flex flex-wrap gap-4">
                             {room.employees.map((item, i) => {
                                 return (

@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'ti.sobral@ifce.edu.br',
             'password' => Hash::make('qwe123'),
             'status' => 1,
-            'registry' => 3024033,
+            'registry' => 123456,
             'permission_id' => Permission::where('description', 'Administrador')->first()->id
         ]);
     }

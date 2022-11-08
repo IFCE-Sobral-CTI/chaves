@@ -41,7 +41,13 @@ class EmployeeController extends Controller
     {
         $this->authorize('employees.create', Employee::class);
 
-        return Inertia::render('Keys/Employee/Create');
+        return Inertia::render('Keys/Employee/Create', [
+            'employeeType' => [
+                ['value' => Employee::EMPLOYEE, 'label' => 'Servidor'],
+                ['value' => Employee::COLLABORATOR, 'label' => 'Colaborador'],
+                ['value' => Employee::STUDENT, 'label' => 'Discente'],
+            ]
+        ]);
     }
 
     /**
@@ -93,6 +99,11 @@ class EmployeeController extends Controller
 
         return Inertia::render('Keys/Employee/Edit', [
             'employee' => $employee,
+            'employeeType' => [
+                ['value' => Employee::EMPLOYEE, 'label' => 'Servidor'],
+                ['value' => Employee::COLLABORATOR, 'label' => 'Colaborador'],
+                ['value' => Employee::STUDENT, 'label' => 'Discente'],
+            ]
         ]);
     }
 

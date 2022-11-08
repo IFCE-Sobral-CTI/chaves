@@ -12,9 +12,6 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
     const [chart1, setChart1] = useState('');
     const [chart2, setChart2] = useState('');
 
-    console.log("Borrow", dataBorrow);
-    console.log("Keys", dataKeys);
-
     useEffect(() => {
         startTransitionChart1(() => {
             setChart1(

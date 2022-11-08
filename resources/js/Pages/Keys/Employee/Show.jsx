@@ -6,11 +6,35 @@ import Button from "@/Components/Form/Button";
 import DeleteModal from "@/Components/Dashboard/DeleteModal";
 
 function Show({ employee, can }) {
+    const employeeType = (type) => {
+        let name = '';
+
+        switch (type) {
+            case 1:
+                name = 'Servidor';
+                break;
+            case 2:
+                name = 'Colaborador';
+                break;
+            case 3:
+                name = 'Discente';
+                break;
+        };
+
+        return (
+            <span>{name}</span>
+        );
+    };
+
     return (
         <>
-            <Head title="Detalhes da Servidor" />
-            <AuthenticatedLayout titleChildren={'Detalhes da Servidor'} breadcrumbs={[{ label: 'Servidores', url: route('employees.index') }, { label: employee.description, url: route('employees.show', employee.id) }]}>
+            <Head title="Detalhes da Mutuário" />
+            <AuthenticatedLayout titleChildren={'Detalhes da Mutuário'} breadcrumbs={[{ label: 'Mutuários', url: route('employees.index') }, { label: employee.description, url: route('employees.show', employee.id) }]}>
                 <Panel className={'flex flex-col gap-4'}>
+                    <div className="flex flex-col">
+                        <div className="text-sm font-light">Classe</div>
+                        <div className="">{employeeType(employee.type)}</div>
+                    </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Matricula</div>
                         <div className="">{employee.registry}</div>
@@ -28,7 +52,7 @@ function Show({ employee, can }) {
                         <div className="">{employee.observation?? '-'}</div>
                     </div>
                     <div className="flex flex-col">
-                        <div className="text-sm font-light">Válido até</div>
+                        <div className="text-sm font-light">Cadastro válido até</div>
                         <div className="">{employee.valid_until?? '-'}</div>
                     </div>
                     <div className="flex flex-col">

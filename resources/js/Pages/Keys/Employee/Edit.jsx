@@ -7,14 +7,16 @@ import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
 import Textarea from "@/Components/Form/Textarea";
 import moment from "moment";
+import Select from "@/Components/Form/Select";
 
-function Edit({ employee }) {
+function Edit({ employee, employeeType }) {
     const { data, setData, put, processing, errors } = useForm({
         name: employee.name,
         email: employee.email,
         registry: employee.registry,
         observation: employee.observation,
         valid_until: employee.valid_until? moment(employee.valid_until, 'DD/MM/YYYY').format('yyyy-MM-DD'): null,
+        type: employee.type,
     });
 
     const onHandleChange = (event) => {
@@ -28,10 +30,22 @@ function Edit({ employee }) {
 
     return (
         <>
-            <Head title="Editar Servidor" />
-            <AuthenticatedLayout titleChildren={'Editar Servidor'} breadcrumbs={[{ label: 'Servidores', url: route('employees.index') }, { label: employee.description, url: route('employees.show', employee.id) }, { label: 'Editar'}]}>
+            <Head title="Editar Mutuário" />
+            <AuthenticatedLayout titleChildren={'Editar Mutuário'} breadcrumbs={[{ label: 'Mutuários', url: route('employees.index') }, { label: employee.description, url: route('employees.show', employee.id) }, { label: 'Editar'}]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
+                        <div className="mb-4">
+                            <label htmlFor="type" className="font-light">Classe do Mutuário</label>
+                            <Select value={data.type} name={'type'} handleChange={onHandleChange} required={true}>
+                                <option>Selecione uma classe</option>
+                                {employeeType.map((item, index) => {
+                                    return (
+                                        <option value={item.value} key={index}>{item.label}</option>
+                                    );
+                                })}
+                            </Select>
+                            <InputError message={errors.type} />
+                        </div>
                         <div className="mb-4">
                             <label htmlFor="registry" className="font-light">Matricula</label>
                             <Input value={data.registry} type={'number'} name={'registry'} handleChange={onHandleChange} required={true} placeholder="Digite a matricula" />
@@ -39,12 +53,12 @@ function Edit({ employee }) {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="name" className="font-light">Nome</label>
-                            <Input value={data.name} name={'name'} handleChange={onHandleChange} required={true} placeholder="Digite o nome do servidor" />
+                            <Input value={data.name} name={'name'} handleChange={onHandleChange} required={true} placeholder="Digite o nome do mutuário" />
                             <InputError message={errors.name} />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="email" className="font-light">E-mail</label>
-                            <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do servidor" />
+                            <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do mutuário" />
                             <InputError message={errors.email} />
                         </div>
                         <div className="mb-4">
@@ -54,7 +68,7 @@ function Edit({ employee }) {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="observation" className="font-light">Observações</label>
-                            <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o servidor" />
+                            <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o mutuário" />
                             <InputError message={errors.observation} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">
