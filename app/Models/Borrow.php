@@ -11,10 +11,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @method search(Request $request): array
+ * @method dataChart(): array
+ * @method dataChart2(): array
+ * @method reportByDate(Request $request): array
+ *
+ * @property Carbon devolution
+ * @property string observation
+ * @property Employee employee
+ * @property User user
+ */
 class Borrow extends Model
 {
     use HasFactory;
 
+    /**
+     * @var array $fillable
+     */
     protected $fillable = [
         'devolution',
         'observation',
@@ -22,30 +36,46 @@ class Borrow extends Model
         'user_id',
     ];
 
+    /**
+     * @var array $casts
+     */
     protected $casts = [
         'devolution' => 'datetime:d/m/Y H:i:s',
     ];
 
-    public function getCreatedAtAttribute($date)
+    /**
+     * @param string $date
+     * @return string
+     */
+    public function getCreatedAtAttribute(string $date): string
     {
         return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
     }
 
-    public function getUpdatedAtAttribute($date)
+    public function getUpdatedAtAttribute(string $date): string
     {
         return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
     }
 
+    /**
+     * @return BelongsTo
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo
+     */
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
     }
 
+    /**
+     * @return BelongsToMany
+     */
     public function keys(): BelongsToMany
     {
         return $this->belongsToMany(Key::class);
@@ -189,13 +219,13 @@ class Borrow extends Model
             case 1:
                 $query->where('devolution', '!=', null);
                 break;
-
             case 2:
                 $query->where('devolution', null)->where('created_at', '>=', now()->subDay());
                 break;
-
             case 3:
                 $query->where('devolution', null)->where('created_at', '<', now()->subDay());
+                break;
+            default:
                 break;
         }
     }

@@ -14,21 +14,36 @@ class Block extends Model
 {
     use HasFactory;
 
+    /**
+     * @var array $fillable
+     */
     protected $fillable = [
         'description'
     ];
 
+    /**
+     * @var array $casts
+     */
     protected $casts = [
         'created_at' => 'datetime:d/m/Y h:i:s',
         'updated_at' => 'datetime:d/m/Y h:i:s',
     ];
 
+    /**
+     * @return HasMany
+     */
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class);
     }
 
-    public function scopeSearch($query, $term = ''): array
+    /**
+     *
+     * @param $query
+     * @param string $term
+     * @return array
+     */
+    public function scopeSearch($query, string $term = ''): array
     {
         $query->where('description', 'like', "%{$term}%");
 
