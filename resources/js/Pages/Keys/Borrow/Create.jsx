@@ -4,7 +4,6 @@ import Panel from "@/Components/Dashboard/Panel";
 import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
 import Textarea from "@/Components/Form/Textarea";
-import Select from "@/Components/Form/Select";
 import Search from "./Components/Search";
 import SelectEmployee from "./Components/SelectEmployee";
 
@@ -14,8 +13,6 @@ function Create({ employees, keys }) {
         employee_id: "",
         keys: [],
     });
-
-    console.log('Data', data);
 
     const onHandleChange = (event) => {
         setData(event.target.name, event.target.value);
@@ -42,7 +39,7 @@ function Create({ employees, keys }) {
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o empréstimo" />
                             <InputError message={errors.observation} />
                         </div>
-                        <Search data={keys} onChange={onChangeKeys} error={errors.keys} />
+                        <Search values={data.keys} data={keys} onChange={onChangeKeys} error={errors.keys} />
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
