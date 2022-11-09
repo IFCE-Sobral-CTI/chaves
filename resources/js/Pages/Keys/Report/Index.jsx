@@ -50,6 +50,8 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                 <td className="px-1 py-3 font-light">{borrow.created_at}</td>
                 <td className="px-1 py-3 font-light">{borrow.employee.name}</td>
                 <td className="px-1 py-3 font-light">{borrow.user.name}</td>
+                <td className="px-1 py-3 font-light">{borrow.received_by?.name?? '-'}</td>
+                <td className="px-1 py-3 font-light">{borrow.returned_by?? '-'}</td>
                 <td className="px-1 py-3 font-light">
                     <div className="flex flex-wrap gap-2">
                         {borrow.keys.map((key, i) => {
@@ -90,7 +92,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                                 <SelectEmployee value={data.employee} data={employees} onChange={(id) => setData('employee', id)}  error={errors.employee} />
                             </div>
                             <div className="flex-1 border p-2 rounded-lg">
-                                <div className="">Por Usuário</div>
+                                <div className="">Entregue por</div>
                                 <div className="">
                                     <label htmlFor="user" className="font-light">Usuário</label>
                                     <Select value={data.user} name={'user'} handleChange={onHandleChange}>
@@ -143,11 +145,18 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                     <table className="w-full table-auto text-neutral-600">
                         <thead>
                             <tr>
-                                <th  className="px-1 pt-3 font-semibold text-left">Data</th>
-                                <th  className="px-1 pt-3 font-semibold text-left">Mutuário</th>
-                                <th  className="px-1 pt-3 font-semibold text-left">Usuário</th>
-                                <th  className="px-1 pt-3 font-semibold text-left">Chaves</th>
-                                <th  className="px-1 pt-3 font-semibold text-left">Situação</th>
+                                <th></th>
+                                <th></th>
+                                <th colSpan={2} className="px-1 pt-3 font-semibold text-center border-b">Usuários</th>
+                            </tr>
+                            <tr>
+                                <th rowSpan={2} className="px-1 pt-3 font-semibold text-left">Data</th>
+                                <th rowSpan={2} className="px-1 pt-3 font-semibold text-left">Mutuário</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Entregue por</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Recebido por</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Devolvida por</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Chaves</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Situação</th>
                             </tr>
                         </thead>
                         <tbody>

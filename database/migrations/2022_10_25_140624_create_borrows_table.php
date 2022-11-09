@@ -17,12 +17,18 @@ return new class extends Migration
             $table->id();
             $table->text('observation')->nullable();
             $table->dateTime('devolution')->nullable();
+            $table->string('returned_by')->nullable();
             $table->foreignId('employee_id')
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->foreignId('user_id')
                 ->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+            $table->foreignId('received_by')
+                ->nullable()
+                ->constrained('users')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
             $table->timestamps();

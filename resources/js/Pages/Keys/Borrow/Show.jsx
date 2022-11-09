@@ -17,16 +17,24 @@ function Show({ borrow, can }) {
                         <div className="">{borrow.employee.name}</div>
                     </div>
                     <div className="flex flex-col">
+                        <div className="text-sm font-light">Observações</div>
+                        <div className="">{borrow.observation?? '-'}</div>
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="text-sm font-light">Entregue por</div>
+                        <div className="">{borrow.user.name}</div>
+                    </div>
+                    <div className="flex flex-col">
                         <div className="text-sm font-light">Devolução</div>
                         <div className="">{borrow.devolution?? '-'}</div>
                     </div>
                     <div className="flex flex-col">
-                        <div className="text-sm font-light">Observações</div>
-                        <div className="">{borrow.observation}</div>
+                        <div className="text-sm font-light">Recebido por</div>
+                        <div className="">{borrow.received_by?.name?? '-'}</div>
                     </div>
                     <div className="flex flex-col">
-                        <div className="text-sm font-light">Usuário</div>
-                        <div className="">{borrow.user.name}</div>
+                        <div className="text-sm font-light">Devolvida por</div>
+                        <div className="">{borrow.returned_by?? '-'}</div>
                     </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Criado em</div>

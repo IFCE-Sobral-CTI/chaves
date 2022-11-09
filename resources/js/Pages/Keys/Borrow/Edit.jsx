@@ -17,6 +17,7 @@ function Edit({ borrow, employees, keys, borrowKeys }) {
         employee_id: borrow.employee_id,
         devolution: borrow.devolution? moment(borrow.devolution, 'DD/MM/YYYY hh:mm:ss').format('yyyy-MM-DDThh:mm'): null,
         keys: borrowKeys,
+        returned_by: borrow.returned_by,
     });
 
     const onHandleChange = (event) => {
@@ -48,6 +49,11 @@ function Edit({ borrow, employees, keys, borrowKeys }) {
                             <label htmlFor="devolution" className="font-light">Devolução</label>
                             <Input value={data.devolution} type={'datetime-local'} name={'devolution'} handleChange={onHandleChange} required={false} />
                             <InputError message={errors.devolution} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="returned_by" className="font-light">Devolvido por</label>
+                            <Input value={data.returned_by} name={'returned_by'} handleChange={onHandleChange} required={false} placeholder={'Quem devolveu a chave?'} />
+                            <InputError message={errors.returned_by} />
                         </div>
                         <Search data={keys} onChange={onChangeKeys} values={data.keys} />
                         <div className="flex items-center justify-center gap-4 mt-6">

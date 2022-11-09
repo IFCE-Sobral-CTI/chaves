@@ -26,6 +26,7 @@ class UpdateBorrowRequest extends FormRequest
         return [
             'devolution' => 'nullable|date',
             'observation' => 'nullable',
+            'returned_by' => 'nullable',
             'employee_id' => 'required|exists:employees,id',
             'keys' => 'array',
             'keys.*' => 'exists:keys,id',

@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
  * @property string observation
  * @property Employee employee
  * @property User user
+ * @property User received_by
  */
 class Borrow extends Model
 {
@@ -31,9 +32,11 @@ class Borrow extends Model
      */
     protected $fillable = [
         'devolution',
+        'returned_by',
         'observation',
         'employee_id',
         'user_id',
+        'received_by',
     ];
 
     /**
@@ -68,6 +71,14 @@ class Borrow extends Model
     /**
      * @return BelongsTo
      */
+    public function receivedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by');
+    }
+
+    /**
+     * @return BelongsTo
+     */
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
@@ -91,7 +102,7 @@ class Borrow extends Model
      */
     public function scopeSearch(Builder $query, Request $request): array
     {
-        $query->with(['employee', 'user'])->whereHas('employee', function(Builder $query) use ($request) {
+        $query->with(['employee', 'user', 'receivedBy'])->whereHas('employee', function(Builder $query) use ($request) {
             $query->where('name', 'like', "%{$request->term}%")
                 ->orWhere('registry', 'like', "%{$request->term}%");
         });
@@ -156,7 +167,7 @@ class Borrow extends Model
      */
     public function scopeReportByDate(Builder $query, Request $request): array
     {
-        $query->with(['employee', 'keys', 'user']);
+        $query->with(['employee', 'keys', 'user', 'receivedBy']);
 
         $this->filterByDate($query, $request);
         $this->filterBySituation($query, $request);

@@ -81,7 +81,7 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.view', $borrow);
 
-        $borrow = Borrow::with(['employee', 'keys' => ['room'], 'user'])->find($borrow->id);
+        $borrow = Borrow::with(['employee', 'keys' => ['room'], 'user', 'receivedBy'])->find($borrow->id);
 
         return Inertia::render('Keys/Borrow/Show', [
             'borrow' => $borrow,
@@ -104,7 +104,7 @@ class BorrowController extends Controller
         $this->authorize('borrows.update', $borrow);
 
         $borrowKeys = $borrow->keys->pluck("id")->toArray();
-        $borrow = Borrow::with(['employee', 'keys' => ['room']])->find($borrow->id);
+        $borrow = Borrow::with(['employee', 'keys' => ['room']], 'receivedBy')->find($borrow->id);
 
         $borrowed = Key::borrowed()->pluck('id')->toArray();
 
@@ -160,12 +160,16 @@ class BorrowController extends Controller
      * @param  \App\Models\Borrow  $borrow
      * @return \Illuminate\Http\Response
      */
-    public function receive(Borrow $borrow)
+    public function receive(Borrow $borrow, Request $request)
     {
         $this->authorize('borrows.receive', $borrow);
 
+        $request->validate([
+            'returned_by' => 'nullable|min:2',
+        ]);
+
         try {
-            $borrow->update(['devolution' => now()]);
+            $borrow->update(['devolution' => now(), 'received_by' => Auth::user()->id, 'returned_by' => $request->returned_by]);
             return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

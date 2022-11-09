@@ -22,8 +22,10 @@ class BorrowFactory extends Factory
         return [
             'devolution' => $rand? now(): null,
             'observation' => fake()->sentence(),
+            'returned_by' => $rand? fake()->name(): null,
             'employee_id' => Employee::all()->random()->id,
             'user_id' => 1,
+            'received_by' => $rand? 1: null,
             'created_at' => now()->subHours(6)->format('Y-m-d H:i:s'),
         ];
     }

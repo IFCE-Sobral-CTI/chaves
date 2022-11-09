@@ -40,7 +40,8 @@ function Index({ borrows, count, page, termSearch, can }) {
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.created_at}</Link></td>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.employee.name}</Link></td>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.user.name.split(' ')[0]}</Link></td>
-                <td className="hidden px-1 py-3 font-light md:block"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.devolution?? '-'}</Link></td>
+                <td className="hidden px-1 py-3 font-light md:inline-table"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.devolution?? '-'}</Link></td>
+                <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.returned_by?? '-'}</Link></td>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{status(item.created_at, item.devolution)}</Link></td>
                 <td className="flex justify-end py-3 pr-2 text-neutral-400">
                     <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
@@ -80,8 +81,9 @@ function Index({ borrows, count, page, termSearch, can }) {
                             <tr className="border-b">
                                 <th className="px-1 pt-3 font-semibold text-left">Data</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Mutuário</th>
-                                <th className="px-1 pt-3 font-semibold text-left">Usuário</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Entregue por</th>
                                 <th className="hidden px-1 pt-3 font-semibold text-left md:block">Devolução</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Devolvido por</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Situação</th>
                                 <th></th>
                             </tr>
