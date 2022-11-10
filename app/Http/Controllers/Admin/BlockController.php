@@ -22,7 +22,7 @@ class BlockController extends Controller
     {
         $this->authorize('blocks.viewAny', Block::class);
 
-        $result = Block::search($request->term);
+        $result = Block::search($request);
 
         return Inertia::render('Keys/Block/Index', [
             'blocks' => $result['data'],
