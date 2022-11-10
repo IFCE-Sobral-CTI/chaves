@@ -40,7 +40,6 @@ class Block extends Model
     }
 
     /**
-     *
      * @param Builder $query
      * @param Request $request
      * @return array

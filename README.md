@@ -70,6 +70,10 @@ A instalação(local) desse sistema é bem simples, bastando apenas seguir os pa
 * Dados de acesso:
   * Login: ti.sobral@ifce.edu.br
   * Senha: qwe123
+
+## Documentação
+
+Para mais informações sobre o sistema acesse a [wiki](https://github.com/CTI-Sobral-IFCE/chaves/wiki).
   
 ## Licença
 
