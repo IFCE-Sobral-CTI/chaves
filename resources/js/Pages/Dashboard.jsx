@@ -23,12 +23,22 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
                     options={{
                         chart: {
                             title: "Empréstimos",
-                            subtitle: 'Últimos 7 dias'
-                        }
+                            subtitle: 'Últimos 7 dias',
+                        },
+                        legend: {position: 'bottom'},
                     }}
                 />
             )
         });
+
+        const any = {
+            legend: { position: ['top'], alignment: 'start' },
+            chart: {
+                title: "Chaves emprestadas",
+                subtitle: 'Últimos 7 dias',
+            },
+            colors: ['#54b74f'],
+        };
 
         startTransitionChart2(() => {
             setChart2(
@@ -37,13 +47,7 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
                     data={dataKeys}
                     width={'100%'}
                     height={'100%'}
-                    options={{
-                        chart: {
-                            title: "Chaves emprestadas",
-                            subtitle: 'Últimos 7 dias',
-                        },
-                        colors: ['#54b74f']
-                    }}
+                    options={any}
                 />
             )
         });
@@ -74,7 +78,7 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
                 <td className="font-light p-1.5">
                     <Link href={can.borrowView? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.employee.name}</Link>
                 </td>
-                <td className="font-light p-1.5"><Link href={can.borrowView? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{status(item.created_at, item.devolution)}</Link></td>
+                <td className="font-light p-1.5 hidden md:table-cell"><Link href={can.borrowView? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{status(item.created_at, item.devolution)}</Link></td>
                 <td className="flex justify-end p-1.5 text-neutral-400">
                     <Link href={can.borrowView? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
@@ -89,7 +93,7 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
     return (
         <>
             <AuthenticatedLayout breadcrumbs={[{label: 'Minha Página', url: route('admin')}]}>
-                <div className="grid grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
                     <div className="p-2 text-center text-white transition rounded-lg shadow-md bg-emerald-500 hover:bg-emerald-600">
                         <div className="text-xs font-bold tracking-widest uppercase">Total de Salas</div>
                         <div className="text-4xl font-bold">{countRooms}</div>
@@ -111,7 +115,7 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
                         <div className="text-4xl font-bold">{countBorrows}</div>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                     <Panel className={'flex-1 h-96'}>
                         {isPendingChart1
                         ?<div className="w-full h-full flex justify-center items-center transition">
@@ -141,7 +145,7 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
                                 <tr className="border-b">
                                     <th className="font-semibold text-left px-1.5 pt-1.5">Data</th>
                                     <th className="font-semibold text-left px-1.5 pt-1.5">Servidor</th>
-                                    <th className="font-semibold text-left px-1.5 pt-1.5">Situação</th>
+                                    <th className="font-semibold text-left px-1.5 pt-1.5 hidden md:table-cell">Situação</th>
                                     <th></th>
                                 </tr>
                             </thead>

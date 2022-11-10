@@ -28,7 +28,7 @@ function Navbar() {
                 <div className="hidden md:block">
                     <h1 className="text-xl font-semibold">{title}</h1>
                 </div>
-                <div className="px-4">
+                <div className="flex justify-end items-center px-1 md:px-4">
                     <button className="flex items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-7 w-7" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
