@@ -46,7 +46,13 @@ class Key extends Model
     {
         $query->with('room')
             ->whereHas('room', function(Builder $query) use ($request) {
-                $query->where('description', 'like', "%{$request->term}%");
+                $query->where('description', 'like', "%{$request->term}%")
+                    ->orWhereHas('employees', function(Builder $query) use ($request) {
+                        $query->where('name', 'like', "%{$request->term}%");
+                    })
+                    ->orWhereHas('block', function(Builder $query) use ($request) {
+                        $query->where('description', 'like', "%{$request->term}%");
+                    });
             })
             ->orWhere('number', 'like', "%{$request->term}%")
             ->orWhere('description', 'like', "%{$request->term}%");
