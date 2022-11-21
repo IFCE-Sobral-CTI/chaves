@@ -22,6 +22,9 @@ class Employee extends Model
     const COLLABORATOR = 2;
     const STUDENT = 3;
 
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'name',
         'email',
@@ -31,22 +34,36 @@ class Employee extends Model
         'type',
     ];
 
+    /**
+     * @var string[]
+     */
     protected $casts = [
         'created_at' => 'datetime:d/m/Y H:i:s',
         'updated_at' => 'datetime:d/m/Y H:i:s',
         'valid_until' => 'datetime:d/m/Y',
     ];
 
+    /**
+     * @return HasMany
+     */
     public function borrows(): HasMany
     {
         return $this->hasMany(Borrow::class);
     }
 
+    /**
+     * @return BelongsToMany
+     */
     public function rooms(): BelongsToMany
     {
         return $this->belongsToMany(Room::class);
     }
 
+    /**
+     * @param $query
+     * @param $request
+     * @return array
+     */
     public function scopeSearch($query, $request)
     {
         $query->where('name', 'like', "%{$request->term}%")->orWhere('registry', 'like', "%{$request->term}%");

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
- * @method search(Request $request): array
+ * @method static search(Request $request)[]
  * @method dataChart(): array
  * @method dataChart2(): array
  * @method reportByDate(Request $request): array
@@ -55,6 +55,10 @@ class Borrow extends Model
         return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
     }
 
+    /**
+     * @param string $date
+     * @return string
+     */
     public function getUpdatedAtAttribute(string $date): string
     {
         return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
@@ -187,8 +191,6 @@ class Borrow extends Model
      *
      * @param Builder $query (pointer for query)
      * @param Request $request
-     *
-     * @return void
      */
     private function filterByUser(Builder &$query, Request $request): void
     {

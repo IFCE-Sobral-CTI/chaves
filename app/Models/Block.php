@@ -40,9 +40,7 @@ class Block extends Model
     }
 
     /**
-     * @param Builder $query
-     * @param Request $request
-     * @return array
+     * Search for description in resource
      */
     public function scopeSearch(Builder $query, Request $request): array
     {

@@ -9,18 +9,23 @@ use App\Models\Borrow;
 use App\Models\Employee;
 use App\Models\Key;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class BorrowController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $this->authorize('borrows.viewAny', Borrow::class);
 
@@ -35,9 +40,10 @@ class BorrowController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @throws AuthorizationException
+     * @return Response
      */
-    public function create()
+    public function create(): Response
     {
         $this->authorize('borrows.create', Borrow::class);
 
@@ -54,15 +60,16 @@ class BorrowController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreBorrowRequest  $request
-     * @return \Illuminate\Http\Response
+     * @param StoreBorrowRequest $request
+     * @throws AuthorizationException
+     *
+     * @return RedirectResponse
      */
     public function store(StoreBorrowRequest $request)
     {
         $this->authorize('borrows.create', Borrow::class);
 
         try {
-            //$borrow = Borrow::create($request->validated());
             $borrow = Auth::user()->borrows()->create($request->validated());
             $borrow->keys()->sync($request->keys);
             return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
@@ -74,10 +81,11 @@ class BorrowController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Borrow  $borrow
-     * @return \Illuminate\Http\Response
+     * @param Borrow $borrow
+     * @throws AuthorizationException
+     * @return Response
      */
-    public function show(Borrow $borrow)
+    public function show(Borrow $borrow): Response
     {
         $this->authorize('borrows.view', $borrow);
 
@@ -96,10 +104,11 @@ class BorrowController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Borrow  $borrow
-     * @return \Illuminate\Http\Response
+     * @param Borrow $borrow
+     * @return Response
+     *@throws AuthorizationException
      */
-    public function edit(Borrow $borrow)
+    public function edit(Borrow $borrow): Response
     {
         $this->authorize('borrows.update', $borrow);
 
@@ -119,16 +128,17 @@ class BorrowController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateBorrowRequest  $request
-     * @param  \App\Models\Borrow  $borrow
-     * @return \Illuminate\Http\Response
+     * @param UpdateBorrowRequest $request
+     * @param Borrow $borrow
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function update(UpdateBorrowRequest $request, Borrow $borrow)
+    public function update(UpdateBorrowRequest $request, Borrow $borrow): RedirectResponse
     {
         $this->authorize('borrows.update', $borrow);
 
         /*
-         * Verifica se as chaves foi retirada a data de devolução
+         * Verifica se as chaves foi retirada na data de devolução
          * e se as chaves que voltarão a ser emprestas já estão emprestadas
          */
         if (is_null($request->devolution) && $borrow->devolution) {
@@ -156,11 +166,12 @@ class BorrowController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateBorrowRequest  $request
-     * @param  \App\Models\Borrow  $borrow
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param Borrow $borrow
+     * @throws AuthorizationException
+     * @return RedirectResponse
      */
-    public function receive(Borrow $borrow, Request $request)
+    public function receive(Borrow $borrow, Request $request): RedirectResponse
     {
         $this->authorize('borrows.receive', $borrow);
 
@@ -179,10 +190,11 @@ class BorrowController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Borrow  $borrow
-     * @return \Illuminate\Http\Response
+     * @param Borrow $borrow
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function destroy(Borrow $borrow)
+    public function destroy(Borrow $borrow): RedirectResponse
     {
         $this->authorize('borrows.delete', $borrow);
 
