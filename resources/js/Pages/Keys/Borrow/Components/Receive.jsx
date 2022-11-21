@@ -2,17 +2,24 @@ import 'tw-elements';
 import { useForm } from "@inertiajs/inertia-react";
 import Input from '@/Components/Form/Input';
 import InputError from '@/Components/InputError';
+import {useEffect, useRef} from "react";
 
 export default function Receive({ url }) {
     const { data, setData, put, processing, errors } = useForm({
         returned_by: ""
     });
 
-    console.log("Data", data);
+    const buttonRef = useRef(null);
+
+    useEffect(() => {
+        if (data.returned_by !== '')
+            document.querySelector('#button-submit').setAttribute('data-bs-dismiss', 'modal');
+    }, [data.returned_by]);
 
     const submit = (e) => {
         e.preventDefault();
-        put(url, {data}, {
+        put(url, {
+            data,
             preserveScroll: true
         });
     }
@@ -40,24 +47,29 @@ export default function Receive({ url }) {
                             </h5>
                             <button type="button" className="box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 btn-close focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div className="relative p-4 modal-body">
-                            <div className="mb-4">
-                                <label htmlFor="returned_by" className="font-light">Devolução</label>
-                                <Input value={data.returned_by} type={'text'} name={'returned_by'} handleChange={(e) => setData(e.target.name, e.target.value)} required={true} placeholder={'Quem entregou a(s) chave(s)?'} />
-                                <InputError message={errors.returned_by} />
+                        <form onSubmit={submit}>
+                            <div className="relative p-4 modal-body">
+                                <div className="mb-4">
+                                    <label htmlFor="returned_by" className="font-light">Devolução</label>
+                                    <Input value={data.returned_by} type={'text'} name={'returned_by'} handleChange={(e) => setData(e.target.name, e.target.value)} required={true} placeholder={'Quem entregou a(s) chave(s)?'} />
+                                    <InputError message={errors.returned_by} />
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex flex-wrap items-center justify-end flex-shrink-0 p-4 border-t border-gray-200 modal-footer rounded-b-md">
-                            <button type="button" className="flex items-center px-6 py-2.5 bg-gray-600 text-white font-light leading-tight rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-800 active:shadow-lg transition duration-150 ease-in-out" data-bs-dismiss="modal">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5 mr-3" role="img" aria-hidden="true" viewBox="0 0 16 16">
-                                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
-                                </svg>
-                                <span>Fechar</span>
-                            </button>
-                            <form onSubmit={submit}>
+                            <div className="flex flex-wrap items-center justify-end flex-shrink-0 p-4 border-t border-gray-200 modal-footer rounded-b-md">
                                 <button
-                                    type="submit"
+                                    type="button"
+                                    className="flex items-center px-6 py-2.5 bg-gray-600 text-white font-light leading-tight rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-800 active:shadow-lg transition duration-150 ease-in-out"
                                     data-bs-dismiss="modal"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5 mr-3" role="img" aria-hidden="true" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                                    </svg>
+                                    <span>Fechar</span>
+                                </button>
+                                <button
+                                    id={'button-submit'}
+                                    ref={buttonRef}
+                                    type="submit"
                                     className="flex items-centerk px-6 py-2.5 bg-green text-white font-light leading-tight rounded shadow-md hover:bg-green-dark hover:shadow-lg focus:bg-green-dark focus:shadow-lg focus:outline-none focus:ring-0 active:bg-red-800 active:shadow-lg transition duration-150 ease-in-out ml-1"
                                     disabled={processing}
                                 >
@@ -66,8 +78,8 @@ export default function Receive({ url }) {
                                     </svg>
                                     Enviar
                                 </button>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

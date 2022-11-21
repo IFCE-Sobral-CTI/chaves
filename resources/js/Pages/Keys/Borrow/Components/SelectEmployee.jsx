@@ -1,7 +1,8 @@
 import InputError from "@/Components/InputError";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import {useForm} from "@inertiajs/inertia-react";
 
-function SelectEmployee({ data, onChange, error, value }) {
+function SelectEmployee({ data, onChange, value, error }) {
     const [toggle, setToggle] = useState(false);
     const [term, setTerm] = useState('');
     const [list, setList] = useState([]);
@@ -38,12 +39,12 @@ function SelectEmployee({ data, onChange, error, value }) {
     }, [term, selected]);
 
     const handleSelect = (event) => {
-        setSelected(data.filter(item => item.id == event.target.value).pop())
+        setSelected(data.filter(item => item.id === event.target.value).pop())
         toggleHandle();
     }
 
     const items = list.map((item, index) => {
-        if (selected?.id != item.id)
+        if (selected?.id !== item.id)
             return (
                 <li className="px-2 py-1 rounded-lg transition cursor-pointer font-light hover:bg-neutral-100" key={index} onClick={handleSelect} value={item.id}>{item.registry} - {item.name}</li>
             );
