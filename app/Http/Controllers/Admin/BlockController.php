@@ -7,18 +7,23 @@ use App\Http\Requests\StoreBlockRequest;
 use App\Http\Requests\UpdateBlockRequest;
 use App\Models\Block;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class BlockController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $this->authorize('blocks.viewAny', Block::class);
 
@@ -39,9 +44,10 @@ class BlockController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function create()
+    public function create(): Response
     {
         $this->authorize('blocks.create', Block::class);
 
@@ -51,28 +57,30 @@ class BlockController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreBlockRequest  $request
-     * @return \Illuminate\Http\Response
+     * @param StoreBlockRequest $request
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function store(StoreBlockRequest $request)
+    public function store(StoreBlockRequest $request): RedirectResponse
     {
         $this->authorize('blocks.create', Block::class);
 
         try {
             $block = Block::create($request->validated());
-            return redirect()->route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
+            return to_route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Block  $block
-     * @return \Illuminate\Http\Response
+     * @param Block $block
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function show(Block $block)
+    public function show(Block $block): Response
     {
         $this->authorize('blocks.view', $block);
 
@@ -88,10 +96,11 @@ class BlockController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Block  $block
-     * @return \Illuminate\Http\Response
+     * @param Block $block
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function edit(Block $block)
+    public function edit(Block $block): Response
     {
         $this->authorize('blocks.update', $block);
 
@@ -103,37 +112,39 @@ class BlockController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateBlockRequest  $request
-     * @param  \App\Models\Block  $block
-     * @return \Illuminate\Http\Response
+     * @param UpdateBlockRequest $request
+     * @param Block $block
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function update(UpdateBlockRequest $request, Block $block)
+    public function update(UpdateBlockRequest $request, Block $block): RedirectResponse
     {
         $this->authorize('blocks.update', $block);
 
         try {
             $block->update($request->validated());
-            return redirect()->route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
+            return to_route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Block  $block
-     * @return \Illuminate\Http\Response
+     * @param Block $block
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function destroy(Block $block)
+    public function destroy(Block $block): RedirectResponse
     {
         $this->authorize('blocks.delete', $block);
 
         try {
             $block->delete();
-            return redirect()->route('blocks.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
+            return to_route('blocks.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
     }
 }

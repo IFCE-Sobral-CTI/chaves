@@ -72,9 +72,9 @@ class BorrowController extends Controller
         try {
             $borrow = Auth::user()->borrows()->create($request->validated());
             $borrow->keys()->sync($request->keys);
-            return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
     }
 
@@ -137,30 +137,40 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.update', $borrow);
 
-        /*
-         * Verifica se as chaves foi retirada na data de devolução
-         * e se as chaves que voltarão a ser emprestas já estão emprestadas
-         */
         if (is_null($request->devolution) && $borrow->devolution) {
-            $borrowed = Key::borrowed()->pluck('id')->toArray();
-
-            $filtered = array_reduce($borrowed, function($carry, $item) use ($request) {
-                if (in_array($item, $request->keys))
-                    return ++$carry;
-                return $carry;
-            });
-
-            if ($filtered)
-                return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Alguma das chaves já estão emprestada.']);
+            $this->keysBorrowed($request, $borrow);
         }
 
         try {
             $borrow->update($request->validated());
             $borrow->keys()->sync($request->keys);
-            return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @param Borrow $borrow
+     * @return RedirectResponse|void
+     */
+    private function keysBorrowed(Request $request, Borrow $borrow): ?RedirectResponse
+    {
+        /*
+         * Verifica se as chaves foi retirada na data de devolução
+         * e se as chaves que voltarão a ser emprestas já estão emprestadas
+         */
+        $borrowed = Key::borrowed()->pluck('id')->toArray();
+
+        $filtered = array_reduce($borrowed, function($carry, $item) use ($request) {
+            if (in_array($item, $request->keys))
+                return ++$carry;
+            return $carry;
+        });
+
+        if ($filtered)
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Alguma das chaves já estão emprestada.']);
     }
 
     /**
@@ -181,9 +191,9 @@ class BorrowController extends Controller
 
         try {
             $borrow->update(['devolution' => now(), 'received_by' => Auth::user()->id, 'returned_by' => $request->returned_by]);
-            return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
     }
 
@@ -200,9 +210,9 @@ class BorrowController extends Controller
 
         try {
             $borrow->delete();
-            return redirect()->route('borrows.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
+            return to_route('borrows.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
     }
 }

@@ -48,7 +48,10 @@ class Block extends Model
 
         return [
             'count' => $query->count(),
-            'data' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
+            'data' => $query->orderBy('description', 'ASC')
+                            ->select('id', 'description')
+                            ->paginate(env('APP_PAGINATION'))
+                            ->appends(['term' => $request->term]),
         ];
     }
 }
