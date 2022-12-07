@@ -164,6 +164,7 @@ class UserController extends Controller
         $this->authorize('users.update', $user);
 
         $data = $request->validated();
+        $data['password'] = Hash::make($request->password);
 
         try {
             $user->update($data);
@@ -186,6 +187,7 @@ class UserController extends Controller
         $this->authorize('users.update.password', $user);
 
         $data = $request->validated();
+        $data['password'] = Hash::make($request->password);
 
         try {
             $user->update($data);
