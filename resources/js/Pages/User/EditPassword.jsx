@@ -9,7 +9,7 @@ import Button from "@/Components/Form/Button";
 function EditPassword({ user }) {
     const { data, setData, put, processing, errors } = useForm({
         password: "",
-        confirm_password: "",
+        password_confirmation: "",
     });
 
     const onHandleChange = (event) => {
@@ -33,9 +33,9 @@ function EditPassword({ user }) {
                             <InputError message={errors.password} />
                         </div>
                         <div className="mb-4">
-                            <label htmlFor="confirm_password" className="font-light">Confirmação de senha</label>
-                            <Input type={'password'} value={data.confirm_password} name={'confirm_password'} handleChange={onHandleChange} required={true} placeholder="Digite a matricula" />
-                            <InputError message={errors.confirm_password} />
+                            <label htmlFor="password_confirmation" className="font-light">Confirmação de senha</label>
+                            <Input type={'password'} value={data.password_confirmation} name={'password_confirmation'} handleChange={onHandleChange} required={true} placeholder="Digite a matricula" />
+                            <InputError message={errors.password_confirmation} />
                         </div>
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
