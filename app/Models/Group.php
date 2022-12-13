@@ -47,6 +47,8 @@ class Group extends Model
         return [
             'count' => $query->count(),
             'data' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
+            'termSearch' => $request->term,
+            'page', $request->page,
         ];
     }
 }

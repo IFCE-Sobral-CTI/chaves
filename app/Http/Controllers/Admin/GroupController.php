@@ -24,18 +24,16 @@ class GroupController extends Controller
     {
         $this->authorize('groups.viewAny', Group::class);
 
-        $result = Group::search($request->term);
-
-        return Inertia::render('Group/Index', [
-            'groups' => $result['data'],
-            'count' => $result['count'],
-            'termSearch' => $request->term,
-            'page', $request->page,
-            'can' => [
-                'create' => Auth::user()->can('groups.create'),
-                'view' => Auth::user()->can('groups.view'),
-            ],
-        ]);
+        return Inertia::render('Group/Index', array_merge(
+            Group::search($request),
+            [
+                'can' => [
+                    'create' => Auth::user()->can('groups.create'),
+                    'view' => Auth::user()->can('groups.view'),
+                ],
+            ])
+        )
+        ;
     }
 
     /**
