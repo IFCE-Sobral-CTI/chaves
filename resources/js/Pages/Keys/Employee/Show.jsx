@@ -48,6 +48,14 @@ function Show({ employee, can }) {
                         <div className="">{employee.email}</div>
                     </div>
                     <div className="flex flex-col">
+                        <div className="text-sm font-light">E-mail Alternativa</div>
+                        <div className="">{employee.alternative_email ?? '-'}</div>
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="text-sm font-light">Telefone</div>
+                        <div className="">{employee.tel ?? '-'}</div>
+                    </div>
+                    <div className="flex flex-col">
                         <div className="text-sm font-light">Observações</div>
                         <div className="">{employee.observation?? '-'}</div>
                     </div>

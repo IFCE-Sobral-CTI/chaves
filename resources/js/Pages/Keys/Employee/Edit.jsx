@@ -13,6 +13,8 @@ function Edit({ employee, employeeType }) {
     const { data, setData, put, processing, errors } = useForm({
         name: employee.name,
         email: employee.email,
+        alternative_email: employee.alternative_email,
+        tel: employee.tel,
         registry: employee.registry,
         observation: employee.observation,
         valid_until: employee.valid_until? moment(employee.valid_until, 'DD/MM/YYYY').format('yyyy-MM-DD'): null,
@@ -60,6 +62,16 @@ function Edit({ employee, employeeType }) {
                             <label htmlFor="email" className="font-light">E-mail</label>
                             <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do mutuário" />
                             <InputError message={errors.email} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="alternative_email" className="font-light">E-mail Alternativo</label>
+                            <Input value={data.alternative_email} type={'email'} name={'alternative_email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail alternativo do mutuário" />
+                            <InputError message={errors.alternative_email} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="tel" className="font-light">Telefone</label>
+                            <Input value={data.tel} type={'tel'} name={'tel'} handleChange={onHandleChange} required={true} placeholder="Digite o telefone do mutuário" />
+                            <InputError message={errors.tel} />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="valid_until" className="font-light">Válido até</label>

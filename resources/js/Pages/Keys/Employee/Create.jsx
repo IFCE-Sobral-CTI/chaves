@@ -12,6 +12,8 @@ function Create({ employeeType }) {
     const { data, setData, post, processing, errors } = useForm({
         name: "",
         email: "",
+        alternative_email: "",
+        tel: "",
         registry: "",
         valid_until: "",
         observation: "",
@@ -59,6 +61,16 @@ function Create({ employeeType }) {
                             <label htmlFor="email" className="font-light">E-mail</label>
                             <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do mutuário" />
                             <InputError message={errors.email} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="alternative_email" className="font-light">E-mail Alternativo</label>
+                            <Input value={data.alternative_email} type={'email'} name={'alternative_email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail alternativo do mutuário" />
+                            <InputError message={errors.alternative_email} />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="tel" className="font-light">Telefone</label>
+                            <Input value={data.tel} type={'tel'} name={'tel'} handleChange={onHandleChange} required={true} placeholder="Digite o telefone do mutuário" />
+                            <InputError message={errors.tel} />
                         </div>
                         <div className="mb-4">
                             <label htmlFor="valid_until" className="font-light">Válido até</label>
