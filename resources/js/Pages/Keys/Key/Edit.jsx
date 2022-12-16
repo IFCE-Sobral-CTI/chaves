@@ -39,7 +39,7 @@ function Edit({ _key, rooms }) {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="description" className="font-light">Descrição</label>
-                            <Input value={data.description} name={'description'} handleChange={onHandleChange} required={true} placeholder="Digite a descrição da chave" />
+                            <Input value={data.description} name={'description'} handleChange={onHandleChange} required={false} placeholder="Digite a descrição da chave" />
                             <InputError message={errors.description} />
                         </div>
                         <div className="mb-4">

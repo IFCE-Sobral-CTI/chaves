@@ -21,7 +21,7 @@ function Show({ _key, can }) {
                     </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Descrição</div>
-                        <div className="">{_key.description}</div>
+                        <div className="">{_key.description?? '-'}</div>
                     </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Observações</div>

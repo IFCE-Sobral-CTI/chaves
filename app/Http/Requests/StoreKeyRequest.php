@@ -24,7 +24,7 @@ class StoreKeyRequest extends FormRequest
     public function rules()
     {
         return [
-            'description' => 'required|min:2',
+            'description' => 'nullable|min:2',
             'number' => 'required|integer',
             'observation' => 'nullable',
             'room_id' => 'exists:rooms,id',
