@@ -9,6 +9,7 @@ use App\Models\Block;
 use App\Models\Employee;
 use App\Models\Room;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +21,9 @@ class RoomController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return Response
+     * @throws AuthorizationException
      */
     public function index(Request $request): Response
     {
@@ -38,6 +41,7 @@ class RoomController extends Controller
      * Show the form for creating a new resource.
      *
      * @return Response
+     * @throws AuthorizationException
      */
     public function create(): Response
     {
@@ -52,8 +56,9 @@ class RoomController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  StoreRoomsRequest  $request
+     * @param StoreRoomRequest $request
      * @return RedirectResponse
+     * @throws AuthorizationException
      */
     public function store(StoreRoomRequest $request): RedirectResponse
     {
@@ -71,8 +76,9 @@ class RoomController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  Rooms  $rooms
+     * @param Room $room
      * @return Response
+     * @throws AuthorizationException
      */
     public function show(Room $room): Response
     {
@@ -90,8 +96,9 @@ class RoomController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  Rooms  $rooms
+     * @param Room $room
      * @return Response
+     * @throws AuthorizationException
      */
     public function edit(Room $room): Response
     {
@@ -107,9 +114,10 @@ class RoomController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  UpdateRoomsRequest  $request
-     * @param  Rooms  $rooms
+     * @param UpdateRoomRequest $request
+     * @param Room $room
      * @return RedirectResponse
+     * @throws AuthorizationException
      */
     public function update(UpdateRoomRequest $request, Room $room): RedirectResponse
     {
@@ -127,8 +135,9 @@ class RoomController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Rooms  $rooms
+     * @param Room $room
      * @return RedirectResponse
+     * @throws AuthorizationException
      */
     public function destroy(Room $room): RedirectResponse
     {

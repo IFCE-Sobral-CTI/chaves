@@ -176,8 +176,6 @@ class PermissionController extends Controller
         ]);
     }
 
-
-
     /**
      * Update rules the specified resource in storage.
      *

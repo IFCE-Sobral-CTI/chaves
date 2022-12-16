@@ -7,12 +7,19 @@ use App\Models\Borrow;
 use App\Models\Employee;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ReportController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * @param Request $request
+     * @return Response
+     * @throws AuthorizationException
+     */
+    public function index(Request $request): Response
     {
         $this->authorize('reports.viewAny');
 

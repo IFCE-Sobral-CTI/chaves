@@ -8,18 +8,23 @@ use App\Http\Requests\UpdateKeyRequest;
 use App\Models\Key;
 use App\Models\Room;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class KeyController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $this->authorize('keys.viewAny', Key::class);
 
@@ -34,9 +39,10 @@ class KeyController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function create()
+    public function create(): Response
     {
         $this->authorize('keys.create', Key::class);
 
@@ -48,10 +54,11 @@ class KeyController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreKeyRequest  $request
-     * @return \Illuminate\Http\Response
+     * @param StoreKeyRequest $request
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function store(StoreKeyRequest $request)
+    public function store(StoreKeyRequest $request): RedirectResponse
     {
         $this->authorize('keys.create', Key::class);
 
@@ -66,10 +73,11 @@ class KeyController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Key  $key
-     * @return \Illuminate\Http\Response
+     * @param Key $key
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function show(Key $key)
+    public function show(Key $key): Response
     {
         $this->authorize('keys.view', $key);
 
@@ -85,10 +93,11 @@ class KeyController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Key  $key
-     * @return \Illuminate\Http\Response
+     * @param Key $key
+     * @return Response
+     * @throws AuthorizationException
      */
-    public function edit(Key $key)
+    public function edit(Key $key): Response
     {
         $this->authorize('keys.update', $key);
 
@@ -101,11 +110,12 @@ class KeyController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateKeyRequest  $request
-     * @param  \App\Models\Key  $key
-     * @return \Illuminate\Http\Response
+     * @param UpdateKeyRequest $request
+     * @param Key $key
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function update(UpdateKeyRequest $request, Key $key)
+    public function update(UpdateKeyRequest $request, Key $key): RedirectResponse
     {
         $this->authorize('keys.update', $key);
 
@@ -120,11 +130,13 @@ class KeyController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Key  $key
-     * @return \Illuminate\Http\Response
+     * @param Key $key
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
-    public function destroy(Key $key)
+    public function destroy(Key $key): RedirectResponse
     {
+        $this->authorize('keys.delete', $key);
         try {
             $key->delete();
             return redirect()->route('keys.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
