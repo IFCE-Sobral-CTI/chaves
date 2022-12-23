@@ -13,11 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('borrows', function (Blueprint $table) {
+        Schema::create('receiveds', function (Blueprint $table) {
             $table->id();
-            $table->text('observation')->nullable();
-            $table->dateTime('devolution')->nullable();
-            $table->foreignId('employee_id')
+            $table->string('receiver');
+            $table->foreignId('borrow_id')
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
@@ -36,6 +35,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('borrows');
+        Schema::dropIfExists('receiveds');
     }
 };

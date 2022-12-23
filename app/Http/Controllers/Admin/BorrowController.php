@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBorrowRequest;
 use App\Http\Requests\UpdateBorrowRequest;
 use App\Models\Borrow;
+use App\Models\BorrowKey;
 use App\Models\Employee;
 use App\Models\Key;
+use App\Models\Received;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
@@ -89,7 +91,7 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.view', $borrow);
 
-        $borrow = Borrow::with(['employee', 'keys' => ['room'], 'user', 'receivedBy'])->find($borrow->id);
+        $borrow = Borrow::with(['employee', 'user', 'receivedBy', 'keys' => ['room'], 'received' => ['key' => ['room']]])->find($borrow->id);
 
         return Inertia::render('Keys/Borrow/Show', [
             'borrow' => $borrow,
@@ -142,7 +144,12 @@ class BorrowController extends Controller
         }
 
         try {
+            // Verifica se foi adicionado ou removido alguma chave
+            // if (array_diff($request->keys, $borrow->keys()->get()->pluck('id')->toArray()))
+            //     $borrow->update(array_merge($request->except(['devolution', 'received_by']), ['devolution' => null, 'received_by' => null]));
+            // else
             $borrow->update($request->validated());
+
             $borrow->keys()->sync($request->keys);
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
@@ -187,10 +194,22 @@ class BorrowController extends Controller
 
         $request->validate([
             'returned_by' => 'nullable|min:2',
+            'keys' => 'array',
+            'keys.*' => 'exists:keys,id',
         ]);
 
+        $received = Received::create([
+            'receiver' => $request->received_by,
+            'user_id' => Auth::user()->id,
+            'borrow_id' => $borrow->id,
+        ]);
+
+        $received->keys()->sync($request->keys);
+
         try {
-            $borrow->update(['devolution' => now(), 'received_by' => Auth::user()->id, 'returned_by' => $request->returned_by]);
+            if ($borrow->keys()->count() == $borrow->received->keys()->count())
+                $borrow->update(['devolution' => now(), 'received_by' => Auth::user()->id, 'returned_by' => $request->returned_by]);
+
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

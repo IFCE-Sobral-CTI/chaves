@@ -2,11 +2,12 @@ import 'tw-elements';
 import { useForm } from "@inertiajs/inertia-react";
 import Input from '@/Components/Form/Input';
 import InputError from '@/Components/InputError';
-import {useEffect, useRef} from "react";
+import { useEffect, useRef } from "react";
 
-export default function Receive({ url }) {
+export default function Receive({ url, keys, received }) {
     const { data, setData, put, processing, errors } = useForm({
-        returned_by: ""
+        returned_by: "",
+        keys: received.map(key => key.id),
     });
 
     const buttonRef = useRef(null);
@@ -16,6 +17,19 @@ export default function Receive({ url }) {
             document.querySelector('#button-submit').setAttribute('data-bs-dismiss', 'modal');
     }, [data.returned_by]);
 
+    const onHandleChange = (event) => {
+        const value = parseInt(event.target.value);
+        let [...list] = data.keys;
+
+        if (data.keys.includes(value)) {
+            list.splice(list.indexOf(value), 1);
+            setData('keys', [...list]);
+        } else {
+            list.push(value);
+            setData('keys', list);
+        }
+    }
+
     const submit = (e) => {
         e.preventDefault();
         put(url, {
@@ -24,15 +38,27 @@ export default function Receive({ url }) {
         });
     }
 
+    const items = keys.map((key, i) => {
+        return (
+            <div className="mb-2" key={i}>
+                <div className="flex gap-2">
+                    <input type="checkbox" value={key.id} id={key.id} onChange={onHandleChange} defaultChecked={false} className="w-5 h-5 bg-gray-100 border rounded-md text-green focus:ring-green-light" />
+                    <label className="text-sm" htmlFor={key.id}>{key.number} - {key.room.description}</label>
+                    <InputError message={errors.keys} />
+                </div>
+            </div>
+        );
+    });
+
     return (
         <>
             <button
                 type="button"
                 data-bs-toggle="modal"
                 data-bs-target="#giveBack-modal"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-md text-sm text-white tracking-widest transition ease-in-out duration-150 bg-green-light active:bg-green-dark hover:bg-green"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm tracking-widest text-white transition duration-150 ease-in-out border border-transparent rounded-md bg-green-light active:bg-green-dark hover:bg-green"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-5" viewBox="0 0 16 16">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                     <path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5z"/>
                     <path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                 </svg>
@@ -53,6 +79,14 @@ export default function Receive({ url }) {
                                     <label htmlFor="returned_by" className="font-light">Devolução</label>
                                     <Input value={data.returned_by} type={'text'} name={'returned_by'} handleChange={(e) => setData(e.target.name, e.target.value)} required={true} placeholder={'Quem entregou a(s) chave(s)?'} />
                                     <InputError message={errors.returned_by} />
+                                </div>
+                                <div className="font-light">Chaves</div>
+                                <div className="p-2 mb-4 border border-gray-400 rounded-md">
+                                    <div className="">
+                                        {items.length
+                                        ?items
+                                        :<span className='text-sm font-light'>Todas as chaves já foram devolvidas.</span>}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex flex-wrap items-center justify-end flex-shrink-0 p-4 border-t border-gray-200 modal-footer rounded-b-md">

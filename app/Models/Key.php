@@ -35,6 +35,11 @@ class Key extends Model
         return $this->belongsToMany(Borrow::class);
     }
 
+    public function received(): BelongsToMany
+    {
+        return $this->belongsToMany(Received::class);
+    }
+
     public function scopeBorrowed(Builder $query): Builder
     {
         return $query->whereHas('borrows', function($query) {

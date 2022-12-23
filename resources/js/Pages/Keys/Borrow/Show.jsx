@@ -7,6 +7,21 @@ import DeleteModal from "@/Components/Dashboard/DeleteModal";
 import Receive from "./Components/Receive";
 
 function Show({ borrow, can }) {
+    console.log("Borrow", borrow);
+
+    const table = () => {
+        return borrow.received.map((item, i) => {
+            return (
+                <tr className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')} key={i}>
+                    <td className="px-1 py-3 font-light">{item.created_at}</td>
+                    <td className="px-1 py-3 font-light">{item.quantity}</td>
+                    <td className="px-1 py-3 font-light">{item.unit}</td>
+                    <td className="px-1 py-3 font-light">{item.price}</td>
+                    <td className="px-1 py-3 font-light">{item.total}</td>
+                </tr>
+        )});
+    };
+
     return (
         <>
             <Head title="Detalhes da Sala" />
@@ -21,22 +36,6 @@ function Show({ borrow, can }) {
                         <div className="">{borrow.observation?? '-'}</div>
                     </div>
                     <div className="flex flex-col">
-                        <div className="text-sm font-light">Entregue por</div>
-                        <div className="">{borrow.user.name}</div>
-                    </div>
-                    <div className="flex flex-col">
-                        <div className="text-sm font-light">Devolução</div>
-                        <div className="">{borrow.devolution?? '-'}</div>
-                    </div>
-                    <div className="flex flex-col">
-                        <div className="text-sm font-light">Recebido por</div>
-                        <div className="">{borrow.received_by?.name?? '-'}</div>
-                    </div>
-                    <div className="flex flex-col">
-                        <div className="text-sm font-light">Devolvida por</div>
-                        <div className="">{borrow.returned_by?? '-'}</div>
-                    </div>
-                    <div className="flex flex-col">
                         <div className="text-sm font-light">Criado em</div>
                         <div className="">{borrow.created_at}</div>
                     </div>
@@ -46,7 +45,7 @@ function Show({ borrow, can }) {
                     </div>
                 </Panel>
                 <Panel>
-                    <h3 className="text-lg font-semibold">Chaves</h3>
+                    <h3 className="mb-2 text-lg font-semibold text-gray-600 border-b border-gray-400">Chaves Emprestadas</h3>
                     <div className="flex flex-wrap gap-4">
                         {borrow.keys.map((item, i) => {
                             return (
@@ -64,6 +63,25 @@ function Show({ borrow, can }) {
                         })}
                     </div>
                 </Panel>
+                <Panel>
+                    <h3 className="text-lg font-semibold text-gray-600 border-b border-gray-400">Chaves Devolvidas</h3>
+                    <div className="flex flex-wrap gap-4">
+                    <table className="w-full table-auto text-neutral-600">
+                        <thead>
+                            <tr className="border-b">
+                                <th className="px-1 pt-3 font-semibold text-left">Data</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Chave</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Sala</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Entregue por</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Recebido por</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {table}
+                        </tbody>
+                    </table>
+                    </div>
+                </Panel>
                 <Panel className={'flex flex-wrap items-center justify-center gap-1 md:gap-4'}>
                     <Button href={route('borrows.index')} className={'gap-2'}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
@@ -78,7 +96,7 @@ function Show({ borrow, can }) {
                         <span>Editar</span>
                     </Button>}
                     {can.delete && <DeleteModal url={route('borrows.destroy', borrow.id)} />}
-                    {(can.receive && !borrow.devolution) && <Receive url={route('borrows.receive', borrow.id)} />}
+                    {(can.receive && (!borrow.devolution)) && <Receive url={route('borrows.receive', borrow.id)} keys={borrow.keys} received={borrow.received} />}
                 </Panel>
             </AuthenticatedLayout>
         </>

@@ -13,9 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('employees', function (Blueprint $table) {
-            $table->string('tel', 20)->nullable();
-            $table->string('alternative_email')->nullable();
+        Schema::table('borrow_key', function (Blueprint $table) {
+            $table->boolean('received')->default(false);
         });
     }
 
@@ -26,9 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('employees', function (Blueprint $table) {
-            $table->dropColumn('tel');
-            $table->dropColumn('alternative_email');
+        Schema::table('borrow_key', function (Blueprint $table) {
+            $table->dropColumn('received');
         });
     }
 };

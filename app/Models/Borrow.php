@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -32,11 +33,9 @@ class Borrow extends Model
      */
     protected $fillable = [
         'devolution',
-        'returned_by',
         'observation',
         'employee_id',
         'user_id',
-        'received_by',
     ];
 
     /**
@@ -75,14 +74,6 @@ class Borrow extends Model
     /**
      * @return BelongsTo
      */
-    public function receivedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'received_by');
-    }
-
-    /**
-     * @return BelongsTo
-     */
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
@@ -95,6 +86,15 @@ class Borrow extends Model
     {
         return $this->belongsToMany(Key::class);
     }
+
+    /**
+     * @return HasMany
+     */
+    public function received(): HasMany
+    {
+        return $this->hasMany(Received::class);
+    }
+
 
     /**
      * Get loan data with optional search
