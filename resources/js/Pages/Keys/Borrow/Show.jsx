@@ -7,20 +7,24 @@ import DeleteModal from "@/Components/Dashboard/DeleteModal";
 import Receive from "./Components/Receive";
 
 function Show({ borrow, can }) {
-    console.log("Borrow", borrow);
 
-    const table = () => {
-        return borrow.received.map((item, i) => {
-            return (
-                <tr className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')} key={i}>
-                    <td className="px-1 py-3 font-light">{item.created_at}</td>
-                    <td className="px-1 py-3 font-light">{item.quantity}</td>
-                    <td className="px-1 py-3 font-light">{item.unit}</td>
-                    <td className="px-1 py-3 font-light">{item.price}</td>
-                    <td className="px-1 py-3 font-light">{item.total}</td>
-                </tr>
-        )});
-    };
+    const table = borrow.received.map((item, index) => {
+        return (
+            <tr className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')} key={index}>
+                <td className="px-1 py-3 font-light">{item.created_at}</td>
+                <td className="px-1 py-3 font-light">{item.receiver}</td>
+                <td className="px-1 py-3 font-light">{item.user.name}</td>
+                <td className="px-1 py-3 font-light">
+                    <div className="flex gap-1">
+                        {item.keys.map((item, i) => {
+                            return (
+                                <span className="px-1 ml-1 text-sm text-white rounded-md py-0.5 bg-green-light font-normal">{item.number}</span>
+                            )
+                        })}
+                    </div>
+                </td>
+            </tr>
+    )});
 
     return (
         <>
@@ -70,10 +74,9 @@ function Show({ borrow, can }) {
                         <thead>
                             <tr className="border-b">
                                 <th className="px-1 pt-3 font-semibold text-left">Data</th>
-                                <th className="px-1 pt-3 font-semibold text-left">Chave</th>
-                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Sala</th>
-                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Entregue por</th>
-                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Recebido por</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Devolvido por</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Usuário</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Chaves</th>
                             </tr>
                         </thead>
                         <tbody>

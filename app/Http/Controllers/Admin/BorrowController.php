@@ -91,7 +91,7 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.view', $borrow);
 
-        $borrow = Borrow::with(['employee', 'user', 'receivedBy', 'keys' => ['room'], 'received' => ['key' => ['room']]])->find($borrow->id);
+        $borrow = Borrow::with(['employee', 'user', 'keys' => ['room'], 'received' => ['keys' => ['room'], 'user']])->find($borrow->id);
 
         return Inertia::render('Keys/Borrow/Show', [
             'borrow' => $borrow,
@@ -198,13 +198,16 @@ class BorrowController extends Controller
             'keys.*' => 'exists:keys,id',
         ]);
 
-        $received = Received::create([
-            'receiver' => $request->received_by,
-            'user_id' => Auth::user()->id,
-            'borrow_id' => $borrow->id,
-        ]);
-
-        $received->keys()->sync($request->keys);
+        try {
+            $received = Received::create([
+                'receiver' => $request->returned_by,
+                'user_id' => Auth::user()->id,
+                'borrow_id' => $borrow->id,
+            ]);
+            $received->keys()->sync($request->keys);
+        } catch (Exception $e) {
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+        }
 
         try {
             if ($borrow->keys()->count() == $borrow->received->keys()->count())

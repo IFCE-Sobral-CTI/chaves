@@ -13,7 +13,9 @@ class Received extends Model
     use HasFactory;
 
     protected $fillable = [
-        'receiver'
+        'receiver',
+        'borrow_id',
+        'user_id',
     ];
 
     protected $casts = [
@@ -29,5 +31,10 @@ class Received extends Model
     public function keys(): BelongsToMany
     {
         return $this->belongsToMany(Key::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
