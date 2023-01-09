@@ -1,12 +1,37 @@
 import React from "react";
+import { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/inertia-react";
+import { useForm } from "@inertiajs/inertia-react";
 import Panel from "@/Components/Dashboard/Panel";
 import Button from "@/Components/Form/Button";
 import DeleteModal from "@/Components/Dashboard/DeleteModal";
 import Receive from "./Components/Receive";
 
 function Show({ borrow, can }) {
+    const [list, setList] = useState([]);
+    const { data, setData, put, processing, errors, reset } = useForm({
+        returned_by: "",
+        keys: [],
+    });
+
+    useEffect(() => {
+        borrow.received.map(item => {
+            return item.keys.map(k => {
+                setList([k.id, ...list])
+            });
+        });
+        console.log(list);
+    }, []);
+
+    const submit = (e) => {
+        e.preventDefault();
+        put(route('borrows.receive', borrow.id), {
+            data,
+            preserveScroll: true,
+            onSuccess: reset('keys', 'returned_by')
+        });
+    };
 
     const table = borrow.received.map((item, index) => {
         return (
@@ -18,7 +43,7 @@ function Show({ borrow, can }) {
                     <div className="flex gap-1">
                         {item.keys.map((item, i) => {
                             return (
-                                <span className="px-1 ml-1 text-sm text-white rounded-md py-0.5 bg-green-light font-normal">{item.number}</span>
+                                <span key={i} className="px-1 ml-1 text-sm text-white rounded-md py-0.5 bg-green-light font-normal">{item.number}</span>
                             )
                         })}
                     </div>
@@ -99,7 +124,7 @@ function Show({ borrow, can }) {
                         <span>Editar</span>
                     </Button>}
                     {can.delete && <DeleteModal url={route('borrows.destroy', borrow.id)} />}
-                    {(can.receive && (!borrow.devolution)) && <Receive url={route('borrows.receive', borrow.id)} keys={borrow.keys} received={borrow.received} />}
+                    {(can.receive && (!borrow.devolution)) && <Receive keys={borrow.keys} received={borrow.received} submit={submit} form={{data, setData, processing, errors}} />}
                 </Panel>
             </AuthenticatedLayout>
         </>

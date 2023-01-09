@@ -209,6 +209,8 @@ class BorrowController extends Controller
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
 
+
+
         try {
             if ($borrow->keys()->count() == $borrow->received->keys()->count())
                 $borrow->update(['devolution' => now(), 'received_by' => Auth::user()->id, 'returned_by' => $request->returned_by]);

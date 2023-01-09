@@ -1,53 +1,48 @@
 import 'tw-elements';
-import { useForm } from "@inertiajs/inertia-react";
 import Input from '@/Components/Form/Input';
 import InputError from '@/Components/InputError';
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function Receive({ url, keys, received }) {
-    const { data, setData, put, processing, errors } = useForm({
-        returned_by: "",
-        keys: received.map(key => key.id),
-    });
-
+export default function Receive({ url, keys, received, form, submit }) {
+    const [keysReceived, setKeysReceived] = useState(form.data.keys);
     const buttonRef = useRef(null);
 
     useEffect(() => {
-        if (data.returned_by !== '')
+        form.setData('keys', []);
+    }, []);
+
+    useEffect(() => {
+        if (form.data.returned_by !== '')
             document.querySelector('#button-submit').setAttribute('data-bs-dismiss', 'modal');
-    }, [data.returned_by]);
+    }, [form.data.returned_by]);
+
+    console.log(form.data.keys);
 
     const onHandleChange = (event) => {
         const value = parseInt(event.target.value);
-        let [...list] = data.keys;
+        let [...list] = form.data.keys;
 
-        if (data.keys.includes(value)) {
+        if (form.data.keys.includes(value)) {
             list.splice(list.indexOf(value), 1);
-            setData('keys', [...list]);
+            form.setData('keys', [...list]);
         } else {
             list.push(value);
-            setData('keys', list);
+            form.setData('keys', list);
         }
-    }
-
-    const submit = (e) => {
-        e.preventDefault();
-        put(url, {
-            data,
-            preserveScroll: true
-        });
+        console.log('Keys', form.data.keys);
     }
 
     const items = keys.map((key, i) => {
-        return (
-            <div className="mb-2" key={i}>
-                <div className="flex gap-2">
-                    <input type="checkbox" value={key.id} id={key.id} onChange={onHandleChange} defaultChecked={false} className="w-5 h-5 bg-gray-100 border rounded-md text-green focus:ring-green-light" />
-                    <label className="text-sm" htmlFor={key.id}>{key.number} - {key.room.description}</label>
-                    <InputError message={errors.keys} />
+        if (!keysReceived.includes(key.id))
+            return (
+                <div className="mb-2" key={i}>
+                    <div className="flex gap-2">
+                        <input type="checkbox" value={key.id} id={key.id} onChange={onHandleChange} defaultChecked={false} className="w-5 h-5 bg-gray-100 border rounded-md text-green focus:ring-green-light" />
+                        <label className="text-sm" htmlFor={key.id}>{key.number} - {key.room.description}</label>
+                        <InputError message={form.errors.keys} />
+                    </div>
                 </div>
-            </div>
-        );
+            );
     });
 
     return (
@@ -77,8 +72,8 @@ export default function Receive({ url, keys, received }) {
                             <div className="relative p-4 modal-body">
                                 <div className="mb-4">
                                     <label htmlFor="returned_by" className="font-light">Devolução</label>
-                                    <Input value={data.returned_by} type={'text'} name={'returned_by'} handleChange={(e) => setData(e.target.name, e.target.value)} required={true} placeholder={'Quem entregou a(s) chave(s)?'} />
-                                    <InputError message={errors.returned_by} />
+                                    <Input value={form.data.returned_by} type={'text'} name={'returned_by'} handleChange={(e) => form.setData(e.target.name, e.target.value)} required={true} placeholder={'Quem entregou a(s) chave(s)?'} />
+                                    <InputError message={form.errors.returned_by} />
                                 </div>
                                 <div className="font-light">Chaves</div>
                                 <div className="p-2 mb-4 border border-gray-400 rounded-md">
@@ -105,7 +100,7 @@ export default function Receive({ url, keys, received }) {
                                     ref={buttonRef}
                                     type="submit"
                                     className="flex items-centerk px-6 py-2.5 bg-green text-white font-light leading-tight rounded shadow-md hover:bg-green-dark hover:shadow-lg focus:bg-green-dark focus:shadow-lg focus:outline-none focus:ring-0 active:bg-red-800 active:shadow-lg transition duration-150 ease-in-out ml-1"
-                                    disabled={processing}
+                                    disabled={form.processing}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5 mr-3" role="img" aria-hidden="true" viewBox="0 0 16 16">
                                         <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
