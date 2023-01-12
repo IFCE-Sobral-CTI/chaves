@@ -36,6 +36,7 @@ class RuleSeeder extends Seeder
             ['description' => 'Atualizar', 'control' => 'borrows.update', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Apagar', 'control' => 'borrows.delete', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Receber chaves', 'control' => 'borrows.receive', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Apagar chaves recebidas', 'control' => 'borrows.receive.destroy', 'group_id' => $borrows->id, 'created_at' => now(), 'updated_at' => now()],
 
             ['description' => 'Página inicial', 'control' => 'keys.viewAny', 'group_id' => $keys->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Detalhar', 'control' => 'keys.view', 'group_id' => $keys->id, 'created_at' => now(), 'updated_at' => now()],

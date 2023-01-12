@@ -51,7 +51,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function() {
     Route::resource('rooms', RoomController::class);
     Route::resource('keys', KeyController::class);
     Route::resource('borrows', BorrowController::class);
-    Route::put('borrows/{borrow}/receive/keys', [BorrowController::class, 'receive'])->name('borrows.receive');
+    Route::post('borrows/{borrow}/receive/keys/{chaves}', [BorrowController::class, 'receive'])->name('borrows.receive');
+    Route::delete('borrows/{borrow}/receive/{received}/keys', [BorrowController::class, 'receiveDestroy'])->name('borrows.receive.destroy');
 
     Route::get('reports/index', [ReportController::class, 'index'])->name('reports.index');
 });

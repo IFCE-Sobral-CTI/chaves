@@ -49,13 +49,9 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.create', Borrow::class);
 
-        $keysInBorrows = Key::whereHas('borrows', function($query) {
-            return $query->where('devolution', null);
-        })->pluck('id')->toArray();
-
         return Inertia::render('Keys/Borrow/Create', [
             'employees' => Employee::select('id', 'registry', 'name')->where('valid_until', '>=', now())->orWhere('valid_until', null)->orderBy('name', 'ASC')->get(),
-            'keys' => Key::with('room')->whereNotIn('id', $keysInBorrows)->get(),
+            'keys' => Key::with('room')->whereNotIn('id', Borrow::keysInBorrow())->get(),
         ]);
     }
 
@@ -92,9 +88,11 @@ class BorrowController extends Controller
         $this->authorize('borrows.view', $borrow);
 
         $borrow = Borrow::with(['employee', 'user', 'keys' => ['room'], 'received' => ['keys' => ['room'], 'user']])->find($borrow->id);
+        $received = $borrow->receivedKeys();
 
         return Inertia::render('Keys/Borrow/Show', [
             'borrow' => $borrow,
+            'received' => array(...$borrow->receivedKeys()),
             'can' => [
                 'update' => Auth::user()->can('borrows.update'),
                 'delete' => Auth::user()->can('borrows.delete'),
@@ -162,7 +160,7 @@ class BorrowController extends Controller
      * @param Borrow $borrow
      * @return RedirectResponse|void
      */
-    private function keysBorrowed(Request $request, Borrow $borrow): ?RedirectResponse
+    private function keysBorrowed(Request $request, Borrow $borrow)
     {
         /*
          * Verifica se as chaves foi retirada na data de devolução
@@ -188,14 +186,14 @@ class BorrowController extends Controller
      * @throws AuthorizationException
      * @return RedirectResponse
      */
-    public function receive(Borrow $borrow, Request $request): RedirectResponse
+    public function receive(Borrow $borrow, Request $request, string $keys): RedirectResponse
     {
         $this->authorize('borrows.receive', $borrow);
 
         $request->validate([
-            'returned_by' => 'nullable|min:2',
-            'keys' => 'array',
-            'keys.*' => 'exists:keys,id',
+            'returned_by' => 'required|min:2',
+        ], [], [
+            'returned_by' => 'devolução'
         ]);
 
         try {
@@ -204,18 +202,28 @@ class BorrowController extends Controller
                 'user_id' => Auth::user()->id,
                 'borrow_id' => $borrow->id,
             ]);
-            $received->keys()->sync($request->keys);
+            $received->keys()->sync(explode('|', $keys));
         } catch (Exception $e) {
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }
 
-
-
         try {
-            if ($borrow->keys()->count() == $borrow->received->keys()->count())
+            if ($borrow->keys()->count() == count($borrow->receivedKeys()))
                 $borrow->update(['devolution' => now(), 'received_by' => Auth::user()->id, 'returned_by' => $request->returned_by]);
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
+        } catch (Exception $e) {
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function receiveDestroy(Borrow $borrow, Received $received): RedirectResponse
+    {
+        $this->authorize('borrows.received.delete', $borrow);
+
+        try {
+            $received->delete();
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         }

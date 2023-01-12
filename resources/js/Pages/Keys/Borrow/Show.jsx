@@ -1,37 +1,26 @@
 import React from "react";
-import { useEffect, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/inertia-react";
-import { useForm } from "@inertiajs/inertia-react";
 import Panel from "@/Components/Dashboard/Panel";
 import Button from "@/Components/Form/Button";
 import DeleteModal from "@/Components/Dashboard/DeleteModal";
 import Receive from "./Components/Receive";
 
-function Show({ borrow, can }) {
-    const [list, setList] = useState([]);
-    const { data, setData, put, processing, errors, reset } = useForm({
-        returned_by: "",
-        keys: [],
-    });
+function Show({ borrow, received, can }) {
 
-    useEffect(() => {
-        borrow.received.map(item => {
-            return item.keys.map(k => {
-                setList([k.id, ...list])
-            });
-        });
-        console.log(list);
-    }, []);
-
-    const submit = (e) => {
-        e.preventDefault();
-        put(route('borrows.receive', borrow.id), {
-            data,
-            preserveScroll: true,
-            onSuccess: reset('keys', 'returned_by')
-        });
-    };
+    const button = (
+        <button
+            type="button"
+            data-bs-toggle="modal"
+            data-bs-target="#delete-modal"
+            className="inline-flex items-center gap-2 p-1 text-sm tracking-widest text-white transition duration-150 ease-in-out bg-red-500 border border-transparent rounded-md active:bg-red-700 hover:bg-red-600"
+            title="Apagar"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" role="img" aria-hidden="true" viewBox="0 0 16 16">
+                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+            </svg>
+        </button>
+    );
 
     const table = borrow.received.map((item, index) => {
         return (
@@ -43,10 +32,19 @@ function Show({ borrow, can }) {
                     <div className="flex gap-1">
                         {item.keys.map((item, i) => {
                             return (
-                                <span key={i} className="px-1 ml-1 text-sm text-white rounded-md py-0.5 bg-green-light font-normal">{item.number}</span>
+                                <span
+                                    key={i}
+                                    className="px-1 ml-1 text-sm text-white rounded-md py-0.5 bg-green-light font-normal"
+                                    title={item.room.description}
+                                >
+                                    {item.number}
+                                </span>
                             )
                         })}
                     </div>
+                </td>
+                <td>
+                    <DeleteModal url={route('borrows.receive.destroy', {borrow: borrow.id, received: item.id})} button={button} />
                 </td>
             </tr>
     )});
@@ -54,7 +52,7 @@ function Show({ borrow, can }) {
     return (
         <>
             <Head title="Detalhes da Sala" />
-            <AuthenticatedLayout titleChildren={'Detalhes da Sala'} breadcrumbs={[{ label: 'Salas', url: route('borrows.index') }, { label: borrow.description, url: route('borrows.show', borrow.id) }]}>
+            <AuthenticatedLayout titleChildren={'Detalhes do Empréstimo'} breadcrumbs={[{ label: 'Empréstimo', url: route('borrows.index') }, { label: borrow.employee.name, url: route('borrows.show', borrow.id) }]}>
                 <Panel className={'flex flex-col gap-4'}>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Mutuário</div>
@@ -102,6 +100,7 @@ function Show({ borrow, can }) {
                                 <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Devolvido por</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Usuário</th>
                                 <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Chaves</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -124,7 +123,7 @@ function Show({ borrow, can }) {
                         <span>Editar</span>
                     </Button>}
                     {can.delete && <DeleteModal url={route('borrows.destroy', borrow.id)} />}
-                    {(can.receive && (!borrow.devolution)) && <Receive keys={borrow.keys} received={borrow.received} submit={submit} form={{data, setData, processing, errors}} />}
+                    {(can.receive && (!borrow.devolution)) && <Receive keys={borrow.keys} borrow={borrow} received={received} />}
                 </Panel>
             </AuthenticatedLayout>
         </>
@@ -132,4 +131,3 @@ function Show({ borrow, can }) {
 }
 
 export default Show;
-
