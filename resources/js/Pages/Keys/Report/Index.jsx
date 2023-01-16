@@ -18,8 +18,6 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
         situation: filters.situation,
     });
 
-    console.log("Data", data);
-
     const onHandleChange = (event) => {
         setData(event.target.name, event.target.value);
     };
@@ -45,18 +43,33 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
     }
 
     const list = borrows.data.map((borrow, i) => {
+        console.log('Received', borrow.received);
         return (
             <tr key={i} className={"border-t transition hover:bg-neutral-100 " + (i % 2 == 0? 'bg-neutral-50': '')}>
                 <td className="px-1 py-3 font-light">{borrow.created_at}</td>
                 <td className="px-1 py-3 font-light">{borrow.employee.name}</td>
                 <td className="px-1 py-3 font-light">{borrow.user.name}</td>
-                <td className="px-1 py-3 font-light">{borrow.received_by?.name?? '-'}</td>
-                <td className="px-1 py-3 font-light">{borrow.returned_by?? '-'}</td>
+                <td className="px-1 py-3 font-light">
+                    <div className="flex flex-wrap gap-2">
+                        {borrow.received.map((rec, i) => {
+                            return (
+                                <div key={'Key-' + i}>{rec.user.name}</div>
+                            )
+                        })}
+                    </div>
+                </td>
+                <td className="px-1 py-3 font-light">
+                    {borrow.received.map((rec, i) => {
+                        return (
+                            <div key={'Key-' + i}>{rec.receiver}</div>
+                        )
+                    })}
+                </td>
                 <td className="px-1 py-3 font-light">
                     <div className="flex flex-wrap gap-2">
                         {borrow.keys.map((key, i) => {
                             return (
-                                <span className="bg-sky-400 text-white text-sm px-1 font-semibold rounded-md transition hover:bg-sky-500">{key.number}</span>
+                                <span key={'Key-' + i} className="px-1 text-sm font-semibold text-white transition rounded-md bg-sky-400 hover:bg-sky-500">{key.number}</span>
                             )
                         })}
                     </div>
@@ -71,7 +84,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
             <AuthenticatedLayout titleChildren={'Relatórios'} breadcrumbs={[{ label: 'Relatórios', url: route('reports.index') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} className="flex items-end justify-between gap-4">
-                        <div className="w-1/3 border p-2 rounded-lg">
+                        <div className="w-1/3 p-2 border rounded-lg">
                             <div className="">Por data</div>
                             <div className="flex gap-2">
                                 <div className="flex-1">
@@ -86,12 +99,12 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="w-2/3 flex justify-between gap-4">
-                            <div className="flex-1 border p-2 rounded-lg">
+                        <div className="flex justify-between w-2/3 gap-4">
+                            <div className="flex-1 p-2 border rounded-lg">
                                 <div className="">Por Mutuário</div>
                                 <SelectEmployee value={data.employee} data={employees} onChange={(id) => setData('employee', id)}  error={errors.employee} />
                             </div>
-                            <div className="flex-1 border p-2 rounded-lg">
+                            <div className="flex-1 p-2 border rounded-lg">
                                 <div className="">Entregue por</div>
                                 <div className="">
                                     <label htmlFor="user" className="font-light">Usuário</label>
@@ -106,7 +119,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                                     <InputError message={errors.user} />
                                 </div>
                             </div>
-                            <div className="flex-1 border p-2 rounded-lg">
+                            <div className="flex-1 p-2 border rounded-lg">
                                 <div className="">Por Situação</div>
                                 <div className="">
                                     <label htmlFor="situation" className="font-light">Situação</label>
@@ -124,7 +137,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                             {filter
                             ?<div className="transition" title="Limpar filtro">
                                 <Button href={route('reports.index')} className={'gap-2 py-2.5'} processing={processing} color={'red'}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-5" viewBox="0 0 16 16">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                         <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                                         <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                                     </svg>
@@ -133,7 +146,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                             </div>
                             :null}
                             <Button type={'submit'} className={'gap-2 py-2.5'} processing={processing}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="h-5 w-5" viewBox="0 0 16 16">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                                 </svg>
                                 Buscar

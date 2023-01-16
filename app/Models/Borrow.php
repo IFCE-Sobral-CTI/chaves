@@ -171,7 +171,7 @@ class Borrow extends Model
      */
     public function scopeReportByDate(Builder $query, Request $request): array
     {
-        $query->with(['employee', 'keys', 'user', 'receivedBy']);
+        $query->with(['employee', 'keys', 'user', 'received' => ['keys', 'user']]);
 
         $this->filterByDate($query, $request);
         $this->filterBySituation($query, $request);
