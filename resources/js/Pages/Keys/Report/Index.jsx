@@ -45,8 +45,9 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
     const list = borrows.data.map((borrow, i) => {
         console.log('Received', borrow.received);
         return (
-            <tr key={i} className={"border-t transition hover:bg-neutral-100 " + (i % 2 == 0? 'bg-neutral-50': '')}>
+            <tr key={i} className={"border-t text-sm transition hover:bg-neutral-100 " + (i % 2 == 0? 'bg-neutral-50': '')}>
                 <td className="px-1 py-3 font-light">{borrow.created_at}</td>
+                <td className="px-1 py-3 font-light">{borrow.devolution}</td>
                 <td className="px-1 py-3 font-light">{borrow.employee.name}</td>
                 <td className="px-1 py-3 font-light">{borrow.user.name}</td>
                 <td className="px-1 py-3 font-light">
@@ -158,12 +159,13 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                     <table className="w-full table-auto text-neutral-600">
                         <thead>
                             <tr>
-                                <th></th>
+                                <th colSpan={2} className="px-1 pt-3 font-semibold text-center border-b">Datas</th>
                                 <th></th>
                                 <th colSpan={2} className="px-1 pt-3 font-semibold text-center border-b">Usuários</th>
                             </tr>
                             <tr>
-                                <th rowSpan={2} className="px-1 pt-3 font-semibold text-left">Data</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Entrega</th>
+                                <th className="px-1 pt-3 font-semibold text-left">Recebida</th>
                                 <th rowSpan={2} className="px-1 pt-3 font-semibold text-left">Mutuário</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Entregue por</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Recebido por</th>

@@ -31,6 +31,9 @@ function Index({ employees, count, page, termSearch, can }) {
             case 3:
                 name = 'Discente';
                 break;
+            case 4:
+                name = 'Externo';
+                break;
         };
 
         return (
@@ -43,8 +46,8 @@ function Index({ employees, count, page, termSearch, can }) {
             <tr key={index} className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')}>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>{item.registry}</Link></td>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>{item.name}</Link></td>
-                <td className="px-1 py-3 font-light hidden md:table-cell"><Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>{item.email}</Link></td>
-                <td className="px-1 py-3 font-light hidden md:table-cell"><Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>{employeeType(item.type)}</Link></td>
+                <td className="hidden px-1 py-3 font-light md:table-cell"><Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>{item.email}</Link></td>
+                <td className="hidden px-1 py-3 font-light md:table-cell"><Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>{employeeType(item.type)}</Link></td>
                 <td className="flex justify-end py-3 pr-2 text-neutral-400">
                     <Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
@@ -83,8 +86,8 @@ function Index({ employees, count, page, termSearch, can }) {
                             <tr className="border-b">
                                 <th className="px-1 pt-3 font-semibold text-left">Matricula</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Nome</th>
-                                <th className="px-1 pt-3 font-semibold text-left hidden md:table-cell">E-mail</th>
-                                <th className="px-1 pt-3 font-semibold text-left hidden md:table-cell">Classe</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">E-mail</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Vínculo</th>
                                 <th></th>
                             </tr>
                         </thead>

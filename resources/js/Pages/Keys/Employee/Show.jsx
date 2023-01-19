@@ -19,6 +19,9 @@ function Show({ employee, can }) {
             case 3:
                 name = 'Discente';
                 break;
+            case 4:
+                name = 'Externo';
+                break;
         };
 
         return (
@@ -32,7 +35,7 @@ function Show({ employee, can }) {
             <AuthenticatedLayout titleChildren={'Detalhes da Mutuário'} breadcrumbs={[{ label: 'Mutuários', url: route('employees.index') }, { label: employee.description, url: route('employees.show', employee.id) }]}>
                 <Panel className={'flex flex-col gap-4'}>
                     <div className="flex flex-col">
-                        <div className="text-sm font-light">Classe</div>
+                        <div className="text-sm font-light">Vínculo</div>
                         <div className="">{employeeType(employee.type)}</div>
                     </div>
                     <div className="flex flex-col">

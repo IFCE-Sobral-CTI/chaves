@@ -21,6 +21,14 @@ class Employee extends Model
     const EMPLOYEE = 1;
     const COLLABORATOR = 2;
     const STUDENT = 3;
+    const EXTERNAL = 4;
+
+    const TYPES = [
+        ['value' => Employee::EMPLOYEE, 'label' => 'Servidor'],
+        ['value' => Employee::COLLABORATOR, 'label' => 'Colaborador'],
+        ['value' => Employee::STUDENT, 'label' => 'Discente'],
+        ['value' => Employee::EXTERNAL, 'label' => 'Externo'],
+    ];
 
     /**
      * @var string[]

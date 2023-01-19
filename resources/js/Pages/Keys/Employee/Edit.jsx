@@ -37,9 +37,9 @@ function Edit({ employee, employeeType }) {
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="mb-4">
-                            <label htmlFor="type" className="font-light">Classe do Mutuário</label>
+                            <label htmlFor="type" className="font-light">Vínculo do Mutuário</label>
                             <Select value={data.type} name={'type'} handleChange={onHandleChange} required={true}>
-                                <option>Selecione uma classe</option>
+                                <option>Selecione um vínculo</option>
                                 {employeeType.map((item, index) => {
                                     return (
                                         <option value={item.value} key={index}>{item.label}</option>
@@ -65,7 +65,7 @@ function Edit({ employee, employeeType }) {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="alternative_email" className="font-light">E-mail Alternativo</label>
-                            <Input value={data.alternative_email} type={'email'} name={'alternative_email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail alternativo do mutuário" />
+                            <Input value={data.alternative_email} type={'email'} name={'alternative_email'} handleChange={onHandleChange} required={false} placeholder="Digite o e-mail alternativo do mutuário" />
                             <InputError message={errors.alternative_email} />
                         </div>
                         <div className="mb-4">
