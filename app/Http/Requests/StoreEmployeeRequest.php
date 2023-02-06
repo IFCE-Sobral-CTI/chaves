@@ -27,7 +27,7 @@ class StoreEmployeeRequest extends FormRequest
             'name' => 'required|min:3',
             'email' => 'required|email|unique:employees,email',
             'alternative_email' => 'nullable|email|unique:employees,alternative_email',
-            'tel' => 'nullable|digits_between:8,14',
+            'tel' => 'nullable|digits_between:8,20',
             'registry' => 'required|digits_between:3,20|unique:employees,registry',
             'observation' => 'nullable|min:3',
             'valid_until' => 'nullable|date',
