@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Http\Traits\CreatedAndUpdatedTimezone;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,17 +13,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Received extends Model
 {
-    use HasFactory;
+    use HasFactory, CreatedAndUpdatedTimezone;
 
     protected $fillable = [
         'receiver',
         'borrow_id',
         'user_id',
-    ];
-
-    protected $casts = [
-        'created_at' => 'datetime:d/m/Y H:i:s',
-        'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
 
     public function borrow(): BelongsTo

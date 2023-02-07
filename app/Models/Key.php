@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Http\Traits\CreatedAndUpdatedTimezone;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,18 +13,13 @@ use Illuminate\Http\Request;
 
 class Key extends Model
 {
-    use HasFactory;
+    use HasFactory, CreatedAndUpdatedTimezone;
 
     protected $fillable = [
         'description',
         'number',
         'observation',
         'room_id',
-    ];
-
-    protected $casts = [
-        'updated_at' => 'datetime:d/m/Y H:i:s',
-        'created_at' => 'datetime:d/m/Y H:i:s',
     ];
 
     public function room(): BelongsTo

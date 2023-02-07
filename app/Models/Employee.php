@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Http\Traits\CreatedAndUpdatedTimezone;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Employee extends Model
 {
-    use HasFactory;
+    use HasFactory, CreatedAndUpdatedTimezone;
 
     const EMPLOYEE = 1;
     const COLLABORATOR = 2;
@@ -45,13 +47,13 @@ class Employee extends Model
     ];
 
     /**
-     * @var string[]
+     * @param string $date
+     * @return string
      */
-    protected $casts = [
-        'created_at' => 'datetime:d/m/Y H:i:s',
-        'updated_at' => 'datetime:d/m/Y H:i:s',
-        'valid_until' => 'datetime:d/m/Y',
-    ];
+    public function getValidUntilAttribute(string $date): string
+    {
+        return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
+    }
 
     /**
      * @return HasMany

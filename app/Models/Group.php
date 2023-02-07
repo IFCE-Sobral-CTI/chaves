@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Http\Traits\CreatedAndUpdatedTimezone;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,21 +12,13 @@ use Illuminate\Http\Request;
 
 class Group extends Model
 {
-    use HasFactory;
+    use HasFactory, CreatedAndUpdatedTimezone;
 
     /**
      * @var string[]
      */
     protected $fillable = [
         'description',
-    ];
-
-    /**
-     * @var string[]
-     */
-    protected $casts = [
-        'created_at' => 'datetime:d/m/Y H:i:s',
-        'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
 
     /**

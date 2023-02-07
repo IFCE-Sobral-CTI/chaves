@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Traits\CreatedAndUpdatedTimezone;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,17 +16,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Rule extends Model
 {
-    use HasFactory;
+    use HasFactory, CreatedAndUpdatedTimezone;
 
     protected $fillable = [
         'description',
         'control',
         'group_id',
-    ];
-
-    protected $casts = [
-        'created_at' => 'datetime:d/m/Y H:i:s',
-        'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
 
     /**

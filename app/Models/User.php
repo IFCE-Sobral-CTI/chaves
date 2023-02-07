@@ -3,17 +3,19 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Http\Traits\CreatedAndUpdatedTimezone;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, CreatedAndUpdatedTimezone;
 
     const ACTIVE = 1;
     const INACTIVE = 0;
@@ -49,9 +51,16 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime:d/m/Y H:i:s',
-        'created_at' => 'datetime:d/m/Y H:i:s',
-        'updated_at' => 'datetime:d/m/Y H:i:s',
     ];
+
+    /**
+     * Returns the date in the defined timezone
+     */
+    public function getEmailVerifiedAtAttribute(string $date): string
+    {
+        return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
+    }
+
 
     public function borrows(): HasMany
     {

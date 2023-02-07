@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Traits\CreatedAndUpdatedTimezone;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +27,7 @@ use Illuminate\Support\Facades\DB;
  */
 class Borrow extends Model
 {
-    use HasFactory;
+    use HasFactory, CreatedAndUpdatedTimezone;
 
     /**
      * @var array $fillable
@@ -39,26 +40,9 @@ class Borrow extends Model
     ];
 
     /**
-     * @var array $casts
+     * Returns the date in the defined timezone
      */
-    protected $casts = [
-        'devolution' => 'datetime:d/m/Y H:i:s',
-    ];
-
-    /**
-     * @param string $date
-     * @return string
-     */
-    public function getCreatedAtAttribute(string $date): string
-    {
-        return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
-    }
-
-    /**
-     * @param string $date
-     * @return string
-     */
-    public function getUpdatedAtAttribute(string $date): string
+    public function getDevolutionAttribute(string $date): string
     {
         return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
     }
