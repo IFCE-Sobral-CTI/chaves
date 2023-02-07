@@ -50,9 +50,12 @@ class Employee extends Model
      * @param string $date
      * @return string
      */
-    public function getValidUntilAttribute(string $date): string
+    public function getValidUntilAttribute(string $date = null): ?string
     {
-        return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
+        if (is_null($date))
+            return null;
+
+        return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE'))->format('d/m/Y H:i:s');
     }
 
     /**

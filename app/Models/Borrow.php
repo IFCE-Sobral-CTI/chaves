@@ -42,9 +42,12 @@ class Borrow extends Model
     /**
      * Returns the date in the defined timezone
      */
-    public function getDevolutionAttribute(string $date): string
+    public function getDevolutionAttribute(string $date = null): ?string
     {
-        return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
+        if (is_null($date))
+            return null;
+
+        return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE'))->format('d/m/Y H:i:s');
     }
 
     /**

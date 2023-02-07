@@ -45,19 +45,13 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime:d/m/Y H:i:s',
-    ];
-
-    /**
      * Returns the date in the defined timezone
      */
-    public function getEmailVerifiedAtAttribute(string $date): string
+    public function getEmailVerifiedAtAttribute(string $date = null): ?string
     {
+        if (is_null($date))
+            return null;
+            
         return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
     }
 
