@@ -69,7 +69,7 @@ function Create({ employeeType }) {
                         </div>
                         <div className="mb-4">
                             <label htmlFor="tel" className="font-light">Telefone</label>
-                            <Input value={data.tel} type={'tel'} name={'tel'} handleChange={onHandleChange} required={true} placeholder="Digite o telefone do mutuário" />
+                            <Input value={data.tel} type={'tel'} name={'tel'} handleChange={onHandleChange} required={false} placeholder="Digite o telefone do mutuário" />
                             <InputError message={errors.tel} />
                         </div>
                         <div className="mb-4">
