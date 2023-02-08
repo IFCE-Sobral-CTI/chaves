@@ -63,12 +63,22 @@ function Show({ borrow, received, can }) {
                         <div className="">{borrow.observation?? '-'}</div>
                     </div>
                     <div className="flex flex-col">
-                        <div className="text-sm font-light">Criado em</div>
-                        <div className="">{borrow.created_at}</div>
+                        <div className="text-sm font-light">Entregue por</div>
+                        <div className="">{borrow.user.name?? '-'}</div>
                     </div>
-                    <div className="flex flex-col">
-                        <div className="text-sm font-light">Atualizado em</div>
-                        <div className="">{borrow.updated_at}</div>
+                    <div className="flex gap-4">
+                        <div className="flex flex-col flex-1">
+                            <div className="text-sm font-light">Devolvido em</div>
+                            <div className="">{borrow.devolution?? '-'}</div>
+                        </div>
+                        <div className="flex flex-col flex-1">
+                            <div className="text-sm font-light">Criado em</div>
+                            <div className="">{borrow.created_at}</div>
+                        </div>
+                        <div className="flex flex-col flex-1">
+                            <div className="text-sm font-light">Atualizado em</div>
+                            <div className="">{borrow.updated_at}</div>
+                        </div>
                     </div>
                 </Panel>
                 <Panel>

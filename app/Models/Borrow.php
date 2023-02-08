@@ -93,7 +93,10 @@ class Borrow extends Model
      */
     public function scopeSearch(Builder $query, Request $request): array
     {
-        $query->with(['employee', 'user', 'received'])->whereHas('employee', function(Builder $query) use ($request) {
+        if (!$request->term)
+            $query->where('devolution', null);
+
+        $query->with(['employee', 'user', 'received', 'keys' => ['room']])->whereHas('employee', function(Builder $query) use ($request) {
             $query->where('name', 'like', "%{$request->term}%")
                 ->orWhere('registry', 'like', "%{$request->term}%");
         });

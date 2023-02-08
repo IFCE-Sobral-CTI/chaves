@@ -39,11 +39,12 @@ function Index({ borrows, count, page, termSearch, can }) {
             <tr key={index} className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')}>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.created_at}</Link></td>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.employee.name}</Link></td>
-                <td className="px-1 py-3 font-light hidden md:table-cell"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.user.name.split(' ')[0]}</Link></td>
-                <td className="px-1 py-3 font-light hidden md:table-cell"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.devolution?? '-'}</Link></td>
-                <td className="px-1 py-3 font-light hidden md:table-cell"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.returned_by?? '-'}</Link></td>
+                <td className="hidden px-1 py-3 font-light md:table-cell"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.user.name.split(' ')[0]}</Link></td>
+                <td className="hidden px-1 py-3 font-light md:table-cell"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.keys.map((it, i) => {
+                    return <span className="px-1 mr-1 text-sm font-normal text-white rounded-md bg-sky-500" title={it.room.description}>{it.number}</span>
+                })}</Link></td>
                 <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{status(item.created_at, item.devolution)}</Link></td>
-                <td className="flex justify-end items-center py-3 pr-2 text-neutral-400">
+                <td className="flex items-center justify-end py-3 pr-2 text-neutral-400">
                     <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                             <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
@@ -81,9 +82,8 @@ function Index({ borrows, count, page, termSearch, can }) {
                             <tr className="border-b">
                                 <th className="px-1 pt-3 font-semibold text-left">Data</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Mutuário</th>
-                                <th className="px-1 pt-3 font-semibold text-left hidden md:table-cell">Entregue por</th>
-                                <th className="px-1 pt-3 font-semibold text-left hidden md:table-cell">Devolução</th>
-                                <th className="px-1 pt-3 font-semibold text-left hidden md:table-cell">Devolvido por</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Entregue por</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Chaves</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Situação</th>
                                 <th></th>
                             </tr>
