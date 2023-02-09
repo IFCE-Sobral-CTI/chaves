@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @method static search(Request $request)[]
@@ -27,7 +29,7 @@ use Illuminate\Support\Facades\DB;
  */
 class Borrow extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone;
+    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
 
     /**
      * @var array $fillable
@@ -38,6 +40,22 @@ class Borrow extends Model
         'employee_id',
         'user_id',
     ];
+
+    /**
+     * @return LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'devolution',
+                'observation',
+                'employee.name',
+                'user.name',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * Returns the date in the defined timezone

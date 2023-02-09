@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\KeyController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\BorrowController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ActivityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function() {
     Route::delete('borrows/{borrow}/receive/{received}/keys', [BorrowController::class, 'receiveDestroy'])->name('borrows.receive.destroy');
 
     Route::get('reports/index', [ReportController::class, 'index'])->name('reports.index');
+
+    Route::resource('activities', ActivityController::class)->only(['index', 'show', 'destroy']);
 });
 
 require __DIR__.'/auth.php';

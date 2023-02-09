@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @method search(mixed $term)
@@ -16,13 +18,28 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Rule extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone;
+    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
 
     protected $fillable = [
         'description',
         'control',
         'group_id',
     ];
+
+    /**
+     * @return LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'description',
+                'control',
+                'group.description'
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * @return BelongsToMany

@@ -126,6 +126,21 @@ class RoomController extends Controller
         try {
             $room->update($request->validated());
             $room->employees()->sync($request->employees);
+            // Cria um log caso haja algum relacionamento com um servidor
+            if ($request->employees) {
+                $properties = function(Request $request) {
+                    $employees = Employee::whereIn('id', $request->employees)->get()->map(function($item) {
+                        return $item->name;
+                    })->toArray();
+                    return ['Servidores' => implode(' - ', $employees)];
+                };
+
+                activity()
+                    ->by(Auth::user())
+                    ->on($room)
+                    ->withProperty('attributes', $properties($request))
+                    ->log('updated');
+            }
             return redirect()->route('rooms.show', $room)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('rooms.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

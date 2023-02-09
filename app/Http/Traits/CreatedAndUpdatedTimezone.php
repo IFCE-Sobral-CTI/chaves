@@ -11,7 +11,7 @@ trait CreatedAndUpdatedTimezone
      */
     public function getCreatedAtAttribute(string $date): string
     {
-        return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE'))->format('d/m/Y H:i:s');
+        return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE', 'UTC'))->format('d/m/Y H:i:s');
     }
 
     /**
@@ -19,6 +19,6 @@ trait CreatedAndUpdatedTimezone
      */
     public function getUpdatedAtAttribute(string $date): string
     {
-        return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE'))->format('d/m/Y H:i:s');
+        return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE', 'UTC'))->format('d/m/Y H:i:s');
     }
 }

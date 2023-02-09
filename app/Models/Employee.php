@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @method search(string $term)
@@ -18,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Employee extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone;
+    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
 
     const EMPLOYEE = 1;
     const COLLABORATOR = 2;
@@ -45,6 +47,26 @@ class Employee extends Model
         'observation',
         'type',
     ];
+
+    /**
+     * @return LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'name',
+                'registry',
+                'email',
+                'alternative_email',
+                'tel',
+                'valid_until',
+                'observation',
+                'type',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * @param string $date

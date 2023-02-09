@@ -12,10 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\CausesActivity;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, CreatedAndUpdatedTimezone;
+    use HasApiTokens, HasFactory, Notifiable, CreatedAndUpdatedTimezone, LogsActivity, CausesActivity;
 
     const ACTIVE = 1;
     const INACTIVE = 0;
@@ -51,10 +54,25 @@ class User extends Authenticatable
     {
         if (is_null($date))
             return null;
-            
+
         return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
     }
 
+    /**
+     * @return LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'name',
+                'email',
+                'registry',
+                'permission.name'
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     public function borrows(): HasMany
     {

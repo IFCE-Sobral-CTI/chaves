@@ -26,6 +26,7 @@ class RuleSeeder extends Seeder
         $keys = Group::firstOrCreate(['description' => 'Chaves']);
         $borrows = Group::firstOrCreate(['description' => 'Empréstimos']);
         $reports = Group::firstOrCreate(['description' => 'Relatórios']);
+        $activities = Group::firstOrCreate(['description' => 'Logs']);
 
         $data = [
             ['description' => 'Página inicial', 'control' => 'reports.viewAny', 'group_id' => $reports->id, 'created_at' => now(), 'updated_at' => now()],
@@ -88,6 +89,9 @@ class RuleSeeder extends Seeder
             ['description' => 'Atualizar', 'control' => 'permissions.update', 'group_id' => $permissions->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Apagar', 'control' => 'permissions.delete', 'group_id' => $permissions->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Modificar regras', 'control' => 'permissions.rules', 'group_id' => $permissions->id, 'created_at' => now(), 'updated_at' => now()],
+
+            ['description' => 'Página inicial', 'control' => 'activities.viewAny', 'group_id' => $reports->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Detalhes', 'control' => 'activities.view', 'group_id' => $activities->id, 'created_at' => now(), 'updated_at' => now()],
         ];
 
         Rule::insert($data);

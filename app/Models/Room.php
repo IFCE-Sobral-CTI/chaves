@@ -10,16 +10,33 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Room extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone;
+    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
 
     protected $fillable = [
         'description',
         'observation',
         'block_id',
     ];
+
+    /**
+     * @return LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'description',
+                'observation',
+                'block.description'
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     public function block(): BelongsTo
     {

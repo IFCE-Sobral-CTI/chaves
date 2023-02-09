@@ -149,6 +149,21 @@ class BorrowController extends Controller
             $borrow->update($request->validated());
 
             $borrow->keys()->sync($request->keys);
+            // Cria um log separado para alterações nas chaves
+            if ($request->keys) {
+                $properties = function(Request $request) {
+                    $keys = Key::whereIn('id', $request->keys)->get()->map(function($item) {
+                        return $item->number;
+                    })->toArray();
+                    return ['Chaves' => implode(' - ', $keys)];
+                };
+
+                activity()
+                    ->by(Auth::user())
+                    ->on($borrow)
+                    ->withProperty('attributes', $properties($request))
+                    ->log('updated');
+            }
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @method static search(mixed $term)
@@ -14,11 +16,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Permission extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone;
+    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
 
     protected $fillable = [
         'description',
     ];
+
+    /**
+     * @return LogOptions
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'description',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     /**
      * @return BelongsToMany

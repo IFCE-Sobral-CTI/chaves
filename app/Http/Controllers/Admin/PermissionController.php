@@ -167,7 +167,7 @@ class PermissionController extends Controller
     public function rules(Permission $permission): Response
     {
         $this->authorize('permissions.rules', $permission);
-        
+
         $permission = Permission::with('rules')->find($permission->id);
 
         return Inertia::render('Permission/Rules', [
@@ -190,6 +190,17 @@ class PermissionController extends Controller
 
         try {
             $permission->rules()->sync($request->rules);
+            $properties = function(Request $request) {
+                $rules = Rule::with('group')->whereIn('id', $request->rules)->get()->map(function($item) {
+                    return $item->group->description.' - '.$item->description;
+                });
+                return ['rules' => implode('|', $rules->toArray())];
+            };
+            activity()
+                ->by(Auth::user())
+                ->on($permission)
+                ->withProperty('attributes', $properties($request))
+                ->log('updated');
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
