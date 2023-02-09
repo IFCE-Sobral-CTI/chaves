@@ -24,8 +24,8 @@ class ReportController extends Controller
         $this->authorize('reports.viewAny');
 
         $request->validate([
-            'start' => 'nullable|date|before:'.now()->format('Y-m-d'),
-            'end' => 'nullable|date|after:start',
+            'start' => 'nullable|date|before_or_equal:'.now()->format('Y-m-d'),
+            'end' => 'nullable|date|after_or_equal:start',
             'employee' => 'nullable|exists:employees,id',
             'user' => 'nullable|exists:users,id',
             'situation' => 'nullable|in:1,2,3'
