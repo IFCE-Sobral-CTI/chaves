@@ -55,9 +55,9 @@ class Group extends Model
 
         return [
             'count' => $query->count(),
-            'groups' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
+            'groups' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term?? '', 'page' => $request->page?? 1]),
             'termSearch' => $request->term,
-            'page', $request->page,
+            'page' => $request->page?? 1,
         ];
     }
 }

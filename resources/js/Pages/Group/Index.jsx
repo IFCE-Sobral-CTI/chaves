@@ -6,13 +6,14 @@ import { Link } from "@inertiajs/inertia-react";
 import React, { useEffect, useState } from "react";
 
 function Index({ groups, count, page, termSearch, can }) {
+    console.log(page);
     const [term, setTerm] = useState(termSearch?? '');
     const [currentPage, setCurrentPage] = useState(page);
 
     useEffect(() => {
         const debounce = setTimeout(() => {
             setCurrentPage(1);
-            Inertia.get(route(route().current()), {term: term, page: currentPage}, {preserveState: true, replace: true});
+            Inertia.get(route(route().current()), {term: term??'', page: currentPage?? 1}, {preserveState: true, replace: true});
         }, 300);
 
         return () => clearTimeout(debounce);
