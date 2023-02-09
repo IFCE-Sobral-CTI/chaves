@@ -43,7 +43,6 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
     }
 
     const list = borrows.data.map((borrow, i) => {
-        console.log('Received', borrow.received);
         return (
             <tr key={i} className={"border-t text-sm transition hover:bg-neutral-100 " + (i % 2 == 0? 'bg-neutral-50': '')}>
                 <td className="px-1 py-3 font-light">{borrow.created_at}</td>

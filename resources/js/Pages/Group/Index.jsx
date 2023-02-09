@@ -6,7 +6,6 @@ import { Link } from "@inertiajs/inertia-react";
 import React, { useEffect, useState } from "react";
 
 function Index({ groups, count, page, termSearch, can }) {
-    console.log(page);
     const [term, setTerm] = useState(termSearch?? '');
     const [currentPage, setCurrentPage] = useState(page);
 

@@ -6,7 +6,6 @@ import Button from "@/Components/Form/Button";
 import DeleteModal from "@/Components/Dashboard/DeleteModal";
 
 function Show({ rule, can }) {
-    console.log(rule);
     return (
         <>
             <Head title="Detalhes do usuário" />

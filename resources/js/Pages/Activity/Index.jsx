@@ -10,8 +10,6 @@ function Index({ activities, count, page, termSearch, can }) {
     const [term, setTerm] = useState(termSearch?? '');
     const [currentPage, setCurrentPage] = useState(page);
 
-    // console.log(activities.data);
-
     useEffect(() => {
         const debounce = setTimeout(() => {
             setCurrentPage(1);
