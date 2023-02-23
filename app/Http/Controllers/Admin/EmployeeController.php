@@ -31,8 +31,8 @@ class EmployeeController extends Controller
 
         return Inertia::render('Keys/Employee/Index', array_merge($result, [
             'can' => [
-                'create' => Auth::user()->can('blocks.create'),
-                'view' => Auth::user()->can('blocks.view'),
+                'create' => Auth::user()->can('employees.create'),
+                'view' => Auth::user()->can('employees.view'),
             ]
         ]));
     }
@@ -85,8 +85,8 @@ class EmployeeController extends Controller
         return Inertia::render('Keys/Employee/Show', [
             'employee' => $employee,
             'can' => [
-                'update' => Auth::user()->can('blocks.update'),
-                'delete' => Auth::user()->can('blocks.delete'),
+                'update' => Auth::user()->can('employees.update'),
+                'delete' => Auth::user()->can('employees.delete'),
             ]
         ]);
     }
