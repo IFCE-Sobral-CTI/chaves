@@ -90,7 +90,7 @@ class RuleSeeder extends Seeder
             ['description' => 'Apagar', 'control' => 'permissions.delete', 'group_id' => $permissions->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Modificar regras', 'control' => 'permissions.rules', 'group_id' => $permissions->id, 'created_at' => now(), 'updated_at' => now()],
 
-            ['description' => 'Página inicial', 'control' => 'activities.viewAny', 'group_id' => $reports->id, 'created_at' => now(), 'updated_at' => now()],
+            ['description' => 'Página inicial', 'control' => 'activities.viewAny', 'group_id' => $activities->id, 'created_at' => now(), 'updated_at' => now()],
             ['description' => 'Detalhes', 'control' => 'activities.view', 'group_id' => $activities->id, 'created_at' => now(), 'updated_at' => now()],
         ];
 
