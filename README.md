@@ -49,7 +49,7 @@ A instalação(local) desse sistema é bem simples, bastando apenas seguir os pa
 5. Execute o projeto.
 
     ```sh
-    ./vendor/bin/sail up -d && npm run build
+    ./vendor/bin/sail up -d
     ```
 
 6. Instale as bibliotecas javascript
