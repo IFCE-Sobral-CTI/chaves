@@ -40,22 +40,22 @@ A instalação(local) desse sistema é bem simples, bastando apenas seguir os pa
         composer install --ignore-platform-reqs
     ```
 
-4. Instale as bibliotecas javascript
-
-    ```sh
-    npm install
-    ```
-
-5. Faça a cópia do arquivos ```.env.example``` para ```.env``` e preencha com os dados de acesso ao banco de dados e demais configurações.
+4. Faça a cópia do arquivos ```.env.example``` para ```.env``` e preencha com os dados de acesso ao banco de dados e demais configurações.
 
     ```sh
     cp .env.example .env
     ```
 
-6. Execute o projeto.
+5. Execute o projeto.
 
     ```sh
     ./vendor/bin/sail up -d && npm run build
+    ```
+
+6. Instale as bibliotecas javascript
+
+    ```sh
+    ./vendor/bin/sail npm install && ./vendor/bin/sail npm build
     ```
 
 7. Povoe o banco de dados.
