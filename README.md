@@ -64,7 +64,13 @@ A instalação(local) desse sistema é bem simples, bastando apenas seguir os pa
     ./vendor/bin/sail artisan migrate:fresh --seed
     ```
 
-8. Para acessar o sistema.
+8. Gere a chave de segurança.
+
+    ```sh
+    ./vendor/bin/sail artisan key:generate
+    ```
+
+9. Para acessar o sistema.
 
 * Endereço: [http://localhost/](http://localhost/)
 * Dados de acesso:
