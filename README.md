@@ -55,7 +55,7 @@ A instalação(local) desse sistema é bem simples, bastando apenas seguir os pa
 6. Execute o projeto.
 
     ```sh
-    ./vendor/bin/sail up -d && npm run dev
+    ./vendor/bin/sail up -d && npm run build
     ```
 
 7. Povoe o banco de dados.
