@@ -35,14 +35,14 @@ export default function Search({ data, onChange, values = [], error = '' }) {
     const items = list.map((item, i) => {
         if (!add.includes(item.id))
             return (
-                <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={i} />
+                <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={i} icon="add" />
             )
     });
 
     const itemsAdd = data.map((item, i) => {
         if (add.includes(item.id))
             return (
-                <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={i} />
+                <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={i} icon="rem" />
             )
     });
 
