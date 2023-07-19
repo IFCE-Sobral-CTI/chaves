@@ -44,7 +44,7 @@ function Show({ borrow, received, can }) {
                     </div>
                 </td>
                 <td>
-                    <DeleteModal url={route('borrows.receive.destroy', {borrow: borrow.id, received: item.id})} button={button} />
+                    <DeleteModal url={route('borrows.receive.destroy', {borrow: borrow.id, received: item.id})} button={button} forTable />
                 </td>
             </tr>
     )});

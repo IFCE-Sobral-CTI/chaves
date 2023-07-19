@@ -37,13 +37,33 @@ function Index({ borrows, count, page, termSearch, can }) {
     const table = borrows.data.map((item, index) => {
         return (
             <tr key={index} className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')}>
-                <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.created_at}</Link></td>
-                <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.employee.name}</Link></td>
-                <td className="hidden px-1 py-3 font-light md:table-cell"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.user.name.split(' ')[0]}</Link></td>
-                <td className="hidden px-1 py-3 font-light md:table-cell"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.keys.map((it, i) => {
-                    return <span className="px-1 mr-1 text-sm font-normal text-white rounded-md bg-sky-500" title={it.room.description}>{it.number}</span>
-                })}</Link></td>
-                <td className="px-1 py-3 font-light"><Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{status(item.created_at, item.devolution)}</Link></td>
+                <td className="px-1 py-3 font-light">
+                    <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
+                        {item.created_at}
+                    </Link>
+                </td>
+                <td className="px-1 py-3 font-light">
+                    <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
+                        {item.employee.name}
+                    </Link>
+                </td>
+                <td className="hidden px-1 py-3 font-light md:table-cell">
+                    <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
+                        {item.user.name.split(' ')[0]}
+                    </Link>
+                </td>
+                <td className="hidden px-1 py-3 font-light md:table-cell">
+                    <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
+                        {item.keys.map((it, i) => {
+                            return <span className="px-1 mr-1 text-sm font-normal text-white rounded-md bg-sky-500" title={it.room.description} key={i}>{it.number}</span>
+                        })}
+                    </Link>
+                </td>
+                <td className="px-1 py-3 font-light">
+                    <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
+                        {status(item.created_at, item.devolution)}
+                    </Link>
+                </td>
                 <td className="flex items-center justify-end py-3 pr-2 text-neutral-400">
                     <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
