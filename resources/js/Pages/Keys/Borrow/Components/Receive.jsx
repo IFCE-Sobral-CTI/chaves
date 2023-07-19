@@ -8,7 +8,7 @@ import {
 import Input from '@/Components/Form/Input';
 import InputError from '@/Components/InputError';
 
-export default function DeleteModal({ borrow, keys, received }) {
+export default function Receive({ borrow, keys, received }) {
     const [idRand] = useState(`modal-${uuidv4()}`);
     const [keysReceived, setKeysReceived] = useState(received);
     const [chaves, setChaves] = useState([]);
