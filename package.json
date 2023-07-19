@@ -26,6 +26,7 @@
         "moment": "^2.29.4",
         "react-google-charts": "^4.0.0",
         "react-tailwindcss-select": "^1.3.3",
-        "tw-elements": "^1.0.0-alpha12"
+        "tw-elements": "^1.0.0-alpha12",
+        "uuid": "^9.0.0"
     }
 }
