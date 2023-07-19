@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "@inertiajs/inertia-react";
-import 'tw-elements';
+import {
+    Collapse,
+    initTE,
+} from "tw-elements";
 
 function Sidebar({ can }) {
     const [width, setWidth] = useState(window.innerWidth);
+    const teInitialized = useRef(false);
 
-    const [accessCollapse, setAccessCollapse] = useState(
+    const [accessCollapse] = useState(
         route().current('users.*') ||
         route().current('permissions.*') ||
         route().current('rules.*') ||
@@ -20,12 +24,21 @@ function Sidebar({ can }) {
     }
 
     useEffect(() => {
+        initTE({ Collapse });
+    }, []);
+
+    useEffect(() => {
         setWidth(window.innerWidth);
     }, [window.innerWidth]);
 
     return (
         <>
-            <nav id="sidebar" className={"collapse collapse-horizontal mr-2 p-2 " + (width >= 1024? 'show': '')}>
+            <nav
+                id="sidebar"
+                className={"mr-2 p-2 " + (width >= 1024? '': '!visible hidden')}
+                data-te-collapse-item
+                data-te-collapse-horizontal
+            >
             {/* <nav id="sidebar" className={"mr-2 p-2"}> */}
                 <div className="flex flex-col w-48 gap-3 md:w-64">
                     <Link
@@ -104,8 +117,9 @@ function Sidebar({ can }) {
                                     : ''
                                 ) + `text-gray-600 p-3 rounded-lg hover:bg-white hover:shadow-md transition flex items-center gap-4 focus:ring-0`}
                             type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#accessCollapse"
+
+                            data-te-collapse-init
+                            data-te-target="#accessCollapse"
                             aria-expanded="false"
                             aria-controls="accessCollapse"
                             onClick={toggleChevronAccess}
@@ -128,8 +142,9 @@ function Sidebar({ can }) {
                             </span>
                         </button>
                         <div
-                            className={'flex flex-col gap-1 collapse pl-2 ' + (chevronAccess? 'show': '')}
+                            className={'flex flex-col gap-1 pl-2 ' + (chevronAccess? '': '!visible hidden')}
                             id="accessCollapse"
+                            data-te-collapse-item
                         >
                             {can.users_viewAny && <Link
                                 href={route('users.index', {term: '', page: 1})}
