@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Models\Employee;
+use App\Models\Key;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
@@ -83,7 +84,8 @@ class EmployeeController extends Controller
         $this->authorize('employees.view', $employee);
 
         return Inertia::render('Keys/Employee/Show', [
-            'employee' => $employee,
+            'employee' => $employee->load(['borrowable_keys' => ['room']]),
+            'keys' => Key::getForSelect(),
             'can' => [
                 'update' => $request->user()->can('employees.update'),
                 'delete' => $request->user()->can('employees.delete'),
