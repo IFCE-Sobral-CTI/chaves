@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\Request;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -101,9 +102,10 @@ class Employee extends Model
      * @param $request
      * @return array
      */
-    public function scopeSearch($query, $request)
+    public function scopeSearch(Builder $query, Request $request)
     {
-        $query->where('name', 'like', "%{$request->term}%")->orWhere('registry', 'like', "%{$request->term}%");
+        $query->with(['borrowable_keys' => ['room']])->where('name', 'like', "%{$request->term}%")
+            ->orWhere('registry', 'like', "%{$request->term}%");
 
         return [
             'count' => $query->count(),
@@ -111,5 +113,10 @@ class Employee extends Model
             'page' => $request->page?? 1,
             'termSearch' => $request->term,
         ];
+    }
+
+    public function borrowable_keys(): BelongsToMany
+    {
+        return $this->belongsToMany(Key::class, 'borrowable_keys', 'employee_id', 'key_id');
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -83,5 +84,20 @@ class Key extends Model
             'page' => $request->page?? 1,
             'termSearch' => $request->term,
         ];
+    }
+
+    public function borrowable_keys(): BelongsToMany
+    {
+        return $this->belongsToMany(Employee::class, 'borrowable_keys', 'key_id', 'employee_id');
+    }
+
+    public function scopeGetForSelect(Builder $query): Collection
+    {
+        return $query->with('room')->get()->map(function ($key) {
+            return [
+                'id' => $key->id,
+                'name' => $key->number . ' - ' . $key->room->description,
+            ];
+        });
     }
 }
