@@ -35,8 +35,8 @@ class BlockController extends Controller
             'page' => $request->page?? 1,
             'termSearch' => $request->term,
             'can' => [
-                'create' => Auth::user()->can('blocks.create'),
-                'view' => Auth::user()->can('blocks.view'),
+                'create' => $request->user()->can('blocks.create'),
+                'view' => $request->user()->can('blocks.view'),
             ]
         ]);
     }
@@ -80,15 +80,15 @@ class BlockController extends Controller
      * @return Response
      * @throws AuthorizationException
      */
-    public function show(Block $block): Response
+    public function show(Request $request, Block $block): Response
     {
         $this->authorize('blocks.view', $block);
 
         return Inertia::render('Keys/Block/Show', [
             'block' => $block,
             'can' => [
-                'update' => Auth::user()->can('blocks.update'),
-                'delete' => Auth::user()->can('blocks.delete'),
+                'update' => $request->user()->can('blocks.update'),
+                'delete' => $request->user()->can('blocks.delete'),
             ]
         ]);
     }

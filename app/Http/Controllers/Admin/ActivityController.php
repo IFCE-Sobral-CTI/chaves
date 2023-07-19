@@ -7,7 +7,6 @@ use App\Models\Activity as ModelsActivity;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
@@ -26,7 +25,7 @@ class ActivityController extends Controller
 
         return Inertia::render('Activity/Index', array_merge(ModelsActivity::search($request), [
             'can' => [
-                'view' => Auth::user()->can('activities.view'),
+                'view' => $request->user()->can('activities.view'),
             ]
         ]));
     }
@@ -38,7 +37,7 @@ class ActivityController extends Controller
      * @return Response
      * @throws AuthorizationException
      */
-    public function show(Activity $activity): Response
+    public function show(Request $request, Activity $activity): Response
     {
         $this->authorize('activities.view', $activity);
 
@@ -49,7 +48,7 @@ class ActivityController extends Controller
         return Inertia::render('Activity/Show', [
             'activity' => $activity,
             'can' => [
-                'delete' => Auth::user()->can('activities.delete'),
+                'delete' => $request->user()->can('activities.delete'),
             ]
         ]);
     }

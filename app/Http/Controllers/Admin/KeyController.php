@@ -30,8 +30,8 @@ class KeyController extends Controller
 
         return Inertia::render('Keys/Key/Index', array_merge(Key::search($request), [
             'can' => [
-                'create' => Auth::user()->can('keys.create'),
-                'view' => Auth::user()->can('keys.view'),
+                'create' => $request->user()->can('keys.create'),
+                'view' => $request->user()->can('keys.view'),
             ],
         ]));
     }
@@ -77,15 +77,15 @@ class KeyController extends Controller
      * @return Response
      * @throws AuthorizationException
      */
-    public function show(Key $key): Response
+    public function show(Request $request, Key $key): Response
     {
         $this->authorize('keys.view', $key);
 
         return Inertia::render('Keys/Key/Show', [
             '_key' => Key::with('room')->find($key->id),
             'can' => [
-                'update' => Auth::user()->can('keys.update'),
-                'delete' => Auth::user()->can('keys.delete'),
+                'update' => $request->user()->can('keys.update'),
+                'delete' => $request->user()->can('keys.delete'),
             ],
         ]);
     }

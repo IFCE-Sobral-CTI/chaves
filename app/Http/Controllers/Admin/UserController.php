@@ -38,8 +38,8 @@ class UserController extends Controller
             'page' => $request->page?? 1,
             'termSearch' => $request->term,
             'can' => [
-                'create' => Auth::user()->can('users.create'),
-                'view' => Auth::user()->can('users.view'),
+                'create' => $request->user()->can('users.create'),
+                'view' => $request->user()->can('users.view'),
             ]
         ]);
     }
@@ -88,16 +88,16 @@ class UserController extends Controller
      * @return Response
      * @throws AuthorizationException
      */
-    public function show(User $user): Response
+    public function show(Request $request, User $user): Response
     {
         $this->authorize('users.view', $user);
 
         return Inertia::render('User/Show', [
             'user' => User::with('permission')->find($user->id),
             'can' => [
-                'update' => Auth::user()->can('users.update'),
-                'update_password' => Auth::user()->can('users.update.password'),
-                'delete' => Auth::user()->can('users.delete'),
+                'update' => $request->user()->can('users.update'),
+                'update_password' => $request->user()->can('users.update.password'),
+                'delete' => $request->user()->can('users.delete'),
             ]
         ]);
     }
@@ -108,11 +108,11 @@ class UserController extends Controller
      * @return Response
      * @throws AuthorizationException
      */
-    public function profile(): Response
+    public function profile(Request $request): Response
     {
         $this->authorize('users.profile', User::class);
 
-        $user = Auth::user();
+        $user = $request->user();
 
         return Inertia::render('User/Profile', [
             'user' => User::with('permission')->find($user->id),

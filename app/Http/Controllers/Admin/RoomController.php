@@ -31,8 +31,8 @@ class RoomController extends Controller
 
         return Inertia::render('Keys/Room/Index', array_merge(Room::search($request), [
             'can' => [
-                'create' => Auth::user()->can('rooms.create'),
-                'view' => Auth::user()->can('rooms.view'),
+                'create' => $request->user()->can('rooms.create'),
+                'view' => $request->user()->can('rooms.view'),
             ],
         ]));
     }
@@ -80,15 +80,15 @@ class RoomController extends Controller
      * @return Response
      * @throws AuthorizationException
      */
-    public function show(Room $room): Response
+    public function show(Request $request,Room $room): Response
     {
         $this->authorize('rooms.view', $room);
 
         return Inertia::render('Keys/Room/Show', [
             'room' => Room::with(['block', 'employees'])->find($room->id),
             'can' => [
-                'update' => Auth::user()->can('rooms.update'),
-                'delete' => Auth::user()->can('rooms.delete'),
+                'update' => $request->user()->can('rooms.update'),
+                'delete' => $request->user()->can('rooms.delete'),
             ]
         ]);
     }

@@ -9,7 +9,6 @@ use App\Models\Employee;
 use App\Models\Key;
 use App\Models\Room;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,7 +30,7 @@ class HomeController extends Controller
             'dataBorrow' => Borrow::dataChart(),
             'dataKeys' => Borrow::dataChart2(),
             'can' => [
-                'borrowView' => Auth::user()->can('borrows.view'),
+                'borrowView' => $request->user()->can('borrows.view'),
             ]
         ]);
     }

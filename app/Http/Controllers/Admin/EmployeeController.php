@@ -31,8 +31,8 @@ class EmployeeController extends Controller
 
         return Inertia::render('Keys/Employee/Index', array_merge($result, [
             'can' => [
-                'create' => Auth::user()->can('employees.create'),
-                'view' => Auth::user()->can('employees.view'),
+                'create' => $request->user()->can('employees.create'),
+                'view' => $request->user()->can('employees.view'),
             ]
         ]));
     }
@@ -78,15 +78,15 @@ class EmployeeController extends Controller
      * @return Response
      * @throws AuthorizationException
      */
-    public function show(Employee $employee): Response
+    public function show(Request $request, Employee $employee): Response
     {
         $this->authorize('employees.view', $employee);
 
         return Inertia::render('Keys/Employee/Show', [
             'employee' => $employee,
             'can' => [
-                'update' => Auth::user()->can('employees.update'),
-                'delete' => Auth::user()->can('employees.delete'),
+                'update' => $request->user()->can('employees.update'),
+                'delete' => $request->user()->can('employees.delete'),
             ]
         ]);
     }

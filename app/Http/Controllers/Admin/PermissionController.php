@@ -38,9 +38,9 @@ class PermissionController extends Controller
             'page' => $request->page?? 1,
             'termSearch' => $request->term,
             'can' => [
-                'viewAny' => Auth::user()->can('permissions.viewAny'),
-                'view' => Auth::user()->can('permissions.view'),
-                'create' => Auth::user()->can('permissions.create'),
+                'viewAny' => $request->user()->can('permissions.viewAny'),
+                'view' => $request->user()->can('permissions.view'),
+                'create' => $request->user()->can('permissions.create'),
             ]
         ]);
     }
@@ -86,16 +86,16 @@ class PermissionController extends Controller
      * @param Permission $permission
      * @return Response
      */
-    public function show(Permission $permission): Response
+    public function show(Request $request, Permission $permission): Response
     {
         $this->authorize('permissions.view', $permission);
 
         return Inertia::render('Permission/Show', [
             'permission' => Permission::with('rules')->find($permission->id),
             'can' => [
-                'delete' => Auth::user()->can('permissions.delete'),
-                'update' => Auth::user()->can('permissions.update'),
-                'rules' => Auth::user()->can('permissions.rules'),
+                'delete' => $request->user()->can('permissions.delete'),
+                'update' => $request->user()->can('permissions.update'),
+                'rules' => $request->user()->can('permissions.rules'),
             ]
         ]);
     }
@@ -197,7 +197,7 @@ class PermissionController extends Controller
                 return ['rules' => implode('|', $rules->toArray())];
             };
             activity()
-                ->by(Auth::user())
+                ->by($request->user())
                 ->on($permission)
                 ->withProperty('attributes', $properties($request))
                 ->log('updated');

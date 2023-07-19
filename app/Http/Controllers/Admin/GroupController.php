@@ -31,8 +31,8 @@ class GroupController extends Controller
             Group::search($request),
             [
                 'can' => [
-                    'create' => Auth::user()->can('groups.create'),
-                    'view' => Auth::user()->can('groups.view'),
+                    'create' => $request->user()->can('groups.create'),
+                    'view' => $request->user()->can('groups.view'),
                 ],
             ])
         )
@@ -78,15 +78,15 @@ class GroupController extends Controller
      * @return Response
      * @throws AuthorizationException
      */
-    public function show(Group $group): Response
+    public function show(Request $request, Group $group): Response
     {
         $this->authorize('groups.view', $group);
 
         return Inertia::render('Group/Show', [
             'group' => $group,
             'can' => [
-                'update' => Auth::user()->can('groups.update'),
-                'delete' => Auth::user()->can('groups.delete'),
+                'update' => $request->user()->can('groups.update'),
+                'delete' => $request->user()->can('groups.delete'),
             ],
         ]);
     }

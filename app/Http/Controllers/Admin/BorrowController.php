@@ -33,8 +33,8 @@ class BorrowController extends Controller
 
         return Inertia::render('Keys/Borrow/Index', array_merge(Borrow::search($request), [
             'can' => [
-                'create' => Auth::user()->can('borrows.create'),
-                'view' => Auth::user()->can('borrows.view'),
+                'create' => $request->user()->can('borrows.create'),
+                'view' => $request->user()->can('borrows.view'),
             ]
         ]));
     }
@@ -68,7 +68,7 @@ class BorrowController extends Controller
         $this->authorize('borrows.create', Borrow::class);
 
         try {
-            $borrow = Auth::user()->borrows()->create($request->validated());
+            $borrow = $request->user()->borrows()->create($request->validated());
             $borrow->keys()->sync($request->keys);
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
@@ -83,7 +83,7 @@ class BorrowController extends Controller
      * @throws AuthorizationException
      * @return Response
      */
-    public function show(Borrow $borrow): Response
+    public function show(Request $request, Borrow $borrow): Response
     {
         $this->authorize('borrows.view', $borrow);
 
@@ -94,9 +94,9 @@ class BorrowController extends Controller
             'borrow' => $borrow,
             'received' => array(...$borrow->receivedKeys()),
             'can' => [
-                'update' => Auth::user()->can('borrows.update'),
-                'delete' => Auth::user()->can('borrows.delete'),
-                'receive' => Auth::user()->can('borrows.receive'),
+                'update' => $request->user()->can('borrows.update'),
+                'delete' => $request->user()->can('borrows.delete'),
+                'receive' => $request->user()->can('borrows.receive'),
             ],
         ]);
     }
