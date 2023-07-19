@@ -5,7 +5,7 @@ import Panel from "@/Components/Dashboard/Panel";
 import Button from "@/Components/Form/Button";
 import DeleteModal from "@/Components/Dashboard/DeleteModal";
 
-function Show({ employee, can }) {
+function Show({ employee, can, keys }) {
     const employeeType = (type) => {
         let name = '';
 
@@ -65,6 +65,14 @@ function Show({ employee, can }) {
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Cadastro válido até</div>
                         <div className="">{employee.valid_until?? '-'}</div>
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="text-sm font-light">Chaves autorizadas</div>
+                        <div className="">
+                            {employee.borrowable_keys.map((it, i) => {
+                                return <span className="px-1 mr-1 text-sm font-normal text-white rounded-md bg-sky-500" title={it.room.description} key={i}>{it.number}</span>
+                            })}
+                        </div>
                     </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Criado em</div>
