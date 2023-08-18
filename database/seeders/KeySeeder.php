@@ -15,6 +15,6 @@ class KeySeeder extends Seeder
      */
     public function run()
     {
-        Key::factory()->count(16)->create();
+        Key::factory()->count(500)->create();
     }
 }

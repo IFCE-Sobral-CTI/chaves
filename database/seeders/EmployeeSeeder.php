@@ -15,6 +15,6 @@ class EmployeeSeeder extends Seeder
      */
     public function run()
     {
-        Employee::factory()->count(11)->create();
+        Employee::factory()->count(1000)->create();
     }
 }
