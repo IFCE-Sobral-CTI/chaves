@@ -3,7 +3,7 @@ import { Head, useForm } from "@inertiajs/inertia-react";
 import Panel from "@/Components/Dashboard/Panel";
 import FormCreate from "@/Pages/Keys/Borrow/Components/FormCreate";
 
-function Create({ employees, keys }) {
+function Create({ employees, keys}) {
     const { data, setData, post, processing, errors } = useForm({
         observation: "",
         employee_id: "",

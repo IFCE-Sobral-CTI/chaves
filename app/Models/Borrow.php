@@ -114,10 +114,11 @@ class Borrow extends Model
         if (!$request->term)
             $query->where('devolution', null);
 
-        $query->with(['employee', 'user', 'received', 'keys' => ['room']])->whereHas('employee', function(Builder $query) use ($request) {
-            $query->where('name', 'like', "%{$request->term}%")
-                ->orWhere('registry', 'like', "%{$request->term}%");
-        });
+        $query->with(['employee', 'user', 'received', 'keys' => ['room']])
+            ->whereHas('employee', function(Builder $query) use ($request) {
+                $query->where('name', 'like', "%{$request->term}%")
+                    ->orWhere('registry', 'like', "%{$request->term}%");
+            });
 
         return [
             'count' => $query->count(),
@@ -276,24 +277,9 @@ class Borrow extends Model
         $list = collect([]);
 
         $this->received->map(function($item) use (&$list) {
-            $list = $list->merge($item->receivedKeys());
+            $list = $list->merge($item->keys->pluck('id'));
         });
 
         return $list->unique()->toArray();
-    }
-
-    public function scopeKeysInBorrow(Builder $query): array
-    {
-        $keysInBorrow = collect([]);
-        $keysReceived = collect([]);
-
-        $query->get()->map(function($borrow) use (&$keysInBorrow, &$keysReceived) {
-            $keysReceived = $keysReceived->merge($borrow->receivedKeys());
-            $borrow->keys->map(function($key) use (&$keysInBorrow) {
-                $keysInBorrow->push($key->id);
-            });
-        });
-
-        return $keysInBorrow->unique()->diff($keysReceived->unique()->all())->all();
     }
 }

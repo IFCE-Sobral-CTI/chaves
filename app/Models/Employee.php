@@ -119,4 +119,12 @@ class Employee extends Model
     {
         return $this->belongsToMany(Key::class, 'borrowable_keys', 'employee_id', 'key_id');
     }
+
+    public function scopeGetActiveEmployees(Builder $query)
+    {
+        return $query->where('valid_until', '>=', now())
+            ->orWhere('valid_until', null)
+            ->orderBy('name', 'ASC')
+            ->get();
+    }
 }

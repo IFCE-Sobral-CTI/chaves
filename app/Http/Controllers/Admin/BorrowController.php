@@ -50,8 +50,8 @@ class BorrowController extends Controller
         $this->authorize('borrows.create', Borrow::class);
 
         return Inertia::render('Keys/Borrow/Create', [
-            'employees' => fn() => Employee::select('id', 'registry', 'name')->where('valid_until', '>=', now())->orWhere('valid_until', null)->orderBy('name', 'ASC')->get(),
-            'keys' => fn() => Key::with('room')->whereNotIn('id', Borrow::keysInBorrow())->get(),
+            'employees' => fn() => Employee::getActiveEmployees(),
+            'keys' => fn() => Key::with('room')->whereNotIn('id', Key::borrowed()->pluck('id')->toArray())->get(),
         ]);
     }
 

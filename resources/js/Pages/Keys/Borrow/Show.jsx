@@ -43,9 +43,9 @@ function Show({ borrow, received, can }) {
                         })}
                     </div>
                 </td>
-                <td>
+                {(can.receive && (!borrow.devolution)) && <td>
                     <DeleteModal url={route('borrows.receive.destroy', {borrow: borrow.id, received: item.id})} button={button} forTable />
-                </td>
+                </td>}
             </tr>
     )});
 
@@ -110,7 +110,7 @@ function Show({ borrow, received, can }) {
                                 <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Devolvido por</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Usuário</th>
                                 <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Chaves</th>
-                                <th></th>
+                                {(can.receive && (!borrow.devolution)) && <th></th>}
                             </tr>
                         </thead>
                         <tbody>

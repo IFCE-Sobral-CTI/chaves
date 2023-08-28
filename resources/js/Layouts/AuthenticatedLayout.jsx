@@ -1,6 +1,6 @@
 import 'tw-elements';
 import React, { useEffect, useState } from 'react';
-import {Head, Link, useForm, usePage} from '@inertiajs/inertia-react';
+import {Head, usePage} from '@inertiajs/inertia-react';
 import Footer from '@/Components/Public/Footer';
 import Sidebar from '@/Components/Dashboard/Sidebar';
 import Breadcrumbs from '@/Components/Dashboard/Breadcrumbs';
@@ -10,19 +10,17 @@ import AlertContext from '@/Context/AlertContext';
 import Navbar from "@/Components/Dashboard/Navbar";
 
 export default function AuthenticatedLayout({breadcrumbs, children, titleChildren}) {
-    const { title, flash, auth, authorizations } = usePage().props;
+    const { title, flash, authorizations } = usePage().props;
     const [alert, setAlert] = useState(false);
     const [message, setMessage] = useState(flash?.flash?.message);
     const [type, setType] = useState(flash?.flash?.status);
-    const { post } = useForm();
-
-    const onHandleLogout = () => {
-        post(route('logout'));
-    }
 
     useEffect(() => {
-        if (flash?.flash)
+        if (flash?.flash) {
             setAlert(true);
+            setMessage(flash.flash.message);
+            setType(flash.flash.status);
+        }
     }, [flash]);
 
     return (
