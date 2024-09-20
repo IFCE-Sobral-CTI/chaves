@@ -49,9 +49,11 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.create', Borrow::class);
 
+        //dd(Key::with('room')->whereNotIn('id', Borrow::KeysReceived())->get());
+
         return Inertia::render('Keys/Borrow/Create', [
             'employees' => fn() => Employee::getActiveEmployees(),
-            'keys' => fn() => Key::with('room')->whereNotIn('id', Key::borrowed()->pluck('id')->toArray())->get(),
+            'keys' => fn() => Key::with('room')->whereNotIn('id', Borrow::KeysNotReceived())->get(),
         ]);
     }
 
@@ -92,7 +94,7 @@ class BorrowController extends Controller
 
         return Inertia::render('Keys/Borrow/Show', [
             'borrow' => $borrow,
-            'received' => array(...$borrow->receivedKeys()),
+            'received' => $borrow->receivedKeys(),
             'can' => [
                 'update' => $request->user()->can('borrows.update'),
                 'delete' => $request->user()->can('borrows.delete'),

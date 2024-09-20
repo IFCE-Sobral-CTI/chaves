@@ -282,4 +282,33 @@ class Borrow extends Model
 
         return $list->unique()->toArray();
     }
+
+    /**
+     * Get keys that have not been returned
+     *
+     * @param Builder $query
+     * @return array
+     */
+    public function scopeKeysNotReceived(Builder $query): array
+    {
+        $borrows = $query->where('devolution', null)->get();
+
+        $keys_borrowed = collect([]);
+
+        $borrows->map(function($borrow) use (&$keys_borrowed) {
+            $keys_borrowed = $keys_borrowed->merge($borrow->keys->pluck('id'));
+        });
+
+        $keys_received = collect([]);
+
+        $borrows->map(function($borrow) use (&$keys_received) {
+            $borrow->received->map(function($received) use (&$keys_received) {
+                $keys_received = $keys_received->merge($received->keys->pluck('id'));
+            });
+        });
+
+        $keys_borrowed = $keys_borrowed->diff($keys_received);
+
+        return $keys_borrowed->values()->toArray();
+    }
 }

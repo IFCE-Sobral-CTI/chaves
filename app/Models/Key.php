@@ -56,10 +56,16 @@ class Key extends Model
         return $this->belongsToMany(Received::class);
     }
 
-    public function scopeBorrowed(Builder $query): Builder
+    public function scopeBorrowed(Builder $keys): Builder
     {
-        return $query->whereHas('borrows', function($query) {
-            return $query->where('devolution', null);
+        $keys_id = Key::get()->pluck('id')->toArray();
+
+        return $keys->whereHas('borrows', function($borrows) use ($keys_id) {
+            return $borrows->where('devolution', null)->whereHas('received', function($received) use ($keys_id) {
+                return $received->whereHas('keys', function($k) use ($keys_id) {
+                    return $k->whereIn('key_id', $keys_id);
+                });
+            });
         });
     }
 
