@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('qwe123'),
             'status' => 1,
             'registry' => 123456,
-            'permission_id' => Permission::where('description', 'Administrador')->first()->id
+            'permission_id' => Permission::where('description', 'Administrador')->first()->id,
         ]);
     }
 }

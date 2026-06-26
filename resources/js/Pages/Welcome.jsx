@@ -1,5 +1,5 @@
 import React from 'react';
-import { Head } from '@inertiajs/inertia-react';
+import { Head } from '@inertiajs/react';
 import Footer from '@/Components/Public/Footer';
 import Panel from '@/Components/Public/Panel';
 import Navbar from '@/Components/Public/Navbar';

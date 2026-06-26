@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @method static search(Request $request)[]
@@ -29,10 +29,10 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Borrow extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
+    use CreatedAndUpdatedTimezone, HasFactory, LogsActivity;
 
     /**
-     * @var array $fillable
+     * @var array
      */
     protected $fillable = [
         'devolution',
@@ -41,9 +41,6 @@ class Borrow extends Model
         'user_id',
     ];
 
-    /**
-     * @return LogOptions
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -54,68 +51,52 @@ class Borrow extends Model
                 'user.name',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontLogEmptyChanges();
     }
 
     /**
      * Returns the date in the defined timezone
      */
-    public function getDevolutionAttribute(string $date = null): ?string
+    public function getDevolutionAttribute(?string $date = null): ?string
     {
-        if (is_null($date))
+        if (is_null($date)) {
             return null;
+        }
 
         return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE'))->format('d/m/Y H:i:s');
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
     }
 
-    /**
-     * @return BelongsToMany
-     */
     public function keys(): BelongsToMany
     {
         return $this->belongsToMany(Key::class);
     }
 
-    /**
-     * @return HasMany
-     */
     public function received(): HasMany
     {
         return $this->hasMany(Received::class);
     }
 
-
     /**
      * Get loan data with optional search
-     *
-     * @param Builder $query
-     * @param Request $request
-     *
-     * @return array
      */
     public function scopeSearch(Builder $query, Request $request): array
     {
-        if (!$request->term)
+        if (! $request->term) {
             $query->where('devolution', null);
+        }
 
         $query->with(['employee', 'user', 'received', 'keys' => ['room']])
-            ->whereHas('employee', function(Builder $query) use ($request) {
+            ->whereHas('employee', function (Builder $query) use ($request) {
                 $query->where('name', 'like', "%{$request->term}%")
                     ->orWhere('registry', 'like', "%{$request->term}%");
             });
@@ -123,23 +104,19 @@ class Borrow extends Model
         return [
             'count' => $query->count(),
             'borrows' => $query->orderBy('id', 'desc')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
-            'page' => $request->page?? 1,
+            'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];
     }
 
     /**
      * Get data for chart 2
-     *
-     * @param Builder $query
-     *
-     * @return array
      */
     public function scopeDataChart(Builder $query): array
     {
         $data = [];
 
-        foreach($query->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))->groupBy('date')->take(5)->get() as $borrow) {
+        foreach ($query->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))->groupBy('date')->take(5)->get() as $borrow) {
             $data[] = [Carbon::parse($borrow->date)->format('d/m/y'), $borrow->count];
         }
 
@@ -148,10 +125,6 @@ class Borrow extends Model
 
     /**
      * Get data for chart 2
-     *
-     * @param Builder $query
-     *
-     * @return array
      */
     public function scopeDataChart2(Builder $query): array
     {
@@ -159,8 +132,8 @@ class Borrow extends Model
         $start = now()->subDays(6)->startOfDay();
         $end = now()->subDays(6)->endOfDay();
 
-        for($i = $count = 0; $i <= 6; $i++, $start->addDay(), $end->addDay(), $count = 0) {
-            foreach($query->whereBetween('created_at', [$start, $end])->get() as $borrow) {
+        for ($i = $count = 0; $i <= 6; $i++, $start->addDay(), $end->addDay(), $count = 0) {
+            foreach ($query->whereBetween('created_at', [$start, $end])->get() as $borrow) {
                 $count += $borrow->keys->count();
             }
 
@@ -172,11 +145,6 @@ class Borrow extends Model
 
     /**
      * Get data of borrow by filters
-     *
-     * @param Builder $query
-     * @param Request $request
-     *
-     * @return array
      */
     public function scopeReportByDate(Builder $query, Request $request): array
     {
@@ -190,7 +158,7 @@ class Borrow extends Model
         return [
             'count' => $query->count(),
             'borrows' => $query->orderBy('created_at', 'desc')->paginate(env('APP_PAGINATION'))->appends($request->all()),
-            'page' => $request->page?? 1,
+            'page' => $request->page ?? 1,
             'filter' => ($request->has('start') || $request->has('end') || $request->has('employee') || $request->has('user') || $request->has('situation')),
         ];
     }
@@ -198,13 +166,12 @@ class Borrow extends Model
     /**
      * Filter by user for borrow query
      *
-     * @param Builder $query (pointer for query)
-     * @param Request $request
+     * @param  Builder  $query  (pointer for query)
      */
     private function filterByUser(Builder &$query, Request $request): void
     {
-        $query->when(!is_null($request->user), function($query) use ($request) {
-            return $query->whereHas('user', function($query) use ($request) {
+        $query->when(! is_null($request->user), function ($query) use ($request) {
+            return $query->whereHas('user', function ($query) use ($request) {
                 return $query->where('id', $request->user);
             });
         });
@@ -213,15 +180,12 @@ class Borrow extends Model
     /**
      * Filter by employee for borrow query
      *
-     * @param Builder $query (pointer for query)
-     * @param Request $request
-     *
-     * @return void
+     * @param  Builder  $query  (pointer for query)
      */
     private function filterByEmployee(Builder &$query, Request $request): void
     {
-        $query->when(!is_null($request->employee), function($query) use ($request) {
-            return $query->whereHas('employee', function($query) use ($request) {
+        $query->when(! is_null($request->employee), function ($query) use ($request) {
+            return $query->whereHas('employee', function ($query) use ($request) {
                 return $query->where('id', $request->employee);
             });
         });
@@ -230,14 +194,11 @@ class Borrow extends Model
     /**
      * Filter by situation for borrow query
      *
-     * @param Builder $query (pointer for query)
-     * @param Request $request
-     *
-     * @return void
+     * @param  Builder  $query  (pointer for query)
      */
     private function filterBySituation(Builder &$query, Request $request): void
     {
-        switch($request->situation) {
+        switch ($request->situation) {
             case 1:
                 $query->where('devolution', '!=', null);
                 break;
@@ -255,28 +216,28 @@ class Borrow extends Model
     /**
      * Filter by date for borrow query
      *
-     * @param Builder $query (pointer for query)
-     * @param Request $request
-     *
-     * @return void
+     * @param  Builder  $query  (pointer for query)
      */
     private function filterByDate(Builder &$query, Request $request): void
     {
-        if (!is_null($request->start))
+        if (! is_null($request->start)) {
             $start = Carbon::parse($request->start)->startOfDay();
+        }
 
-        if (!is_null($request->end))
+        if (! is_null($request->end)) {
             $end = Carbon::parse($request->end)->endOfDay();
+        }
 
-        if (isset($start))
-            $query->whereBetween('created_at', [$start, $end?? now()])->get();
+        if (isset($start)) {
+            $query->whereBetween('created_at', [$start, $end ?? now()])->get();
+        }
     }
 
     public function receivedKeys(): array
     {
         $list = collect([]);
 
-        $this->received->map(function($item) use (&$list) {
+        $this->received->map(function ($item) use (&$list) {
             $list = $list->merge($item->keys->pluck('id'));
         });
 
@@ -285,9 +246,6 @@ class Borrow extends Model
 
     /**
      * Get keys that have not been returned
-     *
-     * @param Builder $query
-     * @return array
      */
     public function scopeKeysNotReceived(Builder $query): array
     {
@@ -295,14 +253,14 @@ class Borrow extends Model
 
         $keys_borrowed = collect([]);
 
-        $borrows->map(function($borrow) use (&$keys_borrowed) {
+        $borrows->map(function ($borrow) use (&$keys_borrowed) {
             $keys_borrowed = $keys_borrowed->merge($borrow->keys->pluck('id'));
         });
 
         $keys_received = collect([]);
 
-        $borrows->map(function($borrow) use (&$keys_received) {
-            $borrow->received->map(function($received) use (&$keys_received) {
+        $borrows->map(function ($borrow) use (&$keys_received) {
+            $borrow->received->map(function ($received) use (&$keys_received) {
                 $keys_received = $keys_received->merge($received->keys->pluck('id'));
             });
         });

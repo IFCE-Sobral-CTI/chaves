@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Borrow;
 use App\Models\Employee;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,8 +14,6 @@ use Inertia\Response;
 class ReportController extends Controller
 {
     /**
-     * @param Request $request
-     * @return Response
      * @throws AuthorizationException
      */
     public function index(Request $request): Response
@@ -28,9 +25,9 @@ class ReportController extends Controller
             'end' => 'nullable|date|after_or_equal:start',
             'employee' => 'nullable|exists:employees,id',
             'user' => 'nullable|exists:users,id',
-            'situation' => 'nullable|in:1,2,3'
+            'situation' => 'nullable|in:1,2,3',
         ], [
-            'start.before' => 'A data de início deve ser anterior a hoje.'
+            'start.before' => 'A data de início deve ser anterior a hoje.',
         ]);
 
         return Inertia::render('Keys/Report/Index', array_merge(Borrow::ReportByDate($request), [
@@ -42,7 +39,7 @@ class ReportController extends Controller
                 'employee' => $request->employee,
                 'user' => $request->user,
                 'situation' => $request->situation,
-            ]
+            ],
         ]));
     }
 }

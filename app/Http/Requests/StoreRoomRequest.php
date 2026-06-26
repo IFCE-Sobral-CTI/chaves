@@ -28,7 +28,7 @@ class StoreRoomRequest extends FormRequest
             'observation' => 'nullable',
             'block_id' => 'required|exists:blocks,id',
             'employees' => 'nullable|array',
-            'employees.*' => 'exists:employees,id'
+            'employees.*' => 'exists:employees,id',
         ];
     }
 }

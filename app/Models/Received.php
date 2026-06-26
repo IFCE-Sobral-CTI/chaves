@@ -3,19 +3,16 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Received extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
+    use CreatedAndUpdatedTimezone, HasFactory, LogsActivity;
 
     protected $fillable = [
         'receiver',
@@ -23,9 +20,6 @@ class Received extends Model
         'user_id',
     ];
 
-    /**
-     * @return LogOptions
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -36,7 +30,7 @@ class Received extends Model
                 'user.name',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontLogEmptyChanges();
     }
 
     public function borrow(): BelongsTo
@@ -58,7 +52,7 @@ class Received extends Model
     {
         $list = collect([]);
 
-        $this->keys->map(function($key) use ($list) {
+        $this->keys->map(function ($key) use ($list) {
             $list->push($key->id);
         });
 

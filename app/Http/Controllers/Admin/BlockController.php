@@ -10,7 +10,6 @@ use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,8 +18,6 @@ class BlockController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
-     * @return Response
      * @throws AuthorizationException
      */
     public function index(Request $request): Response
@@ -32,19 +29,18 @@ class BlockController extends Controller
         return Inertia::render('Keys/Block/Index', [
             'blocks' => $result['data'],
             'count' => $result['count'],
-            'page' => $request->page?? 1,
+            'page' => $request->page ?? 1,
             'termSearch' => $request->term,
             'can' => [
                 'create' => $request->user()->can('blocks.create'),
                 'view' => $request->user()->can('blocks.view'),
-            ]
+            ],
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @return Response
      * @throws AuthorizationException
      */
     public function create(): Response
@@ -57,8 +53,6 @@ class BlockController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param StoreBlockRequest $request
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function store(StoreBlockRequest $request): RedirectResponse
@@ -67,6 +61,7 @@ class BlockController extends Controller
 
         try {
             $block = Block::create($request->validated());
+
             return to_route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
             return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -76,8 +71,6 @@ class BlockController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param Block $block
-     * @return Response
      * @throws AuthorizationException
      */
     public function show(Request $request, Block $block): Response
@@ -89,15 +82,13 @@ class BlockController extends Controller
             'can' => [
                 'update' => $request->user()->can('blocks.update'),
                 'delete' => $request->user()->can('blocks.delete'),
-            ]
+            ],
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Block $block
-     * @return Response
      * @throws AuthorizationException
      */
     public function edit(Block $block): Response
@@ -105,16 +96,13 @@ class BlockController extends Controller
         $this->authorize('blocks.update', $block);
 
         return Inertia::render('Keys/Block/Edit', [
-            'block' => $block
+            'block' => $block,
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param UpdateBlockRequest $request
-     * @param Block $block
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function update(UpdateBlockRequest $request, Block $block): RedirectResponse
@@ -123,6 +111,7 @@ class BlockController extends Controller
 
         try {
             $block->update($request->validated());
+
             return to_route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -132,8 +121,6 @@ class BlockController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Block $block
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function destroy(Block $block): RedirectResponse
@@ -142,6 +129,7 @@ class BlockController extends Controller
 
         try {
             $block->delete();
+
             return to_route('blocks.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
             return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

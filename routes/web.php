@@ -1,19 +1,19 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
+use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\BlockController;
+use App\Http\Controllers\Admin\BorrowController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\Admin\HomeController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\PermissionController;
-use App\Http\Controllers\Admin\RuleController;
-use App\Http\Controllers\Admin\BlockController;
-use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\KeyController;
-use App\Http\Controllers\Admin\RoomController;
-use App\Http\Controllers\Admin\BorrowController;
+use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\RoomController;
+use App\Http\Controllers\Admin\RuleController;
+use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +26,6 @@ use App\Http\Controllers\Admin\ActivityController;
 |
 */
 
-
 URL::forceRootUrl(config('app.url'));
 
 if (config('app.env') !== 'local') {
@@ -35,7 +34,7 @@ if (config('app.env') !== 'local') {
 
 Route::redirect('/', 'admin')->name('home');
 
-Route::prefix('admin')->middleware(['auth', 'verified'])->group(function() {
+Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('admin');
     Route::resource('users', UserController::class);
     Route::get('users/{user}/edit/password', [UserController::class, 'editPassword'])->name('users.edit.password');

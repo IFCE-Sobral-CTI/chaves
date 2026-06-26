@@ -12,15 +12,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\CausesActivity;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\CausesActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, CreatedAndUpdatedTimezone, LogsActivity, CausesActivity;
+    use CausesActivity, CreatedAndUpdatedTimezone, HasApiTokens, HasFactory, LogsActivity, Notifiable;
 
     const ACTIVE = 1;
+
     const INACTIVE = 0;
 
     /**
@@ -50,17 +51,15 @@ class User extends Authenticatable
     /**
      * Returns the date in the defined timezone
      */
-    public function getEmailVerifiedAtAttribute(string $date = null): ?string
+    public function getEmailVerifiedAtAttribute(?string $date = null): ?string
     {
-        if (is_null($date))
+        if (is_null($date)) {
             return null;
+        }
 
         return Carbon::parse($date)->setTimezone('America/Fortaleza')->format('d/m/Y H:i:s');
     }
 
-    /**
-     * @return LogOptions
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -68,10 +67,10 @@ class User extends Authenticatable
                 'name',
                 'email',
                 'registry',
-                'permission.name'
+                'permission.name',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontLogEmptyChanges();
     }
 
     public function borrows(): HasMany
@@ -79,35 +78,23 @@ class User extends Authenticatable
         return $this->hasMany(Borrow::class);
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function permission(): BelongsTo
     {
         return $this->belongsTo(Permission::class);
     }
 
-    /**
-     * @return bool
-     */
     public function isAdmin(): bool
     {
         return $this->permission->description === 'Administrador';
     }
 
-    /**
-     * @param $rule
-     * @return bool
-     */
     public function hasRule($rule): bool
     {
         return $this->permission->rules()->hasControl($rule);
     }
 
     /**
-     * @param $query
-     * @param string $term
-     * @return array
+     * @param  string  $term
      */
     public function scopeSearch($query, $term = ''): array
     {

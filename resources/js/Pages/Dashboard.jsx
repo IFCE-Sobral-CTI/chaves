@@ -2,7 +2,7 @@ import React, { useEffect, useState, useTransition } from 'react';
 import Chart from 'react-google-charts';
 import Panel from '@/Components/Dashboard/Panel';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Link } from '@inertiajs/inertia-react';
+import { Link } from '@inertiajs/react';
 import moment from 'moment';
 import 'tw-elements';
 

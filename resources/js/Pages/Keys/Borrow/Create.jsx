@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, useForm } from "@inertiajs/inertia-react";
+import { Head, useForm } from "@inertiajs/react";
 import Panel from "@/Components/Dashboard/Panel";
 import FormCreate from "@/Pages/Keys/Borrow/Components/FormCreate";
 

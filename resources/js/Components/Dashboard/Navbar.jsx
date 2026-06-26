@@ -1,9 +1,9 @@
 import React, {useEffect, useRef} from "react";
-import {Link, useForm, usePage} from "@inertiajs/inertia-react";
+import {Link, useForm, usePage} from "@inertiajs/react";
 import {
     Collapse,
     Dropdown,
-    initTE,
+    initTWE,
 } from "tw-elements";
 
 function Navbar() {
@@ -15,7 +15,7 @@ function Navbar() {
         setTimeout(() => {
             if (!teInitialized.current) {
                 console.debug(`Tailwind Elements initialized`);
-                initTE({ Dropdown, Collapse });
+                initTWE({ Dropdown, Collapse });
             }
             teInitialized.current = true;
         }, 500);

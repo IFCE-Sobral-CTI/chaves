@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Borrow;
 use App\Models\Employee;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Borrow>
+ * @extends Factory<Borrow>
  */
 class BorrowFactory extends Factory
 {
@@ -19,8 +19,9 @@ class BorrowFactory extends Factory
     public function definition()
     {
         $rand = rand(0, 1);
+
         return [
-            'devolution' => $rand? now(): null,
+            'devolution' => $rand ? now() : null,
             'observation' => fake()->sentence(),
             'employee_id' => Employee::all()->random()->id,
             'user_id' => 1,

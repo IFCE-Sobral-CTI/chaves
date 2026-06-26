@@ -1,6 +1,6 @@
 import 'tw-elements';
 import React, { useEffect, useState } from 'react';
-import {Head, usePage} from '@inertiajs/inertia-react';
+import {Head, usePage} from '@inertiajs/react';
 import Footer from '@/Components/Public/Footer';
 import Sidebar from '@/Components/Dashboard/Sidebar';
 import Breadcrumbs from '@/Components/Dashboard/Breadcrumbs';

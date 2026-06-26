@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useForm } from "@inertiajs/inertia-react";
+import { useForm } from "@inertiajs/react";
 import {v4 as uuidv4} from 'uuid';
 import {
     Modal,
-    initTE,
+    initTWE,
 } from "tw-elements";
 
 export default function DeleteModal({ url, forTable }) {
@@ -17,7 +17,7 @@ export default function DeleteModal({ url, forTable }) {
         setTimeout(() => {
             if (!teInitialized.current) {
               console.debug(`Tailwind Elements initialized`)
-              initTE({ Modal })
+              initTWE({ Modal })
             }
             teInitialized.current = true
           }, 500);

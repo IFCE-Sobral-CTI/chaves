@@ -21,17 +21,11 @@ class BorrowKey extends Model
         'key_id',
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function borrow(): BelongsTo
     {
         return $this->belongsTo(Borrow::class);
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function key(): BelongsTo
     {
         return $this->belongsTo(Key::class);

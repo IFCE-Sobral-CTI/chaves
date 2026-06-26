@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Rule;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Tightenco\Ziggy\Ziggy;
+use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -19,7 +19,6 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return string|null
      */
     public function version(Request $request)
@@ -30,7 +29,6 @@ class HandleInertiaRequests extends Middleware
     /**
      * Define the props that are shared by default.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return mixed[]
      */
     public function share(Request $request)
@@ -49,17 +47,18 @@ class HandleInertiaRequests extends Middleware
                 return ['flash' => fn () => $request->session()->get('flash')];
             },
             'authorizations' => function () use ($request) {
-                if (!$request->user())
+                if (! $request->user()) {
                     return [];
+                }
 
                 $rules = [];
 
                 if ($request->user()->isAdmin()) {
-                    foreach(Rule::where('control', 'like', '%viewAny%')->get() as $rule) {
+                    foreach (Rule::where('control', 'like', '%viewAny%')->get() as $rule) {
                         $rules[str_replace('.', '_', $rule->control)] = true;
                     }
                 } else {
-                    foreach($request->user()->permission->rules()->where('control', 'like', '%viewAny%')->get() as $rule) {
+                    foreach ($request->user()->permission->rules()->where('control', 'like', '%viewAny%')->get() as $rule) {
                         $rules[str_replace('.', '_', $rule->control)] = true;
                     }
                 }

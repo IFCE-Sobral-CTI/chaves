@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useForm } from "@inertiajs/inertia-react";
+import { useForm } from "@inertiajs/react";
 import {v4 as uuidv4} from 'uuid';
 import {
     Modal,
-    initTE,
+    initTWE,
 } from "tw-elements";
 import Input from '@/Components/Form/Input';
 import InputError from '@/Components/InputError';
@@ -13,7 +13,7 @@ export default function Receive({ borrow, keys, received }) {
     const [keysReceived, setKeysReceived] = useState(received);
     const [chaves, setChaves] = useState([]);
     const teInitialized = useRef(false);
-    const { data, setData, post, processing, errors, reset } = useForm('receivedKeys', {
+    const { data, setData, post, processing, errors, reset } = useForm({
         returned_by: ''
     });
 
@@ -21,7 +21,7 @@ export default function Receive({ borrow, keys, received }) {
         setTimeout(() => {
             if (!teInitialized.current) {
               console.debug(`Tailwind Elements initialized`)
-              initTE({ Modal })
+              initTWE({ Modal })
             }
             teInitialized.current = true
           }, 500);

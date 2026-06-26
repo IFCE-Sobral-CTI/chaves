@@ -21,8 +21,6 @@ class RoomController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
-     * @return Response
      * @throws AuthorizationException
      */
     public function index(Request $request): Response
@@ -40,7 +38,6 @@ class RoomController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return Response
      * @throws AuthorizationException
      */
     public function create(): Response
@@ -49,15 +46,13 @@ class RoomController extends Controller
 
         return Inertia::render('Keys/Room/Create', [
             'blocks' => Block::select('id', 'description')->orderBy('description', 'ASC')->get(),
-            'employees' => Employee::where('type', Employee::EMPLOYEE)->orderBy('name')->get()
+            'employees' => Employee::where('type', Employee::EMPLOYEE)->orderBy('name')->get(),
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param StoreRoomRequest $request
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function store(StoreRoomRequest $request): RedirectResponse
@@ -67,6 +62,7 @@ class RoomController extends Controller
         try {
             $room = Room::create($request->validated());
             $room->employees()->sync($request->employees);
+
             return redirect()->route('rooms.show', $room)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('rooms.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -76,11 +72,9 @@ class RoomController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param Room $room
-     * @return Response
      * @throws AuthorizationException
      */
-    public function show(Request $request,Room $room): Response
+    public function show(Request $request, Room $room): Response
     {
         $this->authorize('rooms.view', $room);
 
@@ -89,15 +83,13 @@ class RoomController extends Controller
             'can' => [
                 'update' => $request->user()->can('rooms.update'),
                 'delete' => $request->user()->can('rooms.delete'),
-            ]
+            ],
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Room $room
-     * @return Response
      * @throws AuthorizationException
      */
     public function edit(Room $room): Response
@@ -114,9 +106,6 @@ class RoomController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param UpdateRoomRequest $request
-     * @param Room $room
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function update(UpdateRoomRequest $request, Room $room): RedirectResponse
@@ -128,10 +117,11 @@ class RoomController extends Controller
             $room->employees()->sync($request->employees);
             // Cria um log caso haja algum relacionamento com um servidor
             if ($request->employees) {
-                $properties = function(Request $request) {
-                    $employees = Employee::whereIn('id', $request->employees)->get()->map(function($item) {
+                $properties = function (Request $request) {
+                    $employees = Employee::whereIn('id', $request->employees)->get()->map(function ($item) {
                         return $item->name;
                     })->toArray();
+
                     return ['Servidores' => implode(' - ', $employees)];
                 };
 
@@ -141,6 +131,7 @@ class RoomController extends Controller
                     ->withProperty('attributes', $properties($request))
                     ->log('updated');
             }
+
             return redirect()->route('rooms.show', $room)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('rooms.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -150,8 +141,6 @@ class RoomController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Room $room
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function destroy(Room $room): RedirectResponse
@@ -160,6 +149,7 @@ class RoomController extends Controller
 
         try {
             $room->delete();
+
             return redirect()->route('rooms.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('rooms.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

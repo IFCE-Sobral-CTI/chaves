@@ -1,6 +1,6 @@
 import InputError from "@/Components/InputError";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {useForm} from "@inertiajs/inertia-react";
+import {useForm} from "@inertiajs/react";
 
 function SelectEmployee({ data, onChange, value, error }) {
     const [toggle, setToggle] = useState(false);

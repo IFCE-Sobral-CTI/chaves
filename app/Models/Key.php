@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,12 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Key extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
+    use CreatedAndUpdatedTimezone, HasFactory, LogsActivity;
 
     protected $fillable = [
         'description',
@@ -25,9 +24,6 @@ class Key extends Model
         'room_id',
     ];
 
-    /**
-     * @return LogOptions
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -35,10 +31,10 @@ class Key extends Model
                 'description',
                 'number',
                 'observation',
-                'room.description'
+                'room.description',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontLogEmptyChanges();
     }
 
     public function room(): BelongsTo
@@ -60,9 +56,9 @@ class Key extends Model
     {
         $keys_id = Key::get()->pluck('id')->toArray();
 
-        return $keys->whereHas('borrows', function($borrows) use ($keys_id) {
-            return $borrows->where('devolution', null)->whereHas('received', function($received) use ($keys_id) {
-                return $received->whereHas('keys', function($k) use ($keys_id) {
+        return $keys->whereHas('borrows', function ($borrows) use ($keys_id) {
+            return $borrows->where('devolution', null)->whereHas('received', function ($received) use ($keys_id) {
+                return $received->whereHas('keys', function ($k) use ($keys_id) {
                     return $k->whereIn('key_id', $keys_id);
                 });
             });
@@ -72,12 +68,12 @@ class Key extends Model
     public function scopeSearch($query, Request $request): array
     {
         $query->with('room')
-            ->whereHas('room', function(Builder $query) use ($request) {
+            ->whereHas('room', function (Builder $query) use ($request) {
                 $query->where('description', 'like', "%{$request->term}%")
-                    ->orWhereHas('employees', function(Builder $query) use ($request) {
+                    ->orWhereHas('employees', function (Builder $query) use ($request) {
                         $query->where('name', 'like', "%{$request->term}%");
                     })
-                    ->orWhereHas('block', function(Builder $query) use ($request) {
+                    ->orWhereHas('block', function (Builder $query) use ($request) {
                         $query->where('description', 'like', "%{$request->term}%");
                     });
             })
@@ -87,7 +83,7 @@ class Key extends Model
         return [
             'count' => $query->count(),
             'keys' => $query->orderBy('number', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term, 'page' => $request->page]),
-            'page' => $request->page?? 1,
+            'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];
     }
@@ -102,7 +98,7 @@ class Key extends Model
         return $query->with('room')->get()->map(function ($key) {
             return [
                 'id' => $key->id,
-                'name' => $key->number . ' - ' . $key->room->description,
+                'name' => $key->number.' - '.$key->room->description,
             ];
         });
     }

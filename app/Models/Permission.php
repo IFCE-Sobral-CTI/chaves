@@ -7,24 +7,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @method static search(mixed $term)
+ *
  * @property string description
  */
 class Permission extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
+    use CreatedAndUpdatedTimezone, HasFactory, LogsActivity;
 
     protected $fillable = [
         'description',
     ];
 
-    /**
-     * @return LogOptions
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -32,30 +30,19 @@ class Permission extends Model
                 'description',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontLogEmptyChanges();
     }
 
-    /**
-     * @return BelongsToMany
-     */
     public function rules(): BelongsToMany
     {
         return $this->belongsToMany(Rule::class);
     }
 
-    /**
-     * @return HasMany
-     */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
-    /**
-     * @param $query
-     * @param $term
-     * @return array
-     */
     public function scopeSearch($query, $term): array
     {
         $query->where('description', 'like', "%{$term}%");

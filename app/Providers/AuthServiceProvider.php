@@ -31,19 +31,19 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-
         if (Schema::hasTable('rules')) {
             $rules = $rule->with('permissions')->get();
 
-            foreach($rules as $rule) {
-                Gate::define($rule->control, function(User $user) use ($rule) {
+            foreach ($rules as $rule) {
+                Gate::define($rule->control, function (User $user) use ($rule) {
                     return $user->hasRule($rule->control);
                 });
             }
 
-            Gate::before(function($user, $ability) {
-                if ($user->isAdmin())
+            Gate::before(function ($user, $ability) {
+                if ($user->isAdmin()) {
                     return true;
+                }
             });
         }
     }

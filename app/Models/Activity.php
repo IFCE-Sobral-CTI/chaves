@@ -10,19 +10,19 @@ use Spatie\Activitylog\Models\Activity as ModelsActivity;
 
 class Activity extends ModelsActivity
 {
-    use HasFactory, CreatedAndUpdatedTimezone;
+    use CreatedAndUpdatedTimezone, HasFactory;
 
     public function scopeSearch(Builder $query, Request $request)
     {
         $query->with('causer')->whereHas('causer', function ($query) use ($request) {
-            return $query->where('name', 'LIKE', "%".$request->term."%");
+            return $query->where('name', 'LIKE', '%'.$request->term.'%');
         })
-        ->orWhere('subject_type', 'LIKE', '%'.$request->term.'%');
+            ->orWhere('subject_type', 'LIKE', '%'.$request->term.'%');
 
         return [
             'count' => $query->count(),
             'activities' => $query->orderBy('created_at', 'DESC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
-            'page' => $request->page?? 1,
+            'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];
     }

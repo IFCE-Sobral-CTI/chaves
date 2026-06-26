@@ -10,22 +10,26 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @method search(string $term)
+ *
  * @property string name
  * @property string email
  * @property int registry
  */
 class Employee extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
+    use CreatedAndUpdatedTimezone, HasFactory, LogsActivity;
 
     const EMPLOYEE = 1;
+
     const COLLABORATOR = 2;
+
     const STUDENT = 3;
+
     const EXTERNAL = 4;
 
     const TYPES = [
@@ -49,9 +53,6 @@ class Employee extends Model
         'type',
     ];
 
-    /**
-     * @return LogOptions
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -66,40 +67,29 @@ class Employee extends Model
                 'type',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontLogEmptyChanges();
     }
 
-    /**
-     * @param string $date
-     * @return string
-     */
-    public function getValidUntilAttribute(string $date = null): ?string
+    public function getValidUntilAttribute(?string $date = null): ?string
     {
-        if (is_null($date))
+        if (is_null($date)) {
             return null;
+        }
 
         return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE'))->format('d/m/Y H:i:s');
     }
 
-    /**
-     * @return HasMany
-     */
     public function borrows(): HasMany
     {
         return $this->hasMany(Borrow::class);
     }
 
-    /**
-     * @return BelongsToMany
-     */
     public function rooms(): BelongsToMany
     {
         return $this->belongsToMany(Room::class);
     }
 
     /**
-     * @param $query
-     * @param $request
      * @return array
      */
     public function scopeSearch(Builder $query, Request $request)
@@ -110,7 +100,7 @@ class Employee extends Model
         return [
             'count' => $query->count(),
             'employees' => $query->orderBy('name', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
-            'page' => $request->page?? 1,
+            'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];
     }

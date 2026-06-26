@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Link } from "@inertiajs/inertia-react";
+import { Link } from "@inertiajs/react";
 import {
     Collapse,
-    initTE,
+    initTWE,
 } from "tw-elements";
 
 function Sidebar({ can }) {
@@ -24,7 +24,7 @@ function Sidebar({ can }) {
     }
 
     useEffect(() => {
-        initTE({ Collapse });
+        initTWE({ Collapse });
     }, []);
 
     useEffect(() => {

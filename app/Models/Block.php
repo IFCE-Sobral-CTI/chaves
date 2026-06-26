@@ -3,32 +3,29 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
-use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @method search(string $term)
+ *
  * @property string description
  */
 class Block extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone;
+    use CreatedAndUpdatedTimezone, HasFactory;
 
     /**
-     * @var array $fillable
+     * @var array
      */
     protected $fillable = [
-        'description'
+        'description',
     ];
 
-    /**
-     * @return LogOptions
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -36,12 +33,9 @@ class Block extends Model
                 'description',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontLogEmptyChanges();
     }
 
-    /**
-     * @return HasMany
-     */
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class);
@@ -57,9 +51,9 @@ class Block extends Model
         return [
             'count' => $query->count(),
             'data' => $query->orderBy('description', 'ASC')
-                            ->select('id', 'description')
-                            ->paginate(env('APP_PAGINATION'))
-                            ->appends(['term' => $request->term]),
+                ->select('id', 'description')
+                ->paginate(env('APP_PAGINATION'))
+                ->appends(['term' => $request->term]),
         ];
     }
 }

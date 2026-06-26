@@ -5,28 +5,26 @@
         "build": "vite build"
     },
     "devDependencies": {
-        "@headlessui/react": "^1.4.2",
-        "@inertiajs/inertia": "^0.11.0",
-        "@inertiajs/inertia-react": "^0.8.0",
-        "@inertiajs/progress": "^0.1.2",
-        "@tailwindcss/forms": "^0.5.2",
-        "@vitejs/plugin-react": "^2.0.0",
-        "autoprefixer": "^10.4.2",
-        "axios": "^0.27",
-        "laravel-vite-plugin": "^0.6.0",
-        "lodash": "^4.17.19",
-        "postcss": "^8.4.6",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "tailwind-scrollbar": "^2.0.1",
-        "tailwindcss": "^3.1.0",
-        "vite": "^3.0.0"
+        "@headlessui/react": "^2.2.10",
+        "@inertiajs/react": "^3.5.0",
+        "@tailwindcss/forms": "^0.5.11",
+        "@tailwindcss/postcss": "^4.3.1",
+        "@vitejs/plugin-react": "^6.0.1",
+        "autoprefixer": "^10.4.20",
+        "axios": "^1.18.1",
+        "laravel-vite-plugin": "^3.0.1",
+        "lodash": "^4.17.21",
+        "postcss": "^8.4.49",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "tailwind-scrollbar": "^4.0.2",
+        "tailwindcss": "^4.3.1",
+        "tw-elements": "^2.0.0",
+        "vite": "^8.0.7"
     },
     "dependencies": {
-        "moment": "^2.29.4",
-        "react-google-charts": "^4.0.0",
-        "react-tailwindcss-select": "^1.3.3",
-        "tw-elements": "^1.0.0-alpha12",
-        "uuid": "^9.0.0"
+        "moment": "^2.30.1",
+        "react-google-charts": "^4.0.7",
+        "uuid": "^14.0.1"
     }
 }

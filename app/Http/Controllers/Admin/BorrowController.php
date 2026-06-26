@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBorrowRequest;
 use App\Http\Requests\UpdateBorrowRequest;
 use App\Models\Borrow;
-use App\Models\BorrowKey;
 use App\Models\Employee;
 use App\Models\Key;
 use App\Models\Received;
@@ -23,8 +22,6 @@ class BorrowController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
-     * @return Response
      * @throws AuthorizationException
      */
     public function index(Request $request): Response
@@ -35,7 +32,7 @@ class BorrowController extends Controller
             'can' => [
                 'create' => $request->user()->can('borrows.create'),
                 'view' => $request->user()->can('borrows.view'),
-            ]
+            ],
         ]));
     }
 
@@ -43,27 +40,26 @@ class BorrowController extends Controller
      * Show the form for creating a new resource.
      *
      * @throws AuthorizationException
-     * @return Response
      */
     public function create(): Response
     {
         $this->authorize('borrows.create', Borrow::class);
 
-        //dd(Key::with('room')->whereNotIn('id', Borrow::KeysReceived())->get());
+        // dd(Key::with('room')->whereNotIn('id', Borrow::KeysReceived())->get());
 
         return Inertia::render('Keys/Borrow/Create', [
-            'employees' => fn() => Employee::getActiveEmployees(),
-            'keys' => fn() => Key::with('room')->whereNotIn('id', Borrow::KeysNotReceived())->get(),
+            'employees' => fn () => Employee::getActiveEmployees(),
+            'keys' => fn () => Key::with('room')->whereNotIn('id', Borrow::KeysNotReceived())->get(),
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param StoreBorrowRequest $request
-     * @throws AuthorizationException
      *
      * @return RedirectResponse
+     *
+     * @throws AuthorizationException
      */
     public function store(StoreBorrowRequest $request)
     {
@@ -72,6 +68,7 @@ class BorrowController extends Controller
         try {
             $borrow = $request->user()->borrows()->create($request->validated());
             $borrow->keys()->sync($request->keys);
+
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
             return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -81,9 +78,7 @@ class BorrowController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param Borrow $borrow
      * @throws AuthorizationException
-     * @return Response
      */
     public function show(Request $request, Borrow $borrow): Response
     {
@@ -106,15 +101,13 @@ class BorrowController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Borrow $borrow
-     * @return Response
-     *@throws AuthorizationException
+     * @throws AuthorizationException
      */
     public function edit(Borrow $borrow): Response
     {
         $this->authorize('borrows.update', $borrow);
 
-        $borrowKeys = $borrow->keys->pluck("id")->toArray();
+        $borrowKeys = $borrow->keys->pluck('id')->toArray();
         $borrow = Borrow::with(['employee', 'keys' => ['room']], 'receivedBy')->find($borrow->id);
 
         $borrowed = Key::borrowed()->pluck('id')->toArray();
@@ -130,9 +123,6 @@ class BorrowController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param UpdateBorrowRequest $request
-     * @param Borrow $borrow
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function update(UpdateBorrowRequest $request, Borrow $borrow): RedirectResponse
@@ -153,10 +143,11 @@ class BorrowController extends Controller
             $borrow->keys()->sync($request->keys);
             // Cria um log separado para alterações nas chaves
             if ($request->keys) {
-                $properties = function(Request $request) {
-                    $keys = Key::whereIn('id', $request->keys)->get()->map(function($item) {
+                $properties = function (Request $request) {
+                    $keys = Key::whereIn('id', $request->keys)->get()->map(function ($item) {
                         return $item->number;
                     })->toArray();
+
                     return ['Chaves' => implode(' - ', $keys)];
                 };
 
@@ -166,6 +157,7 @@ class BorrowController extends Controller
                     ->withProperty('attributes', $properties($request))
                     ->log('updated');
             }
+
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -173,8 +165,6 @@ class BorrowController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @param Borrow $borrow
      * @return RedirectResponse|void
      */
     private function keysBorrowed(Request $request, Borrow $borrow)
@@ -185,23 +175,23 @@ class BorrowController extends Controller
          */
         $borrowed = Key::borrowed()->pluck('id')->toArray();
 
-        $filtered = array_reduce($borrowed, function($carry, $item) use ($request) {
-            if (in_array($item, $request->keys))
+        $filtered = array_reduce($borrowed, function ($carry, $item) use ($request) {
+            if (in_array($item, $request->keys)) {
                 return ++$carry;
+            }
+
             return $carry;
         });
 
-        if ($filtered)
+        if ($filtered) {
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Alguma das chaves já estão emprestada.']);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
-     * @param Borrow $borrow
      * @throws AuthorizationException
-     * @return RedirectResponse
      */
     public function receive(Borrow $borrow, Request $request, string $keys): RedirectResponse
     {
@@ -210,7 +200,7 @@ class BorrowController extends Controller
         $request->validate([
             'returned_by' => 'required|min:2',
         ], [], [
-            'returned_by' => 'devolução'
+            'returned_by' => 'devolução',
         ]);
 
         try {
@@ -225,8 +215,9 @@ class BorrowController extends Controller
         }
 
         try {
-            if ($borrow->keys()->count() == count($borrow->receivedKeys()))
+            if ($borrow->keys()->count() == count($borrow->receivedKeys())) {
                 $borrow->update(['devolution' => now(), 'received_by' => Auth::user()->id, 'returned_by' => $request->returned_by]);
+            }
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
@@ -240,6 +231,7 @@ class BorrowController extends Controller
 
         try {
             $received->delete();
+
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -249,8 +241,6 @@ class BorrowController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Borrow $borrow
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function destroy(Borrow $borrow): RedirectResponse
@@ -259,6 +249,7 @@ class BorrowController extends Controller
 
         try {
             $borrow->delete();
+
             return to_route('borrows.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
             return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

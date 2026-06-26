@@ -24,7 +24,7 @@ class UpdateBlockRequest extends FormRequest
     public function rules()
     {
         return [
-            'description' => ['required', 'min:3', 'unique:blocks,description,' . $this->block->id],
+            'description' => ['required', 'min:3', 'unique:blocks,description,'.$this->block->id],
         ];
     }
 }

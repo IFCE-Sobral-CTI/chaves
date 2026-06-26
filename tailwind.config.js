@@ -9,7 +9,6 @@ module.exports = {
         './resources/js/**/*.jsx',
         './src/**/*.{html,js}',
         './node_modules/tw-elements/dist/js/**/*.js',
-        "./node_modules/react-tailwindcss-select/dist/index.esm.js"
     ],
 
     theme: {
@@ -30,10 +29,5 @@ module.exports = {
         },
     },
 
-    plugins: [require('@tailwindcss/forms'), require('tw-elements/dist/plugin'), require('tailwind-scrollbar')],
-
-
-    variants: {
-        scrollbar: ['rounded']
-    }
+    plugins: [],
 };

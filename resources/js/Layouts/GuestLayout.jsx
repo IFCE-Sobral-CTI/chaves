@@ -1,6 +1,6 @@
 import React from 'react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link, usePage } from '@inertiajs/inertia-react';
+import { Link, usePage } from '@inertiajs/react';
 
 export default function Guest({ children }) {
     const { title } = usePage().props;

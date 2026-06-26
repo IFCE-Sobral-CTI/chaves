@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Str;
-use Predis\Command\Redis\LLEN;
 
 return [
 

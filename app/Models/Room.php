@@ -10,12 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Room extends Model
 {
-    use HasFactory, CreatedAndUpdatedTimezone, LogsActivity;
+    use CreatedAndUpdatedTimezone, HasFactory, LogsActivity;
 
     protected $fillable = [
         'description',
@@ -23,19 +23,16 @@ class Room extends Model
         'block_id',
     ];
 
-    /**
-     * @return LogOptions
-     */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logOnly([
                 'description',
                 'observation',
-                'block.description'
+                'block.description',
             ])
             ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
+            ->dontLogEmptyChanges();
     }
 
     public function block(): BelongsTo
@@ -56,10 +53,10 @@ class Room extends Model
     public function scopeSearch($query, Request $request)
     {
         $query->with('block')
-            ->whereHas('employees', function(Builder $query) use ($request) {
+            ->whereHas('employees', function (Builder $query) use ($request) {
                 return $query->where('name', 'like', "%{$request->term}%");
             })
-            ->orWhereHas('block', function(Builder $query) use ($request) {
+            ->orWhereHas('block', function (Builder $query) use ($request) {
                 return $query->where('description', 'like', "%{$request->term}%");
             })
             ->orWhere('description', 'like', "%{$request->term}%");
@@ -67,7 +64,7 @@ class Room extends Model
         return [
             'count' => $query->count(),
             'rooms' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term, 'page' => $request->page]),
-            'page' => $request->page?? 1,
+            'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];
     }

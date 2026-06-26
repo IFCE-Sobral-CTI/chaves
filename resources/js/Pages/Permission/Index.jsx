@@ -1,8 +1,8 @@
 import Pagination from "@/Components/Dashboard/Pagination";
 import Panel from "@/Components/Dashboard/Panel";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Inertia } from "@inertiajs/inertia";
-import { Link } from "@inertiajs/inertia-react";
+import { router } from '@inertiajs/react';
+import { Link } from "@inertiajs/react";
 import React, { useEffect, useState } from "react";
 
 function Index({ permissions, count, page, termSearch, can }) {
@@ -12,7 +12,7 @@ function Index({ permissions, count, page, termSearch, can }) {
     useEffect(() => {
         const debounce = setTimeout(() => {
             setCurrentPage(1);
-            Inertia.get(route(route().current()), {term: term, page: currentPage}, {preserveState: true, replace: true});
+            router.get(route(route().current()), {term: term, page: currentPage}, {preserveState: true, replace: true});
         }, 300);
 
         return () => clearTimeout(debounce);

@@ -13,7 +13,6 @@ use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,8 +21,6 @@ class PermissionController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
-     * @return Response
      * @throws AuthorizationException
      */
     public function index(Request $request): Response
@@ -35,13 +32,13 @@ class PermissionController extends Controller
         return Inertia::render('Permission/Index', [
             'permissions' => $result['data'],
             'count' => $result['count'],
-            'page' => $request->page?? 1,
+            'page' => $request->page ?? 1,
             'termSearch' => $request->term,
             'can' => [
                 'viewAny' => $request->user()->can('permissions.viewAny'),
                 'view' => $request->user()->can('permissions.view'),
                 'create' => $request->user()->can('permissions.create'),
-            ]
+            ],
         ]);
     }
 
@@ -49,7 +46,6 @@ class PermissionController extends Controller
      * Show the form for creating a new resource.
      *
      * @throws AuthorizationException
-     * @return Response
      */
     public function create(): Response
     {
@@ -62,8 +58,6 @@ class PermissionController extends Controller
      * Store a newly created resource in storage.
      *
      * @throws AuthorizationException
-     * @param StorePermissionRequest $request
-     * @return RedirectResponse
      */
     public function store(StorePermissionRequest $request): RedirectResponse
     {
@@ -73,6 +67,7 @@ class PermissionController extends Controller
 
         try {
             $permission = Permission::create($data);
+
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'success', 'message' => 'Registro salvo com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('permissions.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -83,8 +78,6 @@ class PermissionController extends Controller
      * Display the specified resource.
      *
      * @throws AuthorizationException
-     * @param Permission $permission
-     * @return Response
      */
     public function show(Request $request, Permission $permission): Response
     {
@@ -96,7 +89,7 @@ class PermissionController extends Controller
                 'delete' => $request->user()->can('permissions.delete'),
                 'update' => $request->user()->can('permissions.update'),
                 'rules' => $request->user()->can('permissions.rules'),
-            ]
+            ],
         ]);
     }
 
@@ -104,8 +97,6 @@ class PermissionController extends Controller
      * Show the form for editing the specified resource.
      *
      * @throws AuthorizationException
-     * @param Permission $permission
-     * @return Response
      */
     public function edit(Permission $permission): Response
     {
@@ -120,9 +111,6 @@ class PermissionController extends Controller
      * Update the specified resource in storage.
      *
      * @throws AuthorizationException
-     * @param UpdatePermissionRequest $request
-     * @param Permission $permission
-     * @return RedirectResponse
      */
     public function update(UpdatePermissionRequest $request, Permission $permission): RedirectResponse
     {
@@ -132,6 +120,7 @@ class PermissionController extends Controller
 
         try {
             $permission->update($data);
+
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('permissions.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -142,8 +131,6 @@ class PermissionController extends Controller
      * Remove the specified resource from storage.
      *
      * @throws AuthorizationException
-     * @param Permission $permission
-     * @return RedirectResponse
      */
     public function destroy(Permission $permission): RedirectResponse
     {
@@ -151,6 +138,7 @@ class PermissionController extends Controller
 
         try {
             $permission->delete();
+
             return redirect()->route('permissions.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('permissions.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -160,8 +148,6 @@ class PermissionController extends Controller
     /**
      * Show the form for editing rules the specified resource.
      *
-     * @param Permission $permission
-     * @return Response
      * @throws AuthorizationException
      */
     public function rules(Permission $permission): Response
@@ -180,9 +166,6 @@ class PermissionController extends Controller
      * Update rules the specified resource in storage.
      *
      * @throws AuthorizationException
-     * @param StoreUpdatePermissionsRulesRequest $request
-     * @param Permission $permission
-     * @return RedirectResponse
      */
     public function syncRules(StoreUpdatePermissionsRulesRequest $request, Permission $permission): RedirectResponse
     {
@@ -190,10 +173,11 @@ class PermissionController extends Controller
 
         try {
             $permission->rules()->sync($request->rules);
-            $properties = function(Request $request) {
-                $rules = Rule::with('group')->whereIn('id', $request->rules)->get()->map(function($item) {
+            $properties = function (Request $request) {
+                $rules = Rule::with('group')->whereIn('id', $request->rules)->get()->map(function ($item) {
                     return $item->group->description.' - '.$item->description;
                 });
+
                 return ['rules' => implode('|', $rules->toArray())];
             };
             activity()
@@ -201,6 +185,7 @@ class PermissionController extends Controller
                 ->on($permission)
                 ->withProperty('attributes', $properties($request))
                 ->log('updated');
+
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);

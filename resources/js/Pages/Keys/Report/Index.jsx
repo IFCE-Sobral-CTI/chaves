@@ -1,7 +1,7 @@
 import Panel from "@/Components/Dashboard/Panel";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import Button from "@/Components/Form/Button";
-import { useForm } from "@inertiajs/inertia-react";
+import { useForm } from "@inertiajs/react";
 import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import moment from "moment";

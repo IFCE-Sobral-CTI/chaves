@@ -16,7 +16,6 @@ class ActivityController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return Response
      * @throws AuthorizationException
      */
     public function index(Request $request): Response
@@ -26,15 +25,13 @@ class ActivityController extends Controller
         return Inertia::render('Activity/Index', array_merge(ModelsActivity::search($request), [
             'can' => [
                 'view' => $request->user()->can('activities.view'),
-            ]
+            ],
         ]));
     }
 
     /**
      * Display the specified resource.
      *
-     * @param Activity $activity
-     * @return Response
      * @throws AuthorizationException
      */
     public function show(Request $request, Activity $activity): Response
@@ -43,20 +40,19 @@ class ActivityController extends Controller
 
         $activity = Activity::with(['causer:id,name', 'subject'])->find($activity->id);
 
-        //dd($activity);
+        // dd($activity);
 
         return Inertia::render('Activity/Show', [
             'activity' => $activity,
             'can' => [
                 'delete' => $request->user()->can('activities.delete'),
-            ]
+            ],
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Activity  $activity
      * @return Response
      */
     public function destroy(Activity $activity)

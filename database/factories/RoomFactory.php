@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Block;
+use App\Models\Rooms;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Rooms>
+ * @extends Factory<Rooms>
  */
 class RoomFactory extends Factory
 {
@@ -20,7 +21,7 @@ class RoomFactory extends Factory
         return [
             'description' => ucfirst(fake()->word),
             'observation' => fake()->sentence(),
-            'block_id' => Block::all()->random()->id
+            'block_id' => Block::all()->random()->id,
         ];
     }
 }

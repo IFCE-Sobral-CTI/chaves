@@ -1,4 +1,4 @@
-import { Link } from "@inertiajs/inertia-react";
+import { Link } from "@inertiajs/react";
 import React from "react";
 
 function Button({ children, type = 'button', processing, className, onClick, color, href }) {

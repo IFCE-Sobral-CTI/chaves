@@ -11,7 +11,6 @@ use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,8 +19,6 @@ class KeyController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
-     * @return Response
      * @throws AuthorizationException
      */
     public function index(Request $request): Response
@@ -39,7 +36,6 @@ class KeyController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return Response
      * @throws AuthorizationException
      */
     public function create(): Response
@@ -54,8 +50,6 @@ class KeyController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param StoreKeyRequest $request
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function store(StoreKeyRequest $request): RedirectResponse
@@ -64,6 +58,7 @@ class KeyController extends Controller
 
         try {
             $key = Key::create($request->validated());
+
             return redirect()->route('keys.show', $key)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('keys.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -73,8 +68,6 @@ class KeyController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param Key $key
-     * @return Response
      * @throws AuthorizationException
      */
     public function show(Request $request, Key $key): Response
@@ -93,8 +86,6 @@ class KeyController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Key $key
-     * @return Response
      * @throws AuthorizationException
      */
     public function edit(Key $key): Response
@@ -110,9 +101,6 @@ class KeyController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param UpdateKeyRequest $request
-     * @param Key $key
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function update(UpdateKeyRequest $request, Key $key): RedirectResponse
@@ -121,6 +109,7 @@ class KeyController extends Controller
 
         try {
             $key->update($request->validated());
+
             return redirect()->route('keys.show', $key)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('keys.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
@@ -130,8 +119,6 @@ class KeyController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Key $key
-     * @return RedirectResponse
      * @throws AuthorizationException
      */
     public function destroy(Key $key): RedirectResponse
@@ -139,6 +126,7 @@ class KeyController extends Controller
         $this->authorize('keys.delete', $key);
         try {
             $key->delete();
+
             return redirect()->route('keys.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
             return redirect()->route('keys.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
