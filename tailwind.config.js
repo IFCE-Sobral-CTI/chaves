@@ -8,7 +8,6 @@ module.exports = {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.jsx',
         './src/**/*.{html,js}',
-        './node_modules/tw-elements/dist/js/**/*.js',
     ],
 
     theme: {
@@ -19,9 +18,6 @@ module.exports = {
                     DEFAULT: '#359830',
                     dark: '#167911',
                 },
-            },
-            screens: {
-                'print': {'raw': 'print'},
             },
             fontFamily: {
                 sans: ['Open Sans', ...defaultTheme.fontFamily.sans],

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Input from "@/Components/Form/Input";
-import 'tw-elements';
 
 export default function Search({ data, onChange, values = [] }) {
     const [list, setList] = useState(data);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Borrow;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBorrowRequest extends FormRequest
@@ -28,7 +29,14 @@ class StoreBorrowRequest extends FormRequest
             'observation' => 'nullable',
             'employee_id' => 'required|exists:employees,id',
             'keys' => 'array',
-            'keys.*' => 'exists:keys,id',
+            'keys.*' => [
+                'exists:keys,id',
+                function ($attribute, $value, $fail) {
+                    if (in_array((int) $value, Borrow::KeysNotReceived())) {
+                        $fail("A chave selecionada já está emprestada e ainda não foi devolvida.");
+                    }
+                },
+            ],
         ];
     }
 }

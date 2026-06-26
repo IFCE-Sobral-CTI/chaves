@@ -245,28 +245,29 @@ class Borrow extends Model
     }
 
     /**
-     * Get keys that have not been returned
+     * Get keys that have not been returned.
+     * Returns key IDs that are currently on open borrows
+     * and have not yet been marked as received.
      */
     public function scopeKeysNotReceived(Builder $query): array
     {
-        $borrows = $query->where('devolution', null)->get();
+        $activeBorrowIds = $query->where('devolution', null)->pluck('id');
 
-        $keys_borrowed = collect([]);
+        if ($activeBorrowIds->isEmpty()) {
+            return [];
+        }
 
-        $borrows->map(function ($borrow) use (&$keys_borrowed) {
-            $keys_borrowed = $keys_borrowed->merge($borrow->keys->pluck('id'));
-        });
+        $receivedKeyIds = DB::table('key_received')
+            ->join('receiveds', 'key_received.received_id', '=', 'receiveds.id')
+            ->whereIn('receiveds.borrow_id', $activeBorrowIds)
+            ->pluck('key_received.key_id');
 
-        $keys_received = collect([]);
-
-        $borrows->map(function ($borrow) use (&$keys_received) {
-            $borrow->received->map(function ($received) use (&$keys_received) {
-                $keys_received = $keys_received->merge($received->keys->pluck('id'));
-            });
-        });
-
-        $keys_borrowed = $keys_borrowed->diff($keys_received);
-
-        return $keys_borrowed->values()->toArray();
+        return DB::table('borrow_key')
+            ->whereIn('borrow_id', $activeBorrowIds)
+            ->whereNotIn('key_id', $receivedKeyIds)
+            ->pluck('key_id')
+            ->unique()
+            ->values()
+            ->toArray();
     }
 }

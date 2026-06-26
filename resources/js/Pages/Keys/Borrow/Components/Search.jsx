@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Input from "@/Components/Form/Input";
-import 'tw-elements';
 import InputError from "@/Components/InputError";
 import SearchItem from "@/Pages/Keys/Borrow/Components/SearchItem";
 

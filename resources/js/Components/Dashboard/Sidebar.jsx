@@ -1,13 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "@inertiajs/react";
-import {
-    Collapse,
-    initTWE,
-} from "tw-elements";
 
-function Sidebar({ can }) {
+function Sidebar({ can, sidebarOpen }) {
     const [width, setWidth] = useState(window.innerWidth);
-    const teInitialized = useRef(false);
 
     const [accessCollapse] = useState(
         route().current('users.*') ||
@@ -24,22 +19,18 @@ function Sidebar({ can }) {
     }
 
     useEffect(() => {
-        initTWE({ Collapse });
-    }, []);
-
-    useEffect(() => {
         setWidth(window.innerWidth);
     }, [window.innerWidth]);
+
+    const isMobile = width < 1024;
+    const visible = isMobile ? sidebarOpen : true;
 
     return (
         <>
             <nav
                 id="sidebar"
-                className={"mr-2 p-2 " + (width >= 1024? '': '!visible hidden')}
-                data-te-collapse-item
-                data-te-collapse-horizontal
+                className={"mr-2 p-2 " + (visible ? '' : '!hidden')}
             >
-            {/* <nav id="sidebar" className={"mr-2 p-2"}> */}
                 <div className="flex flex-col w-48 gap-3 md:w-64">
                     <Link
                         href={route('admin')}
@@ -117,10 +108,7 @@ function Sidebar({ can }) {
                                     : ''
                                 ) + `text-gray-600 p-3 rounded-lg hover:bg-white hover:shadow-md transition flex items-center gap-4 focus:ring-0`}
                             type="button"
-
-                            data-te-collapse-init
-                            data-te-target="#accessCollapse"
-                            aria-expanded="false"
+                            aria-expanded={chevronAccess}
                             aria-controls="accessCollapse"
                             onClick={toggleChevronAccess}
                         >
@@ -142,9 +130,8 @@ function Sidebar({ can }) {
                             </span>
                         </button>
                         <div
-                            className={'flex flex-col gap-1 pl-2 ' + (chevronAccess? '': '!visible hidden')}
+                            className={'flex flex-col gap-1 pl-2 ' + (chevronAccess? '' : '!hidden')}
                             id="accessCollapse"
-                            data-te-collapse-item
                         >
                             {can.users_viewAny && <Link
                                 href={route('users.index', {term: '', page: 1})}

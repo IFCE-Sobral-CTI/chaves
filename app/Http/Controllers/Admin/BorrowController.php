@@ -129,8 +129,9 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.update', $borrow);
 
-        if (is_null($request->devolution) && $borrow->devolution) {
-            $this->keysBorrowed($request, $borrow);
+        $result = $this->keysBorrowed($request, $borrow);
+        if ($result) {
+            return $result;
         }
 
         try {
@@ -170,12 +171,14 @@ class BorrowController extends Controller
     private function keysBorrowed(Request $request, Borrow $borrow)
     {
         /*
-         * Verifica se as chaves foi retirada na data de devolução
-         * e se as chaves que voltarão a ser emprestas já estão emprestadas
+         * Verifica se as chaves a serem emprestadas já estão emprestadas
+         * por outro empréstimo ativo (excluindo as chaves do próprio empréstimo)
          */
         $borrowed = Key::borrowed()->pluck('id')->toArray();
+        $ownKeys = $borrow->keys()->pluck('id')->toArray();
+        $foreignBorrowed = array_diff($borrowed, $ownKeys);
 
-        $filtered = array_reduce($borrowed, function ($carry, $item) use ($request) {
+        $filtered = array_reduce($foreignBorrowed, function ($carry, $item) use ($request) {
             if (in_array($item, $request->keys)) {
                 return ++$carry;
             }
@@ -231,6 +234,12 @@ class BorrowController extends Controller
 
         try {
             $received->delete();
+
+            $borrow->refresh();
+
+            if ($borrow->keys()->count() != count($borrow->receivedKeys())) {
+                $borrow->update(['devolution' => null, 'received_by' => null, 'returned_by' => null]);
+            }
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {

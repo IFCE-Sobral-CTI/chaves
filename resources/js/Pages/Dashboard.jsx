@@ -4,7 +4,6 @@ import Panel from '@/Components/Dashboard/Panel';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Link } from '@inertiajs/react';
 import moment from 'moment';
-import 'tw-elements';
 
 export default function Dashboard({ borrows, can, countRooms, countKeys, countBlocks, countEmployees, countBorrows, dataBorrow, dataKeys }) {
     const [isPendingChart1, startTransitionChart1] = useTransition();

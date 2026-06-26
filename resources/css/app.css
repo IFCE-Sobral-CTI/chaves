@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @plugin "@tailwindcss/forms";
-@plugin "tw-elements/plugin.cjs";
 @plugin "tailwind-scrollbar";
 
 @config "../../tailwind.config.js";

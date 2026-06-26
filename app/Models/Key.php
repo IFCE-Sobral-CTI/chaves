@@ -54,15 +54,7 @@ class Key extends Model
 
     public function scopeBorrowed(Builder $keys): Builder
     {
-        $keys_id = Key::get()->pluck('id')->toArray();
-
-        return $keys->whereHas('borrows', function ($borrows) use ($keys_id) {
-            return $borrows->where('devolution', null)->whereHas('received', function ($received) use ($keys_id) {
-                return $received->whereHas('keys', function ($k) use ($keys_id) {
-                    return $k->whereIn('key_id', $keys_id);
-                });
-            });
-        });
+        return $keys->whereIn('id', Borrow::KeysNotReceived());
     }
 
     public function scopeSearch($query, Request $request): array

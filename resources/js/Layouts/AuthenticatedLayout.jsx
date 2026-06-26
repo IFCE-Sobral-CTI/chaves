@@ -1,4 +1,3 @@
-import 'tw-elements';
 import React, { useEffect, useState } from 'react';
 import {Head, usePage} from '@inertiajs/react';
 import Footer from '@/Components/Public/Footer';
@@ -14,6 +13,7 @@ export default function AuthenticatedLayout({breadcrumbs, children, titleChildre
     const [alert, setAlert] = useState(false);
     const [message, setMessage] = useState(flash?.flash?.message);
     const [type, setType] = useState(flash?.flash?.status);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (flash?.flash) {
@@ -30,9 +30,9 @@ export default function AuthenticatedLayout({breadcrumbs, children, titleChildre
             </AlertContext.Provider>
             <Head title='Dashboard' />
             <div className="flex flex-col min-h-screen max-w-screen bg-neutral-100">
-                <Navbar title={title} />
+                <Navbar onToggleSidebar={() => setSidebarOpen(prev => !prev)} />
                 <div className="flex flex-1">
-                    <Sidebar can={authorizations} />
+                    <Sidebar can={authorizations} sidebarOpen={sidebarOpen} />
                     <main className="flex flex-col gap-2 md:gap-4 w-full px-0.5 md:pr-2 py-2 md:py-4">
                         {breadcrumbs && <Breadcrumbs href={breadcrumbs} />}
                         {titleChildren && <Panel><h1 className="text-xl font-semibold text-center text-neutral-500">{titleChildren}</h1></Panel>}
