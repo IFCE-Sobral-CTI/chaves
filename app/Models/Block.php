@@ -48,12 +48,14 @@ class Block extends Model
     {
         $query->where('description', 'like', "%{$request->term}%");
 
+        $paginator = $query->orderBy('description', 'ASC')
+            ->select('id', 'description')
+            ->paginate(config('app.pagination'))
+            ->appends(['term' => $request->term]);
+
         return [
-            'count' => $query->count(),
-            'data' => $query->orderBy('description', 'ASC')
-                ->select('id', 'description')
-                ->paginate(env('APP_PAGINATION'))
-                ->appends(['term' => $request->term]),
+            'count' => $paginator->total(),
+            'data' => $paginator,
         ];
     }
 }

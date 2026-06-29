@@ -6,15 +6,12 @@
 @config "../../tailwind.config.js";
 
 .fadeOut{
-    opacity:0;
-    width:0;
-    height:0;
-    transition: width 0.5s 0.5s, height 0.5s 0.5s, opacity 0.5s;
-
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s, visibility 0s 0.5s;
 }
 .fadeIn{
-    opacity:1;
-    width:100px;
-    height:100px;
-    transition: width 0.5s, height 0.5s, opacity 0.5s 0.5s;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s, visibility 0s;
 }

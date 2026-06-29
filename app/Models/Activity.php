@@ -14,14 +14,18 @@ class Activity extends ModelsActivity
 
     public function scopeSearch(Builder $query, Request $request)
     {
-        $query->with('causer')->whereHas('causer', function ($query) use ($request) {
-            return $query->where('name', 'LIKE', '%'.$request->term.'%');
-        })
-            ->orWhere('subject_type', 'LIKE', '%'.$request->term.'%');
+        $query->with('causer')->where(function (Builder $q) use ($request) {
+            $q->whereHas('causer', function ($query) use ($request) {
+                return $query->where('name', 'LIKE', '%'.$request->term.'%');
+            })
+                ->orWhere('subject_type', 'LIKE', '%'.$request->term.'%');
+        });
+
+        $paginator = $query->orderBy('created_at', 'DESC')->paginate(config('app.pagination'))->appends(['term' => $request->term]);
 
         return [
-            'count' => $query->count(),
-            'activities' => $query->orderBy('created_at', 'DESC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
+            'count' => $paginator->total(),
+            'activities' => $paginator,
             'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];

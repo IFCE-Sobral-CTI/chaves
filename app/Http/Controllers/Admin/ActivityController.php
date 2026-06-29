@@ -20,7 +20,7 @@ class ActivityController extends Controller
      */
     public function index(Request $request): Response
     {
-        $this->authorize('activities.showAny', Activity::class);
+        $this->authorize('activities.viewAny', Activity::class);
 
         return Inertia::render('Activity/Index', array_merge(ModelsActivity::search($request), [
             'can' => [
@@ -55,12 +55,16 @@ class ActivityController extends Controller
      *
      * @return Response
      */
-    public function destroy(Activity $activity)
+    public function destroy(Request $request, Activity $activity)
     {
+        $this->authorize('activities.delete', $activity);
+
         try {
             $activity->delete();
         } catch (Exception $e) {
-            return to_route('activities.show', $activity)->with('flash', ['status' => 'error', 'message' => $e->getMessage()]);
+            report($e);
+
+            return to_route('activities.show', $activity)->with('flash', ['status' => 'error', 'message' => 'Não foi possível apagar o registro.']);
         }
 
         return to_route('activities.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);

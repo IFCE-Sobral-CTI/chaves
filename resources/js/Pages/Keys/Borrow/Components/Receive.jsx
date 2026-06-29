@@ -11,12 +11,19 @@ export default function Receive({ borrow, keys, received }) {
         returned_by: ''
     });
 
+    const pendingKeys = keys.filter(key => !received.includes(key.id));
+    const allSelected = pendingKeys.length > 0 && chaves.length === pendingKeys.length;
+
     const onHandleChangeKeys = (event) => {
         const value = parseInt(event.target.value);
 
         setChaves(prev => prev.includes(value)
             ? prev.filter(id => id !== value)
             : [...prev, value]);
+    }
+
+    const onHandleToggleAll = (event) => {
+        setChaves(event.target.checked ? pendingKeys.map(key => key.id) : []);
     }
 
     const submit = (e) => {
@@ -49,14 +56,14 @@ export default function Receive({ borrow, keys, received }) {
                 <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
 
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
-                    <DialogPanel className="flex flex-col w-full bg-white border-none rounded-md shadow-lg outline-none md:w-3/6 lg:w-2/6 md:m-auto bg-clip-padding">
-                        <div className="flex items-center justify-between flex-shrink-0 p-4 border-b-2 border-opacity-100 rounded-t-md border-neutral-100">
+                    <DialogPanel className="flex flex-col w-full bg-white border-none rounded-md shadow-lg outline-hidden md:w-3/6 lg:w-2/6 md:m-auto ">
+                        <div className="flex items-center justify-between shrink-0 p-4 border-b-2 rounded-t-md border-neutral-100">
                             <DialogTitle className="text-xl font-medium leading-normal text-neutral-800">
                                 Receber chave(s)
                             </DialogTitle>
                             <button
                                 type="button"
-                                className="box-content border-none rounded-none hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-none"
+                                className="box-content border-none rounded-none hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-hidden"
                                 onClick={() => setOpen(false)}
                                 aria-label="Close"
                             >
@@ -75,28 +82,29 @@ export default function Receive({ borrow, keys, received }) {
                                 </div>
                                 <div className="font-light">Chaves</div>
                                 <div className="p-2 mb-4 border border-gray-400 rounded-md">
-                                    <div className="">
-                                        {keys.length != received.length
-                                        ? keys.map((key, i) => {
-                                            if (!received.includes(key.id))
-                                                return (
-                                                    <div className="mb-2" key={i}>
-                                                        <div className="flex gap-2">
-                                                            <input type="checkbox" name={"keys" + i} value={key.id} id={'key-'+key.id} onChange={onHandleChangeKeys} className="w-5 h-5 bg-gray-100 border rounded-md text-green focus:ring-green-light" />
-                                                            <label className="text-sm" htmlFor={'key-' + key.id}>{key.number} - {key.room.description}</label>
-                                                            <InputError message={errors.keys} />
-                                                        </div>
-                                                    </div>
-                                                );
-                                        })
-                                        :<span className='text-sm font-light'>Todas as chaves já foram devolvidas.</span>}
-                                    </div>
+                                    {pendingKeys.length > 0
+                                    ? (
+                                        <>
+                                            <div className="flex gap-2 pb-2 mb-2 border-b border-gray-200">
+                                                <input type="checkbox" id="key-select-all" checked={allSelected} onChange={onHandleToggleAll} className="w-5 h-5 border border-gray-400 rounded-md cursor-pointer text-green-dark focus:ring-green-light" />
+                                                <label className="text-sm cursor-pointer" htmlFor="key-select-all">Selecionar todas</label>
+                                            </div>
+                                            {pendingKeys.map((key, i) => (
+                                                <div className="flex gap-2 mb-2" key={key.id}>
+                                                    <input type="checkbox" name={"keys" + i} value={key.id} id={'key-'+key.id} checked={chaves.includes(key.id)} onChange={onHandleChangeKeys} className="w-5 h-5 border border-gray-400 rounded-md cursor-pointer text-green-dark focus:ring-green-light" />
+                                                    <label className="text-sm cursor-pointer" htmlFor={'key-' + key.id}>{key.number} - {key.room.description}</label>
+                                                    <InputError message={errors.keys} />
+                                                </div>
+                                            ))}
+                                        </>
+                                    )
+                                    :<span className='text-sm font-light'>Todas as chaves já foram devolvidas.</span>}
                                 </div>
                             </div>
-                            <div className="flex flex-wrap items-center justify-end flex-shrink-0 p-4 border-t border-gray-200 modal-footer rounded-b-md">
+                            <div className="flex flex-wrap items-center justify-end shrink-0 p-4 border-t border-gray-200 modal-footer rounded-b-md">
                                 <button
                                     type="button"
-                                    className="flex items-center px-6 py-2.5 bg-gray-600 text-white font-light leading-tight rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-800 active:shadow-lg transition duration-150 ease-in-out"
+                                    className="flex items-center px-6 py-2.5 bg-gray-600 text-white font-light leading-tight rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-hidden focus:ring-0 active:bg-gray-800 active:shadow-lg transition duration-150 ease-in-out"
                                     onClick={() => setOpen(false)}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5 mr-3" role="img" aria-hidden="true" viewBox="0 0 16 16">
@@ -106,7 +114,7 @@ export default function Receive({ borrow, keys, received }) {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex items-center px-6 py-2.5 bg-green text-white font-light leading-tight rounded shadow-md hover:bg-green-dark hover:shadow-lg focus:bg-green-dark focus:shadow-lg focus:outline-none focus:ring-0 active:bg-red-800 active:shadow-lg transition duration-150 ease-in-out ml-1"
+                                    className="flex items-center px-6 py-2.5 bg-green text-white font-light leading-tight rounded shadow-md hover:bg-green-dark hover:shadow-lg focus:bg-green-dark focus:shadow-lg focus:outline-hidden focus:ring-0 active:bg-red-800 active:shadow-lg transition duration-150 ease-in-out ml-1"
                                     disabled={processing}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5 mr-3" role="img" aria-hidden="true" viewBox="0 0 16 16">

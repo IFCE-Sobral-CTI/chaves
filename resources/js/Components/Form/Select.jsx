@@ -4,7 +4,7 @@ function Select({
     children,
     name,
     value,
-    className,
+    className = '',
     isFocused,
     handleChange,
     required
@@ -24,7 +24,7 @@ function Select({
                 id={name}
                 value={value?? ''}
                 className={
-                    `w-full border-neutral-400 focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 rounded-lg shadow-sm ` +
+                    `w-full border-neutral-400 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200/50 rounded-lg shadow-sm ` +
                     className
                 }
                 ref={select}

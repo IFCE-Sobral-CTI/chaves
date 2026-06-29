@@ -96,6 +96,8 @@ return [
 
     'timezone' => env('APP_TIMEZONE', 'UTC'),
 
+    'pagination' => (int) env('APP_PAGINATION', 15),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

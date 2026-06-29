@@ -38,7 +38,7 @@ class UpdateBorrowRequest extends FormRequest
                     $notReceived = Borrow::KeysNotReceived();
 
                     if ($borrow) {
-                        $ownKeys = $borrow->keys()->pluck('id')->toArray();
+                        $ownKeys = $borrow->keys()->pluck('keys.id')->toArray();
                         $notReceived = array_diff($notReceived, $ownKeys);
                     }
 

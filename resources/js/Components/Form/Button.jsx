@@ -1,7 +1,7 @@
 import { Link } from "@inertiajs/react";
 import React from "react";
 
-function Button({ children, type = 'button', processing, className, onClick, color, href }) {
+function Button({ children, type = 'button', processing, className = '', onClick, color, href }) {
     const handleClick = (event) => {
         if ((typeof onClick) == 'function' )
             onClick(event)

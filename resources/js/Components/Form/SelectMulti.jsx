@@ -28,20 +28,22 @@ function SelectMulti({ data, onChange, value, error, label, name }) {
                 value: selected.map(item => item.id)
             }
         });
+    }, [selected]);
 
+    useEffect(() => {
         const debounce = setTimeout(() => {
             setList(data.filter((item) => {
                 return item.name.toLowerCase().includes(term.toLowerCase());
-            }, term));
+            }));
         }, 300);
 
-        document.addEventListener('click', handleClickOutside, true);
+        return () => clearTimeout(debounce);
+    }, [term, data]);
 
-        return () => {
-            clearTimeout(debounce)
-            document.removeEventListener('click', handleClickOutside, true);
-        };
-    }, [term, selected]);
+    useEffect(() => {
+        document.addEventListener('click', handleClickOutside, true);
+        return () => document.removeEventListener('click', handleClickOutside, true);
+    }, []);
 
     const handleSelect = (event) => {
         let value = list.filter(item => item.id === event.target.value);
@@ -53,12 +55,14 @@ function SelectMulti({ data, onChange, value, error, label, name }) {
         toggleHandle();
     }
 
-    const items = list.map((item, index) => {
+    const items = list.map((item) => {
         let sel = selected.map(item => item.id);
 
         if (!sel.includes(item.id))
             return (
-                <li className="px-2 py-1 font-light transition rounded-lg cursor-pointer hover:bg-neutral-100" key={index} onClick={handleSelect} value={item.id}>{item.name}</li>
+                <li key={item.id}>
+                    <button type="button" className="w-full px-2 py-1 font-light text-left transition rounded-lg cursor-pointer hover:bg-neutral-100" onClick={handleSelect} value={item.id}>{item.name}</button>
+                </li>
             );
     });
 
@@ -73,21 +77,23 @@ function SelectMulti({ data, onChange, value, error, label, name }) {
         setTerm('');
     }
 
+    const inputId = name ? `select-multi-${name}` : undefined;
+
     return (
         <div className="relative w-full mb-4">
-            <label className="font-light">{label}</label>
+            <label htmlFor={inputId} className="font-light">{label}</label>
             <div className="flex p-2 border rounded-lg border-neutral-400" onClick={toggleHandle}>
                 <div className="flex flex-1 gap-2">
                     {selected.length > 0
-                    ?selected.map((item, i) => {
+                    ?selected.map((item) => {
                         return (
-                            <div className="inline-flex items-center justify-between gap-2 text-sm font-light rounded-md text-neutral-700 bg-neutral-200" key={i}>
+                            <div className="inline-flex items-center justify-between gap-2 text-sm font-light rounded-md text-neutral-700 bg-neutral-200" key={item.id}>
                                 <span className="pl-2">{item.name}</span>
-                                <span onClick={() => handleUnselect(item.id)} className="pr-1 border-l border-neutral-400">
+                                <button type="button" onClick={() => handleUnselect(item.id)} className="pr-1 border-l border-neutral-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-4 h-4" viewBox="0 0 16 16">
                                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                                     </svg>
-                                </span>
+                                </button>
                             </div>
                         );
                     })
@@ -102,7 +108,7 @@ function SelectMulti({ data, onChange, value, error, label, name }) {
             <InputError message={error} />
             <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} ref={ref}>
                 <div className="">
-                    <input type="text" value={term} ref={inputRef} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
+                    <input id={inputId} type="text" value={term} ref={inputRef} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
                 </div>
                 <div className="p-1 overflow-auto bg-white border-b border-l border-r rounded-b-lg shadow-md max-h-32 border-neutral-400 scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-ful">
                     <ul>

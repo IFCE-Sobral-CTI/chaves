@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\AssignablePermission;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
@@ -30,7 +31,7 @@ class StoreUserRequest extends FormRequest
             'email' => 'required|email|unique:users,email',
             'status' => 'required|in:0,1',
             'password' => ['required', 'confirmed', Password::defaults()],
-            'permission_id' => 'required|exists:permissions,id',
+            'permission_id' => ['required', 'exists:permissions,id', new AssignablePermission],
         ];
     }
 }

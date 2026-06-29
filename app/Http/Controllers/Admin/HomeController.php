@@ -16,8 +16,15 @@ class HomeController extends Controller
 {
     public function index(Request $request): Response
     {
+        // O dashboard é a landing page pós-login, acessível a qualquer usuário
+        // autenticado. Apenas contagens agregadas são expostas a todos; a lista
+        // de empréstimos recentes só aparece para quem pode visualizá-los.
+        $canViewBorrows = $request->user()->can('borrows.viewAny');
+
         return Inertia::render('Dashboard', [
-            'borrows' => Borrow::with('employee')->orderBy('id', 'DESC')->take(5)->get(),
+            'borrows' => $canViewBorrows
+                ? Borrow::with('employee')->orderBy('id', 'DESC')->take(5)->get()
+                : [],
             'countRooms' => Room::count(),
             'countBlocks' => Block::count(),
             'countKeys' => Key::count(),

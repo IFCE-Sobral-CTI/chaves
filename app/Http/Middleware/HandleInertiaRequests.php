@@ -51,19 +51,23 @@ class HandleInertiaRequests extends Middleware
                     return [];
                 }
 
-                $rules = [];
+                $cacheKey = 'user_controls_' . $request->user()->id;
 
-                if ($request->user()->isAdmin()) {
-                    foreach (Rule::where('control', 'like', '%viewAny%')->get() as $rule) {
-                        $rules[str_replace('.', '_', $rule->control)] = true;
-                    }
-                } else {
-                    foreach ($request->user()->permission->rules()->where('control', 'like', '%viewAny%')->get() as $rule) {
-                        $rules[str_replace('.', '_', $rule->control)] = true;
-                    }
-                }
+                return cache()->remember($cacheKey, now()->addMinutes(5), function () use ($request) {
+                    $rules = [];
 
-                return $rules;
+                    if ($request->user()->isAdmin()) {
+                        foreach (Rule::where('control', 'like', '%viewAny%')->pluck('control') as $control) {
+                            $rules[str_replace('.', '_', $control)] = true;
+                        }
+                    } else {
+                        foreach ($request->user()->permission?->rules()->where('control', 'like', '%viewAny%')->pluck('control') ?? [] as $control) {
+                            $rules[str_replace('.', '_', $control)] = true;
+                        }
+                    }
+
+                    return $rules;
+                });
             },
         ]);
     }

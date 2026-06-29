@@ -47,7 +47,7 @@ function Create({ permissions }) {
                                 <option value={0} disabled>Selecione uma permissão</option>
                                 {permissions.map((item, index) => {
                                     return (
-                                        <option value={item.id} key={index}>{item.description}</option>
+                                        <option value={item.id} key={item.id}>{item.description}</option>
                                     );
                                 })}
                             </Select>

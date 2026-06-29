@@ -76,7 +76,7 @@ class Employee extends Model
             return null;
         }
 
-        return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE'))->format('d/m/Y H:i:s');
+        return Carbon::parse($date)->setTimezone(config('app.timezone'))->format('d/m/Y H:i:s');
     }
 
     public function borrows(): HasMany
@@ -94,12 +94,17 @@ class Employee extends Model
      */
     public function scopeSearch(Builder $query, Request $request)
     {
-        $query->with(['borrowable_keys' => ['room']])->where('name', 'like', "%{$request->term}%")
-            ->orWhere('registry', 'like', "%{$request->term}%");
+        $query->with(['borrowable_keys' => ['room']])
+            ->where(function (Builder $q) use ($request) {
+                $q->where('name', 'like', "%{$request->term}%")
+                    ->orWhere('registry', 'like', "%{$request->term}%");
+            });
+
+        $paginator = $query->orderBy('name', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $request->term]);
 
         return [
-            'count' => $query->count(),
-            'employees' => $query->orderBy('name', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
+            'count' => $paginator->total(),
+            'employees' => $paginator,
             'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];

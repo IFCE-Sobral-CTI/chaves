@@ -23,6 +23,12 @@ class Permission extends Model
         'description',
     ];
 
+    // is_admin NÃO é fillable de propósito: evita que a flag de administrador seja
+    // atribuída via formulários de CRUD de permissão (vetor de escalonamento).
+    protected $casts = [
+        'is_admin' => 'boolean',
+    ];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -47,9 +53,11 @@ class Permission extends Model
     {
         $query->where('description', 'like', "%{$term}%");
 
+        $paginator = $query->orderBy('description', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $term]);
+
         return [
-            'count' => $query->count(),
-            'data' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $term]),
+            'count' => $paginator->total(),
+            'data' => $paginator,
         ];
     }
 }

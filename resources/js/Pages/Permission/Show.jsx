@@ -8,7 +8,7 @@ import DeleteModal from "@/Components/Dashboard/DeleteModal";
 function Show({ permission, can }) {
     const rules = permission.rules.map((item, index) => {
         return (
-            <div className="flex justify-between gap-2 px-2 transition border-b hover:bg-neutral-50" key={index}>
+            <div className="flex justify-between gap-2 px-2 transition border-b hover:bg-neutral-50" key={item.id}>
                 <div className="flex flex-col flex-1">
                     <span className="text-sm font-light">Descrição</span>
                     <p>{item.description}</p>

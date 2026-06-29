@@ -63,7 +63,9 @@ class EmployeeController extends Controller
 
             return redirect()->route('employees.show', $employee)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            report($e);
+
+            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
         }
     }
 
@@ -115,7 +117,9 @@ class EmployeeController extends Controller
 
             return redirect()->route('employees.show', $employee)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            report($e);
+
+            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
         }
     }
 
@@ -126,14 +130,16 @@ class EmployeeController extends Controller
      */
     public function destroy(Employee $employee): RedirectResponse
     {
-        $this->authorize('employees.view', $employee);
+        $this->authorize('employees.delete', $employee);
 
         try {
             $employee->delete();
 
             return redirect()->route('employees.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
-            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            report($e);
+
+            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => 'Não foi possível apagar o registro.']);
         }
     }
 }

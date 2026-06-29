@@ -44,7 +44,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
 
     const list = borrows.data.map((borrow, i) => {
         return (
-            <tr key={i} className={"border-t text-sm transition hover:bg-neutral-100 " + (i % 2 == 0? 'bg-neutral-50': '')}>
+            <tr key={i} className={"border-t border-neutral-200 text-sm transition hover:bg-neutral-100 " + (i % 2 == 0? 'bg-neutral-50': '')}>
                 <td className="px-1 py-3 font-light">{borrow.created_at}</td>
                 <td className="px-1 py-3 font-light">{borrow.devolution}</td>
                 <td className="px-1 py-3 font-light">{borrow.employee.name}</td>
@@ -84,7 +84,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
             <AuthenticatedLayout titleChildren={'Relatórios'} breadcrumbs={[{ label: 'Relatórios', url: route('reports.index') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} className="flex items-end justify-between gap-4">
-                        <div className="w-1/3 p-2 border rounded-lg">
+                        <div className="w-1/3 p-2 border border-neutral-300 rounded-lg">
                             <div className="">Por data</div>
                             <div className="flex gap-2">
                                 <div className="flex-1">
@@ -100,11 +100,11 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                             </div>
                         </div>
                         <div className="flex justify-between w-2/3 gap-4">
-                            <div className="flex-1 p-2 border rounded-lg">
+                            <div className="flex-1 p-2 border border-neutral-300 rounded-lg">
                                 <div className="">Por Mutuário</div>
                                 <SelectEmployee value={data.employee} data={employees} onChange={(id) => setData('employee', id)}  error={errors.employee} />
                             </div>
-                            <div className="flex-1 p-2 border rounded-lg">
+                            <div className="flex-1 p-2 border border-neutral-300 rounded-lg">
                                 <div className="">Entregue por</div>
                                 <div className="">
                                     <label htmlFor="user" className="font-light">Usuário</label>
@@ -112,14 +112,14 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                                         <option>Selecione um Usuário</option>
                                         {users.map((user, index) => {
                                             return (
-                                                <option value={user.id} key={index}>{user.name}</option>
+                                                <option value={user.id} key={user.id}>{user.name}</option>
                                             );
                                         })}
                                     </Select>
                                     <InputError message={errors.user} />
                                 </div>
                             </div>
-                            <div className="flex-1 p-2 border rounded-lg">
+                            <div className="flex-1 p-2 border border-neutral-300 rounded-lg">
                                 <div className="">Por Situação</div>
                                 <div className="">
                                     <label htmlFor="situation" className="font-light">Situação</label>
@@ -158,9 +158,9 @@ function Index({ errors, borrows, count, filter, filters, users, employees }) {
                     <table className="w-full table-auto text-neutral-600">
                         <thead>
                             <tr>
-                                <th colSpan={2} className="px-1 pt-3 font-semibold text-center border-b">Datas</th>
+                                <th colSpan={2} className="px-1 pt-3 font-semibold text-center border-b border-neutral-300">Datas</th>
                                 <th></th>
-                                <th colSpan={2} className="px-1 pt-3 font-semibold text-center border-b">Usuários</th>
+                                <th colSpan={2} className="px-1 pt-3 font-semibold text-center border-b border-neutral-300">Usuários</th>
                             </tr>
                             <tr>
                                 <th className="px-1 pt-3 font-semibold text-left">Entrega</th>

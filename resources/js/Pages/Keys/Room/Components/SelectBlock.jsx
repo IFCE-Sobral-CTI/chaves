@@ -16,36 +16,40 @@ function SelectBlock({ data, onChange, error, value }) {
 
     useEffect(() => {
         if (value) {
-            setSelected(data.filter(item => item.id == value).pop());
+            setSelected(data.filter(item => item.id === value).pop());
         }
     }, []);
 
     useEffect(() => {
-        onChange(selected.id)
+        onChange(selected.id);
+    }, [selected]);
 
+    useEffect(() => {
         const debounce = setTimeout(() => {
             setList(data.filter((item) => {
                 return item.description.toLowerCase().includes(term.toLowerCase());
-            }, term));
+            }));
         }, 300);
 
-        document.addEventListener('click', handleClickOutside, true);
+        return () => clearTimeout(debounce);
+    }, [term, data]);
 
-        return () => {
-            clearTimeout(debounce)
-            document.removeEventListener('click', handleClickOutside, true);
-        };
-    }, [term, selected]);
+    useEffect(() => {
+        document.addEventListener('click', handleClickOutside, true);
+        return () => document.removeEventListener('click', handleClickOutside, true);
+    }, []);
 
     const handleSelect = (event) => {
-        setSelected(data.filter(item => item.id == event.target.value).pop())
+        setSelected(data.filter(item => item.id === event.target.value).pop())
         toggleHandle();
     }
 
-    const items = list.map((item, index) => {
-        if (selected?.id != item.id)
+    const items = list.map((item) => {
+        if (selected?.id !== item.id)
             return (
-                <li className="px-2 py-1 rounded-lg transition cursor-pointer font-light hover:bg-neutral-100" key={index} onClick={handleSelect} value={item.id}>{item.description}</li>
+                <li key={item.id}>
+                    <button type="button" className="w-full px-2 py-1 text-left rounded-lg transition cursor-pointer font-light hover:bg-neutral-100" onClick={handleSelect} value={item.id}>{item.description}</button>
+                </li>
             );
     });
 
@@ -60,12 +64,14 @@ function SelectBlock({ data, onChange, error, value }) {
         setTerm('');
     }
 
+    const inputId = 'select-block';
+
     return (
         <div className="w-full mb-4 relative">
-            <label className="font-light">Bloco</label>
+            <label htmlFor={inputId} className="font-light">Bloco</label>
             <div className="flex border border-neutral-400 rounded-lg p-2" onClick={toggleHandle}>
                 <div className="flex-1">
-                    {selected.id != null
+                    {selected.id !== null
                     ?<span className="text-neutral-700 font-normal">{selected.description}</span>
                     :<span className="text-neutral-500">Nenhum bloco selecionado</span>}
                 </div>
@@ -78,7 +84,7 @@ function SelectBlock({ data, onChange, error, value }) {
             <InputError message={error} />
             <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} ref={ref}>
                 <div className="">
-                    <input type="text" value={term} ref={inputRef} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
+                    <input id={inputId} type="text" value={term} ref={inputRef} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
                 </div>
                 <div className="max-h-32 p-1 shadow-md rounded-b-lg border-b border-l border-r border-neutral-400 bg-white overflow-auto scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-ful">
                     <ul>

@@ -64,7 +64,9 @@ class BlockController extends Controller
 
             return to_route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
-            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            report($e);
+
+            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
         }
     }
 
@@ -114,7 +116,9 @@ class BlockController extends Controller
 
             return to_route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            report($e);
+
+            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
         }
     }
 
@@ -132,7 +136,9 @@ class BlockController extends Controller
 
             return to_route('blocks.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
-            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
+            report($e);
+
+            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
         }
     }
 }

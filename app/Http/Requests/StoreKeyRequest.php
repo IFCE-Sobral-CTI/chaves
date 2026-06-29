@@ -27,7 +27,7 @@ class StoreKeyRequest extends FormRequest
             'description' => 'nullable|min:2',
             'number' => 'required|integer',
             'observation' => 'nullable',
-            'room_id' => 'exists:rooms,id',
+            'room_id' => 'required|exists:rooms,id',
         ];
     }
 }

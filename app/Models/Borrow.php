@@ -39,6 +39,8 @@ class Borrow extends Model
         'observation',
         'employee_id',
         'user_id',
+        'received_by',
+        'returned_by',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -63,12 +65,17 @@ class Borrow extends Model
             return null;
         }
 
-        return Carbon::parse($date)->setTimezone(env('APP_TIMEZONE'))->format('d/m/Y H:i:s');
+        return Carbon::parse($date)->setTimezone(config('app.timezone'))->format('d/m/Y H:i:s');
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function receivedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by');
     }
 
     public function employee(): BelongsTo
@@ -97,13 +104,17 @@ class Borrow extends Model
 
         $query->with(['employee', 'user', 'received', 'keys' => ['room']])
             ->whereHas('employee', function (Builder $query) use ($request) {
-                $query->where('name', 'like', "%{$request->term}%")
-                    ->orWhere('registry', 'like', "%{$request->term}%");
+                $query->where(function (Builder $q) use ($request) {
+                    $q->where('name', 'like', "%{$request->term}%")
+                        ->orWhere('registry', 'like', "%{$request->term}%");
+                });
             });
 
+        $paginator = $query->orderBy('id', 'desc')->paginate(config('app.pagination'))->appends(['term' => $request->term]);
+
         return [
-            'count' => $query->count(),
-            'borrows' => $query->orderBy('id', 'desc')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term]),
+            'count' => $paginator->total(),
+            'borrows' => $paginator,
             'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];
@@ -132,10 +143,15 @@ class Borrow extends Model
         $start = now()->subDays(6)->startOfDay();
         $end = now()->subDays(6)->endOfDay();
 
-        for ($i = $count = 0; $i <= 6; $i++, $start->addDay(), $end->addDay(), $count = 0) {
-            foreach ($query->whereBetween('created_at', [$start, $end])->get() as $borrow) {
-                $count += $borrow->keys->count();
-            }
+        $borrowsWithKeys = $query->clone()
+            ->withCount('keys')
+            ->whereBetween('created_at', [$start->clone(), $end->clone()->addDays(6)])
+            ->get();
+
+        for ($i = 0; $i <= 6; $i++, $start->addDay(), $end->addDay()) {
+            $count = $borrowsWithKeys
+                ->whereBetween('created_at', [$start->clone(), $end->clone()])
+                ->sum('keys_count');
 
             $data[] = [$start->format('d/m'), $count];
         }
@@ -155,9 +171,11 @@ class Borrow extends Model
         $this->filterByEmployee($query, $request);
         $this->filterByUser($query, $request);
 
+        $paginator = $query->orderBy('created_at', 'desc')->paginate(config('app.pagination'))->appends($request->all());
+
         return [
-            'count' => $query->count(),
-            'borrows' => $query->orderBy('created_at', 'desc')->paginate(env('APP_PAGINATION'))->appends($request->all()),
+            'count' => $paginator->total(),
+            'borrows' => $paginator,
             'page' => $request->page ?? 1,
             'filter' => ($request->has('start') || $request->has('end') || $request->has('employee') || $request->has('user') || $request->has('situation')),
         ];

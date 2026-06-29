@@ -19,8 +19,11 @@ function Sidebar({ can, sidebarOpen }) {
     }
 
     useEffect(() => {
-        setWidth(window.innerWidth);
-    }, [window.innerWidth]);
+        const handleResize = () => setWidth(window.innerWidth);
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const isMobile = width < 1024;
     const visible = isMobile ? sidebarOpen : true;
@@ -29,7 +32,7 @@ function Sidebar({ can, sidebarOpen }) {
         <>
             <nav
                 id="sidebar"
-                className={"mr-2 p-2 " + (visible ? '' : '!hidden')}
+                className={"mr-2 p-2 " + (visible ? '' : 'hidden!')}
             >
                 <div className="flex flex-col w-48 gap-3 md:w-64">
                     <Link
@@ -106,7 +109,7 @@ function Sidebar({ can, sidebarOpen }) {
                                     accessCollapse
                                     ? 'bg-gray-50 shadow-md '
                                     : ''
-                                ) + `text-gray-600 p-3 rounded-lg hover:bg-white hover:shadow-md transition flex items-center gap-4 focus:ring-0`}
+                                ) + `text-gray-600 p-3 rounded-lg hover:bg-white hover:shadow-md transition flex items-center gap-4 focus:ring-2`}
                             type="button"
                             aria-expanded={chevronAccess}
                             aria-controls="accessCollapse"
@@ -130,7 +133,7 @@ function Sidebar({ can, sidebarOpen }) {
                             </span>
                         </button>
                         <div
-                            className={'flex flex-col gap-1 pl-2 ' + (chevronAccess? '' : '!hidden')}
+                            className={'flex flex-col gap-1 pl-2 ' + (chevronAccess? '' : 'hidden!')}
                             id="accessCollapse"
                         >
                             {can.users_viewAny && <Link

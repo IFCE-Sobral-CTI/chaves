@@ -85,12 +85,12 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->permission->description === 'Administrador';
+        return (bool) $this->permission?->is_admin;
     }
 
     public function hasRule($rule): bool
     {
-        return $this->permission->rules()->hasControl($rule);
+        return (bool) $this->permission?->rules()->hasControl($rule);
     }
 
     /**
@@ -99,12 +99,16 @@ class User extends Authenticatable
     public function scopeSearch($query, $term = ''): array
     {
         $query->with('permission')
-            ->where('name', 'like', "%{$term}%")
-            ->orWhere('email', 'like', "%{$term}%");
+            ->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                    ->orWhere('email', 'like', "%{$term}%");
+            });
+
+        $paginator = $query->orderBy('name', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $term]);
 
         return [
-            'count' => $query->count(),
-            'data' => $query->orderBy('name', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $term]),
+            'count' => $paginator->total(),
+            'data' => $paginator,
         ];
     }
 }

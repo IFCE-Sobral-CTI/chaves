@@ -48,14 +48,14 @@ export default function DeleteModal({ url, forTable }) {
                 <div className="fixed inset-0 bg-black/50 transition-opacity" aria-hidden="true" />
 
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
-                    <DialogPanel className="flex flex-col w-full bg-white border-none rounded-md shadow-lg outline-none md:w-3/6 lg:w-2/6 md:m-auto bg-clip-padding">
-                        <div className="flex items-center justify-between flex-shrink-0 p-4 border-b-2 border-opacity-100 rounded-t-md border-neutral-100">
+                    <DialogPanel className="flex flex-col w-full bg-white border-none rounded-md shadow-lg outline-hidden md:w-3/6 lg:w-2/6 md:m-auto ">
+                        <div className="flex items-center justify-between shrink-0 p-4 border-b-2 rounded-t-md border-neutral-100">
                             <DialogTitle className="text-xl font-medium leading-normal text-neutral-800">
                                 Apagar registro
                             </DialogTitle>
                             <button
                                 type="button"
-                                className="box-content border-none rounded-none hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-none"
+                                className="box-content border-none rounded-none hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-hidden"
                                 onClick={() => setOpen(false)}
                                 aria-label="Close"
                             >
@@ -69,10 +69,10 @@ export default function DeleteModal({ url, forTable }) {
                             <p>Deseja realmente excluir este registro?</p>
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-end flex-shrink-0 p-4 border-t-2 border-opacity-100 rounded-b-md border-neutral-100">
+                        <div className="flex flex-wrap items-center justify-end shrink-0 p-4 border-t-2 rounded-b-md border-neutral-100">
                             <button
                                 type="button"
-                                className="flex items-center px-6 py-2.5 bg-gray-600 text-white font-light leading-tight rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-800 active:shadow-lg transition duration-150 ease-in-out"
+                                className="flex items-center px-6 py-2.5 bg-gray-600 text-white font-light leading-tight rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-hidden focus:ring-0 active:bg-gray-800 active:shadow-lg transition duration-150 ease-in-out"
                                 onClick={() => setOpen(false)}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5 mr-3" role="img" aria-hidden="true" viewBox="0 0 16 16">
@@ -83,7 +83,7 @@ export default function DeleteModal({ url, forTable }) {
                             <form onSubmit={submit}>
                                 <button
                                     type="submit"
-                                    className="flex items-center px-6 py-2.5 bg-red-600 text-white font-light leading-tight rounded shadow-md hover:bg-red-700 hover:shadow-lg focus:bg-red-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-red-800 active:shadow-lg transition duration-150 ease-in-out ml-1"
+                                    className="flex items-center px-6 py-2.5 bg-red-600 text-white font-light leading-tight rounded shadow-md hover:bg-red-700 hover:shadow-lg focus:bg-red-700 focus:shadow-lg focus:outline-hidden focus:ring-0 active:bg-red-800 active:shadow-lg transition duration-150 ease-in-out ml-1"
                                     disabled={processing}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5 mr-3" role="img" aria-hidden="true" viewBox="0 0 16 16">

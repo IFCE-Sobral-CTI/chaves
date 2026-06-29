@@ -19,7 +19,7 @@ export default function SearchItem({ item, toggleItemHandler, i, icon }) {
     }, []);
 
     return (
-        <tr className="border-t cursor-pointer" onClick={() => toggleItemHandler(item.id)} key={i}>
+        <tr className="border-t border-neutral-300 cursor-pointer" onClick={() => toggleItemHandler(item.id)} key={i}>
             <td className="w-1/6 p-2">{item.number}</td>
             <td className="w-4/6 p-2">{item.room.description}</td>
             <td className="w-1/6 p-2">

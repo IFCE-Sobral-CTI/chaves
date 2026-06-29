@@ -44,7 +44,7 @@ function Navbar({ onToggleSidebar }) {
                             </svg>
                             {auth.user.name.split(' ')[0]}
                         </MenuButton>
-                        <MenuItems className="absolute right-0 z-[1000] mt-2 min-w-max list-none overflow-hidden rounded-lg border-none bg-white shadow-lg focus:outline-none">
+                        <MenuItems className="absolute right-0 z-[1000] mt-2 min-w-max list-none overflow-hidden rounded-lg border-none bg-white shadow-lg focus:outline-hidden">
                             <MenuItem>
                                 {({ focus }) => (
                                     <Link

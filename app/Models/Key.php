@@ -60,21 +60,25 @@ class Key extends Model
     public function scopeSearch($query, Request $request): array
     {
         $query->with('room')
-            ->whereHas('room', function (Builder $query) use ($request) {
-                $query->where('description', 'like', "%{$request->term}%")
-                    ->orWhereHas('employees', function (Builder $query) use ($request) {
-                        $query->where('name', 'like', "%{$request->term}%");
-                    })
-                    ->orWhereHas('block', function (Builder $query) use ($request) {
-                        $query->where('description', 'like', "%{$request->term}%");
-                    });
-            })
-            ->orWhere('number', 'like', "%{$request->term}%")
-            ->orWhere('description', 'like', "%{$request->term}%");
+            ->where(function (Builder $q) use ($request) {
+                $q->whereHas('room', function (Builder $query) use ($request) {
+                    $query->where('description', 'like', "%{$request->term}%")
+                        ->orWhereHas('employees', function (Builder $query) use ($request) {
+                            $query->where('name', 'like', "%{$request->term}%");
+                        })
+                        ->orWhereHas('block', function (Builder $query) use ($request) {
+                            $query->where('description', 'like', "%{$request->term}%");
+                        });
+                })
+                    ->orWhere('number', 'like', "%{$request->term}%")
+                    ->orWhere('description', 'like', "%{$request->term}%");
+            });
+
+        $paginator = $query->orderBy('number', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $request->term, 'page' => $request->page]);
 
         return [
-            'count' => $query->count(),
-            'keys' => $query->orderBy('number', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term, 'page' => $request->page]),
+            'count' => $paginator->total(),
+            'keys' => $paginator,
             'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];

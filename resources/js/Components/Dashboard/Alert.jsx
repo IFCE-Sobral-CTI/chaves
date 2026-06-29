@@ -19,7 +19,7 @@ function Alert() {
     switch (type) {
         case 'success':
             textColor = " text-white";
-            bgColor = " bg-green";
+            bgColor = " bg-green-500";
             borderColor = " border-white";
             break;
         case 'danger':

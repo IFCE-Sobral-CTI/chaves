@@ -41,9 +41,11 @@ class Group extends Model
     {
         $query->where('description', 'like', "%{$request->term}%");
 
+        $paginator = $query->orderBy('description', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $request->term ?? '', 'page' => $request->page ?? 1]);
+
         return [
-            'count' => $query->count(),
-            'groups' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term ?? '', 'page' => $request->page ?? 1]),
+            'count' => $paginator->total(),
+            'groups' => $paginator,
             'termSearch' => $request->term,
             'page' => $request->page ?? 1,
         ];

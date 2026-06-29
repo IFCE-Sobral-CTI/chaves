@@ -52,17 +52,21 @@ class Rule extends Model
     public function scopeSearch($query, $term): array
     {
         $query->with('group')
-            ->where('description', 'like', "%{$term}%")
-            ->orWhere('control', 'like', "%{$term}%");
+            ->where(function ($q) use ($term) {
+                $q->where('description', 'like', "%{$term}%")
+                    ->orWhere('control', 'like', "%{$term}%");
+            });
+
+        $paginator = $query->orderBy('control', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $term]);
 
         return [
-            'count' => $query->count(),
-            'data' => $query->orderBy('control', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $term]),
+            'count' => $paginator->total(),
+            'data' => $paginator,
         ];
     }
 
     public function scopeHasControl($query, $control): bool
     {
-        return (bool) $query->where('control', $control)->count();
+        return (bool) $query->where('control', $control)->exists();
     }
 }

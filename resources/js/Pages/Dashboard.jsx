@@ -69,17 +69,18 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
     }
 
     const list = borrows.map((item, i) => {
+        const fallbackUrl = route('borrows.index');
         return (
-            <tr className="transition border-t hover:bg-neutral-100" key={'list' + i}>
+            <tr className="transition border-t border-gray-200 hover:bg-neutral-100" key={'list' + i}>
                 <td className="font-light p-1.5">
-                    <Link href={can.borrowView? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.created_at}</Link>
+                    <Link href={can.borrowView? route('borrows.show', item.id): fallbackUrl}>{item.created_at}</Link>
                 </td>
                 <td className="font-light p-1.5">
-                    <Link href={can.borrowView? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{item.employee.name}</Link>
+                    <Link href={can.borrowView? route('borrows.show', item.id): fallbackUrl}>{item.employee.name}</Link>
                 </td>
-                <td className="font-light p-1.5 hidden md:table-cell"><Link href={can.borrowView? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>{status(item.created_at, item.devolution)}</Link></td>
+                <td className="font-light p-1.5 hidden md:table-cell"><Link href={can.borrowView? route('borrows.show', item.id): fallbackUrl}>{status(item.created_at, item.devolution)}</Link></td>
                 <td className="flex justify-end p-1.5 text-neutral-400">
-                    <Link href={can.borrowView? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
+                    <Link href={can.borrowView? route('borrows.show', item.id): fallbackUrl}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                             <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
                         </svg>
@@ -141,7 +142,7 @@ export default function Dashboard({ borrows, can, countRooms, countKeys, countBl
                         <h1>Últimos empréstimos</h1>
                         <table className="table w-full table-auto">
                             <thead>
-                                <tr className="border-b">
+                                <tr className="border-b border-gray-300">
                                     <th className="font-semibold text-left px-1.5 pt-1.5">Data</th>
                                     <th className="font-semibold text-left px-1.5 pt-1.5">Servidor</th>
                                     <th className="font-semibold text-left px-1.5 pt-1.5 hidden md:table-cell">Situação</th>

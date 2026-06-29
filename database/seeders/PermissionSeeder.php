@@ -15,7 +15,10 @@ class PermissionSeeder extends Seeder
      */
     public function run()
     {
-        Permission::create(['description' => 'Administrador']);
+        $admin = new Permission(['description' => 'Administrador']);
+        $admin->is_admin = true; // is_admin não é fillable; definido explicitamente aqui
+        $admin->save();
+
         $viewer = Permission::create(['description' => 'Visualizador']);
 
         $viewer->rules()->sync(Rule::where('control', 'like', '%viewAny')->orWhere('control', 'users.profile')->pluck('id')->all());

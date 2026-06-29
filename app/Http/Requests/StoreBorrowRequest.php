@@ -25,7 +25,7 @@ class StoreBorrowRequest extends FormRequest
     public function rules()
     {
         return [
-            'devolution' => 'nullable|datetime',
+            'devolution' => 'nullable|date',
             'observation' => 'nullable',
             'employee_id' => 'required|exists:employees,id',
             'keys' => 'array',

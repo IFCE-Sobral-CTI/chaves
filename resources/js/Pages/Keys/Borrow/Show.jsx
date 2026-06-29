@@ -10,7 +10,7 @@ function Show({ borrow, received, can }) {
 
     const table = borrow.received.map((item, index) => {
         return (
-            <tr className={"border-t transition hover:bg-neutral-100 " + (index % 2 == 0? 'bg-neutral-50': '')} key={index}>
+            <tr className={"border-t transition hover:bg-neutral-100 " + (index % 2 === 0? 'bg-neutral-50': '')} key={item.id}>
                 <td className="px-1 py-3 font-light">{item.created_at}</td>
                 <td className="px-1 py-3 font-light">{item.receiver}</td>
                 <td className="px-1 py-3 font-light">{item.user.name}</td>

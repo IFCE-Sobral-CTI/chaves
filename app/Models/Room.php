@@ -53,17 +53,21 @@ class Room extends Model
     public function scopeSearch($query, Request $request)
     {
         $query->with('block')
-            ->whereHas('employees', function (Builder $query) use ($request) {
-                return $query->where('name', 'like', "%{$request->term}%");
-            })
-            ->orWhereHas('block', function (Builder $query) use ($request) {
-                return $query->where('description', 'like', "%{$request->term}%");
-            })
-            ->orWhere('description', 'like', "%{$request->term}%");
+            ->where(function (Builder $q) use ($request) {
+                $q->whereHas('employees', function (Builder $query) use ($request) {
+                    return $query->where('name', 'like', "%{$request->term}%");
+                })
+                    ->orWhereHas('block', function (Builder $query) use ($request) {
+                        return $query->where('description', 'like', "%{$request->term}%");
+                    })
+                    ->orWhere('description', 'like', "%{$request->term}%");
+            });
+
+        $paginator = $query->orderBy('description', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $request->term, 'page' => $request->page]);
 
         return [
-            'count' => $query->count(),
-            'rooms' => $query->orderBy('description', 'ASC')->paginate(env('APP_PAGINATION'))->appends(['term' => $request->term, 'page' => $request->page]),
+            'count' => $paginator->total(),
+            'rooms' => $paginator,
             'page' => $request->page ?? 1,
             'termSearch' => $request->term,
         ];

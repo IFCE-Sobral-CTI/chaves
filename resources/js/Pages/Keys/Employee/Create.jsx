@@ -41,7 +41,7 @@ function Create({ employeeType }) {
                                 <option>Selecione um vínculo</option>
                                 {employeeType.map((item, index) => {
                                     return (
-                                        <option value={item.value} key={index}>{item.label}</option>
+                                        <option value={item.value} key={item.value}>{item.label}</option>
                                     );
                                 })}
                             </Select>
