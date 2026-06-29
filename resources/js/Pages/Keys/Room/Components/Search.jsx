@@ -31,7 +31,7 @@ export default function Search({ data, onChange, values = [] }) {
     const items = list.map((item, i) => {
         if (!add.includes(item.id))
             return (
-                <tr className="border-t cursor-pointer" onClick={() => toggleItemHandler(item.id)} key={i}>
+                <tr className="border-t border-neutral-200 cursor-pointer hover:bg-neutral-100" onClick={() => toggleItemHandler(item.id)} key={i}>
                     <td className="w-1/6 p-2">{item.registry}</td>
                     <td className="w-4/6 p-2">{item.name}</td>
                     <td className="w-1/6 p-2">
@@ -48,7 +48,7 @@ export default function Search({ data, onChange, values = [] }) {
     const itemsAdd = data.map((item, i) => {
         if (add.includes(item.id))
             return (
-                <tr className="border-t cursor-pointer" onClick={() => toggleItemHandler(item.id)} key={i}>
+                <tr className="border-t border-neutral-200 cursor-pointer hover:bg-neutral-100" onClick={() => toggleItemHandler(item.id)} key={i}>
                     <td className="w-1/6 p-2">{item.registry}</td>
                     <td className="w-4/6 p-2">{item.name}</td>
                     <td className="w-1/6 p-2">

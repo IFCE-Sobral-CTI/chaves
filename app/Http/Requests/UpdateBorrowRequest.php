@@ -43,7 +43,7 @@ class UpdateBorrowRequest extends FormRequest
                     }
 
                     if (in_array((int) $value, $notReceived)) {
-                        $fail("A chave selecionada já está emprestada por outro empréstimo e ainda não foi devolvida.");
+                        $fail('A chave selecionada já está emprestada por outro empréstimo e ainda não foi devolvida.');
                     }
                 },
             ],

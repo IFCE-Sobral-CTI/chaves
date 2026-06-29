@@ -51,7 +51,7 @@ class HandleInertiaRequests extends Middleware
                     return [];
                 }
 
-                $cacheKey = 'user_controls_' . $request->user()->id;
+                $cacheKey = 'user_controls_'.$request->user()->id;
 
                 return cache()->remember($cacheKey, now()->addMinutes(5), function () use ($request) {
                     $rules = [];

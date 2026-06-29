@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "moment": "^2.30.1",
-        "react-google-charts": "^4.0.7",
+        "recharts": "^3.9.0",
         "uuid": "^14.0.1"
     }
 }

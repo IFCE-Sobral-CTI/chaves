@@ -121,42 +121,108 @@ class Borrow extends Model
     }
 
     /**
-     * Get data for chart 2
+     * Get borrow counts per day for the last 7 days.
+     * Returns array of objects: [{ label, value }, ...]
      */
     public function scopeDataChart(Builder $query): array
     {
-        $data = [];
+        $start = now()->subDays(6)->startOfDay();
+        $end = now()->endOfDay();
 
-        foreach ($query->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))->groupBy('date')->take(5)->get() as $borrow) {
-            $data[] = [Carbon::parse($borrow->date)->format('d/m/y'), $borrow->count];
+        $borrows = $query->clone()
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(*) as count'))
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('date')
+            ->pluck('count', 'date');
+
+        $data = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->startOfDay();
+            $dateKey = $date->format('Y-m-d');
+            $data[] = [
+                'label' => $date->format('d/m'),
+                'value' => (int) ($borrows[$dateKey] ?? 0),
+            ];
         }
 
-        return array_merge([['Datas', 'Empréstimos']], $data);
+        return $data;
     }
 
     /**
-     * Get data for chart 2
+     * Get key counts loaned per day for the last 7 days.
+     * Returns array of objects: [{ label, value }, ...]
      */
     public function scopeDataChart2(Builder $query): array
     {
-        $data = [];
         $start = now()->subDays(6)->startOfDay();
-        $end = now()->subDays(6)->endOfDay();
+        $end = now()->endOfDay();
 
         $borrowsWithKeys = $query->clone()
             ->withCount('keys')
-            ->whereBetween('created_at', [$start->clone(), $end->clone()->addDays(6)])
+            ->whereBetween('created_at', [$start, $end])
             ->get();
 
-        for ($i = 0; $i <= 6; $i++, $start->addDay(), $end->addDay()) {
+        $data = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $dayStart = now()->subDays($i)->startOfDay();
+            $dayEnd = now()->subDays($i)->endOfDay();
+
             $count = $borrowsWithKeys
-                ->whereBetween('created_at', [$start->clone(), $end->clone()])
+                ->whereBetween('created_at', [$dayStart, $dayEnd])
                 ->sum('keys_count');
 
-            $data[] = [$start->format('d/m'), $count];
+            $data[] = [
+                'label' => $dayStart->format('d/m'),
+                'value' => (int) $count,
+            ];
         }
 
-        return array_merge([['Datas', 'Chaves']], $data);
+        return $data;
+    }
+
+    /**
+     * Get borrow counts grouped by employee type.
+     * Returns array of objects: [{ label, value }, ...]
+     */
+    public function scopeBorrowsByEmployeeType(Builder $query): array
+    {
+        $counts = $query->clone()
+            ->join('employees', 'borrows.employee_id', '=', 'employees.id')
+            ->select('employees.type', DB::raw('COUNT(*) as count'))
+            ->groupBy('employees.type')
+            ->pluck('count', 'type');
+
+        $data = [];
+        foreach (Employee::TYPES as $type) {
+            $data[] = [
+                'label' => $type['label'],
+                'value' => (int) ($counts[$type['value']] ?? 0),
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get top 5 most borrowed rooms.
+     * Returns array of objects: [{ label, value }, ...]
+     */
+    public function scopeTopRooms(Builder $query): array
+    {
+        $results = $query->clone()
+            ->join('borrow_key', 'borrows.id', '=', 'borrow_key.borrow_id')
+            ->join('keys', 'borrow_key.key_id', '=', 'keys.id')
+            ->join('rooms', 'keys.room_id', '=', 'rooms.id')
+            ->select('rooms.description as label', DB::raw('COUNT(*) as value'))
+            ->groupBy('rooms.id', 'rooms.description')
+            ->orderByDesc('value')
+            ->limit(5)
+            ->get();
+
+        return $results->map(fn ($item) => [
+            'label' => $item->label,
+            'value' => (int) $item->value,
+        ])->toArray();
     }
 
     /**

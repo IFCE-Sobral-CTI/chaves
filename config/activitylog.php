@@ -1,5 +1,7 @@
 <?php
 
+use Spatie\Activitylog\Models\Activity;
+
 return [
     'delete_records_older_than_days' => 365,
 
@@ -9,5 +11,5 @@ return [
 
     'subject_returns_soft_deleted_models' => false,
 
-    'activity_model' => \Spatie\Activitylog\Models\Activity::class,
+    'activity_model' => Activity::class,
 ];

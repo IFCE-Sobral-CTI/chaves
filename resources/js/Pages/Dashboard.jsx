@@ -1,161 +1,121 @@
-import React, { useEffect, useState, useTransition } from 'react';
-import Chart from 'react-google-charts';
-import Panel from '@/Components/Dashboard/Panel';
+import React from 'react';
+import { usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Link } from '@inertiajs/react';
-import moment from 'moment';
+import KpiCard from '@/Components/Dashboard/KpiCard';
+import ChartCard from '@/Components/Dashboard/ChartCard';
+import BorrowsBarChart from '@/Components/Dashboard/BorrowsBarChart';
+import KeysAreaChart from '@/Components/Dashboard/KeysAreaChart';
+import EmployeeTypePie from '@/Components/Dashboard/EmployeeTypePie';
+import TopRoomsBarChart from '@/Components/Dashboard/TopRoomsBarChart';
+import BorrowsTable from '@/Components/Dashboard/BorrowsTable';
+import ExpiringList from '@/Components/Dashboard/ExpiringList';
 
-export default function Dashboard({ borrows, can, countRooms, countKeys, countBlocks, countEmployees, countBorrows, dataBorrow, dataKeys }) {
-    const [isPendingChart1, startTransitionChart1] = useTransition();
-    const [isPendingChart2, startTransitionChart2] = useTransition();
-    const [chart1, setChart1] = useState('');
-    const [chart2, setChart2] = useState('');
+const KeyIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+    </svg>
+);
 
-    useEffect(() => {
-        startTransitionChart1(() => {
-            setChart1(
-                <Chart
-                    chartType='Bar'
-                    data={dataBorrow}
-                    width={'100%'}
-                    height={'100%'}
-                    options={{
-                        chart: {
-                            title: "Empréstimos",
-                            subtitle: 'Últimos 7 dias',
-                        },
-                        legend: {position: 'bottom'},
-                    }}
-                />
-            )
-        });
+const AvailableIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+);
 
-        const any = {
-            legend: { position: ['top'], alignment: 'start' },
-            chart: {
-                title: "Chaves emprestadas",
-                subtitle: 'Últimos 7 dias',
-            },
-            colors: ['#54b74f'],
-        };
+const OpenIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
 
-        startTransitionChart2(() => {
-            setChart2(
-                <Chart
-                    chartType='Bar'
-                    data={dataKeys}
-                    width={'100%'}
-                    height={'100%'}
-                    options={any}
-                />
-            )
-        });
-    }, []);
+const AlertIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+);
 
-    const status = (created_at, devolution) => {
-        let start = moment(created_at, "DD/MM/YYYY hh:mm:ss");
-        let end = moment(created_at, "DD/MM/YYYY hh:mm:ss").add(1, 'd');
-        let now = moment();
-
-
-        if (devolution)
-            return <span className="px-2 py-1 text-xs text-white rounded-lg bg-green">Devolvido</span>
-
-        if (now.isBetween(start, end) && !devolution)
-            return <span className="px-2 py-1 text-xs text-white bg-yellow-500 rounded-lg">Aberto</span>
-
-        if (now.isAfter(end) && !devolution)
-            return <span className="px-2 py-1 text-xs text-white bg-red-500 rounded-lg">Atrasado</span>
-    }
-
-    const list = borrows.map((item, i) => {
-        const fallbackUrl = route('borrows.index');
-        return (
-            <tr className="transition border-t border-gray-200 hover:bg-neutral-100" key={'list' + i}>
-                <td className="font-light p-1.5">
-                    <Link href={can.borrowView? route('borrows.show', item.id): fallbackUrl}>{item.created_at}</Link>
-                </td>
-                <td className="font-light p-1.5">
-                    <Link href={can.borrowView? route('borrows.show', item.id): fallbackUrl}>{item.employee.name}</Link>
-                </td>
-                <td className="font-light p-1.5 hidden md:table-cell"><Link href={can.borrowView? route('borrows.show', item.id): fallbackUrl}>{status(item.created_at, item.devolution)}</Link></td>
-                <td className="flex justify-end p-1.5 text-neutral-400">
-                    <Link href={can.borrowView? route('borrows.show', item.id): fallbackUrl}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
-                            <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
-                        </svg>
-                    </Link>
-                </td>
-            </tr>
-        )
-    });
+export default function Dashboard({
+    kpis,
+    totals,
+    charts,
+    recentBorrows,
+    overdueList,
+    expiringEmployees,
+    can,
+}) {
+    const { authorizations } = usePage().props;
+    const canViewAny = authorizations?.['borrows_viewAny'] ?? false;
 
     return (
-        <>
-            <AuthenticatedLayout breadcrumbs={[{label: 'Minha Página', url: route('admin')}]}>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
-                    <div className="p-2 text-center text-white transition rounded-lg shadow-md bg-emerald-500 hover:bg-emerald-600">
-                        <div className="text-xs font-bold tracking-widest uppercase">Total de Salas</div>
-                        <div className="text-4xl font-bold">{countRooms}</div>
+        <AuthenticatedLayout breadcrumbs={[{ label: 'Minha Página', url: route('admin') }]}>
+            {/* KPIs Operacionais */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <KpiCard title="Chaves em poder" value={kpis.keysOut} icon={KeyIcon} variant="amber" />
+                <KpiCard title="Chaves disponíveis" value={kpis.keysAvailable} icon={AvailableIcon} variant="emerald" />
+                <KpiCard title="Empréstimos abertos" value={kpis.openBorrows} icon={OpenIcon} variant="sky" />
+                <KpiCard title="Empréstimos em atraso" value={kpis.overdueBorrows} icon={AlertIcon} variant="red" />
+            </div>
+
+            {/* Totais de cadastro */}
+            <div className="flex flex-wrap justify-end gap-2 mb-6">
+                {[
+                    { label: 'Salas', value: totals.countRooms },
+                    { label: 'Blocos', value: totals.countBlocks },
+                    { label: 'Chaves', value: totals.countKeys },
+                    { label: 'Servidores', value: totals.countEmployees },
+                    { label: 'Empréstimos', value: totals.countBorrows },
+                ].map((item) => (
+                    <span key={item.label} className="inline-flex items-center gap-2 pl-3 pr-1 py-1 text-xs font-medium text-gray-600 bg-blue-300 rounded-full">
+                        {item.label}
+                        <span className="inline-flex items-center justify-center min-w-5 px-2 py-0.5 text-xs font-semibold text-white bg-gray-500 rounded-full">
+                            {item.value}
+                        </span>
+                    </span>
+                ))}
+            </div>
+
+            {/* Gráficos */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <ChartCard title="Empréstimos por dia (últimos 7 dias)" className="h-80">
+                    <BorrowsBarChart data={charts.borrowsPerDay} />
+                </ChartCard>
+                <ChartCard title="Chaves emprestadas por dia (últimos 7 dias)" className="h-80">
+                    <KeysAreaChart data={charts.keysPerDay} />
+                </ChartCard>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <ChartCard title="Distribuição por tipo de mutuário" className="h-80">
+                    <EmployeeTypePie data={charts.byEmployeeType} />
+                </ChartCard>
+                <ChartCard title="Top 5 salas mais emprestadas" className="h-80">
+                    <TopRoomsBarChart data={charts.topRooms} />
+                </ChartCard>
+            </div>
+
+            {/* Listas detalhadas - apenas para quem tem borrows.viewAny */}
+            {canViewAny && (
+                <>
+                    <div className="mb-4">
+                        <BorrowsTable
+                            title="Últimos empréstimos"
+                            rows={recentBorrows}
+                            canView={can.borrowView}
+                            emptyMessage="Nenhum empréstimo registrado."
+                        />
                     </div>
-                    <div className="p-2 text-center text-white transition bg-indigo-400 rounded-lg shadow-md hover:bg-indigo-500">
-                        <div className="text-xs font-bold tracking-widest uppercase">Total de Blocos</div>
-                        <div className="text-4xl font-bold">{countBlocks}</div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <BorrowsTable
+                            title="Empréstimos em atraso"
+                            rows={overdueList}
+                            canView={can.borrowView}
+                            emptyMessage="Nenhum empréstimo em atraso."
+                        />
+                        <ExpiringList employees={expiringEmployees} />
                     </div>
-                    <div className="p-2 text-center text-white transition bg-teal-500 rounded-lg shadow-md hover:bg-teal-600">
-                        <div className="text-xs font-bold tracking-widest uppercase">Total de Chaves</div>
-                        <div className="text-4xl font-bold">{countKeys}</div>
-                    </div>
-                    <div className="p-2 text-center text-white transition rounded-lg shadow-md bg-amber-400 hover:bg-amber-500">
-                        <div className="text-xs font-bold tracking-widest uppercase">Total de Servidores</div>
-                        <div className="text-4xl font-bold">{countEmployees}</div>
-                    </div>
-                    <div className="p-2 text-center text-white transition rounded-lg shadow-md bg-sky-500 hover:bg-sky-600">
-                        <div className="text-xs font-bold tracking-widest uppercase">Total de Empréstimos</div>
-                        <div className="text-4xl font-bold">{countBorrows}</div>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-                    <Panel className={'flex-1 h-96'}>
-                        {isPendingChart1
-                        ?<div className="w-full h-full flex justify-center items-center transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="animate-spin w-10 h-10" viewBox="0 0 16 16">
-                                <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-                            </svg>
-                        </div>
-                        :chart1}
-                    </Panel>
-                    <Panel className={'flex-1 h-96'}>
-                        {isPendingChart2
-                        ?<div className="w-full h-full flex justify-center items-center transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="animate-spin w-10 h-10" viewBox="0 0 16 16">
-                                <path fillRule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-                            </svg>
-                        </div>
-                        :chart2}
-                    </Panel>
-                </div>
-                <div className="">
-                    <Panel className={'col-span-2 min-h-52'}>
-                        <h1>Últimos empréstimos</h1>
-                        <table className="table w-full table-auto">
-                            <thead>
-                                <tr className="border-b border-gray-300">
-                                    <th className="font-semibold text-left px-1.5 pt-1.5">Data</th>
-                                    <th className="font-semibold text-left px-1.5 pt-1.5">Servidor</th>
-                                    <th className="font-semibold text-left px-1.5 pt-1.5 hidden md:table-cell">Situação</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {list}
-                            </tbody>
-                        </table>
-                    </Panel>
-                </div>
-            </AuthenticatedLayout>
-        </>
-    )
+                </>
+            )}
+        </AuthenticatedLayout>
+    );
 }

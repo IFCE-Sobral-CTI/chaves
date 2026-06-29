@@ -33,7 +33,7 @@ class StoreBorrowRequest extends FormRequest
                 'exists:keys,id',
                 function ($attribute, $value, $fail) {
                     if (in_array((int) $value, Borrow::KeysNotReceived())) {
-                        $fail("A chave selecionada já está emprestada e ainda não foi devolvida.");
+                        $fail('A chave selecionada já está emprestada e ainda não foi devolvida.');
                     }
                 },
             ],

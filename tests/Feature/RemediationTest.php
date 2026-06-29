@@ -10,6 +10,8 @@ use App\Models\Permission;
 use App\Models\Room;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
 class RemediationTest extends TestCase
@@ -23,7 +25,7 @@ class RemediationTest extends TestCase
             'permission_id' => $viewerPermission->id,
         ]);
 
-        $activity = \Spatie\Activitylog\Models\Activity::create([
+        $activity = Activity::create([
             'log_name' => 'default',
             'description' => 'test',
         ]);
@@ -114,7 +116,7 @@ class RemediationTest extends TestCase
             'devolution' => now(),
         ]);
 
-        $result = Borrow::search(new \Illuminate\Http\Request(['term' => 'Silva']));
+        $result = Borrow::search(new Request(['term' => 'Silva']));
 
         $this->assertEquals(1, $result['count']);
         $this->assertTrue($result['borrows']->items()[0]->devolution === null);
