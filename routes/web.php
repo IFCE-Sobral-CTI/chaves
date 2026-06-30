@@ -54,7 +54,15 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::post('borrows/{borrow}/receive/keys/{chaves}', [BorrowController::class, 'receive'])->name('borrows.receive');
     Route::delete('borrows/{borrow}/receive/{received}/keys', [BorrowController::class, 'receiveDestroy'])->name('borrows.receive.destroy');
 
-    Route::get('reports/index', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/borrows', [ReportController::class, 'borrows'])->name('reports.borrows');
+    Route::get('reports/overdue', [ReportController::class, 'overdue'])->name('reports.overdue');
+    Route::get('reports/expiring-access', [ReportController::class, 'expiringAccess'])->name('reports.expiring-access');
+    Route::get('reports/rooms', [ReportController::class, 'rooms'])->name('reports.rooms');
+    Route::get('reports/employees', [ReportController::class, 'employees'])->name('reports.employees');
+    Route::get('reports/staff', [ReportController::class, 'staff'])->name('reports.staff');
+    Route::get('reports/turnaround', [ReportController::class, 'turnaround'])->name('reports.turnaround');
+    Route::redirect('reports/index', 'reports')->name('reports.index.legacy');
 
     Route::resource('activities', ActivityController::class)->only(['index', 'show', 'destroy']);
 });

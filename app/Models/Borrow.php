@@ -31,6 +31,8 @@ class Borrow extends Model
 {
     use CreatedAndUpdatedTimezone, HasFactory, LogsActivity;
 
+    const OVERDUE_AFTER_HOURS = 24;
+
     /**
      * @var array
      */
@@ -42,6 +44,8 @@ class Borrow extends Model
         'received_by',
         'returned_by',
     ];
+
+    protected $appends = ['situation'];
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -66,6 +70,24 @@ class Borrow extends Model
         }
 
         return Carbon::parse($date)->setTimezone(config('app.timezone'))->format('d/m/Y H:i:s');
+    }
+
+    /**
+     * Get situation: devolvido, aberto, or atrasado.
+     */
+    public function getSituationAttribute(): string
+    {
+        $devolution = $this->getRawOriginal('devolution');
+        if ($devolution !== null) {
+            return 'devolvido';
+        }
+
+        $createdAt = Carbon::parse($this->getRawOriginal('created_at'));
+        if ($createdAt->addHours(self::OVERDUE_AFTER_HOURS)->isPast()) {
+            return 'atrasado';
+        }
+
+        return 'aberto';
     }
 
     public function user(): BelongsTo
@@ -226,16 +248,29 @@ class Borrow extends Model
     }
 
     /**
-     * Get data of borrow by filters
+     * Apply all report filters to a query builder.
      */
-    public function scopeReportByDate(Builder $query, Request $request): array
+    public function scopeApplyReportFilters(Builder $query, Request $request): Builder
     {
-        $query->with(['employee', 'keys', 'user', 'received' => ['keys', 'user']]);
-
         $this->filterByDate($query, $request);
         $this->filterBySituation($query, $request);
         $this->filterByEmployee($query, $request);
         $this->filterByUser($query, $request);
+        $this->filterByBlock($query, $request);
+        $this->filterByRoom($query, $request);
+        $this->filterByKey($query, $request);
+
+        return $query;
+    }
+
+    /**
+     * Get data of borrow by filters
+     */
+    public function scopeReportByDate(Builder $query, Request $request): array
+    {
+        $query->with(['employee', 'keys' => ['room' => ['block']], 'user', 'received' => ['keys', 'user']]);
+
+        $this->scopeApplyReportFilters($query, $request);
 
         $paginator = $query->orderBy('created_at', 'desc')->paginate(config('app.pagination'))->appends($request->all());
 
@@ -243,7 +278,36 @@ class Borrow extends Model
             'count' => $paginator->total(),
             'borrows' => $paginator,
             'page' => $request->page ?? 1,
-            'filter' => ($request->has('start') || $request->has('end') || $request->has('employee') || $request->has('user') || $request->has('situation')),
+            'filter' => ($request->has('start') || $request->has('end') || $request->has('employee') || $request->has('user') || $request->has('situation') || $request->has('block') || $request->has('room') || $request->has('key')),
+        ];
+    }
+
+    /**
+     * Get summary counts for the report filters.
+     */
+    public function scopeReportSummary(Builder $query, Request $request): array
+    {
+        $this->filterByDate($query, $request);
+        $this->filterByEmployee($query, $request);
+        $this->filterByUser($query, $request);
+        $this->filterByBlock($query, $request);
+        $this->filterByRoom($query, $request);
+        $this->filterByKey($query, $request);
+
+        $total = $query->clone()->count();
+        $returned = $query->clone()->where('devolution', '!=', null)->count();
+        $open = $query->clone()->where('devolution', null)->where('created_at', '>=', now()->subHours(self::OVERDUE_AFTER_HOURS))->count();
+        $overdue = $query->clone()->where('devolution', null)->where('created_at', '<', now()->subHours(self::OVERDUE_AFTER_HOURS))->count();
+        $keysMoved = $query->clone()
+            ->join('borrow_key', 'borrows.id', '=', 'borrow_key.borrow_id')
+            ->count('borrow_key.key_id');
+
+        return [
+            'total' => $total,
+            'returned' => $returned,
+            'open' => $open,
+            'overdue' => $overdue,
+            'keysMoved' => $keysMoved,
         ];
     }
 
@@ -287,10 +351,10 @@ class Borrow extends Model
                 $query->where('devolution', '!=', null);
                 break;
             case 2:
-                $query->where('devolution', null)->where('created_at', '>=', now()->subDay());
+                $query->where('devolution', null)->where('borrows.created_at', '>=', now()->subHours(self::OVERDUE_AFTER_HOURS));
                 break;
             case 3:
-                $query->where('devolution', null)->where('created_at', '<', now()->subDay());
+                $query->where('devolution', null)->where('borrows.created_at', '<', now()->subHours(self::OVERDUE_AFTER_HOURS));
                 break;
             default:
                 break;
@@ -304,6 +368,9 @@ class Borrow extends Model
      */
     private function filterByDate(Builder &$query, Request $request): void
     {
+        $start = null;
+        $end = null;
+
         if (! is_null($request->start)) {
             $start = Carbon::parse($request->start)->startOfDay();
         }
@@ -312,9 +379,49 @@ class Borrow extends Model
             $end = Carbon::parse($request->end)->endOfDay();
         }
 
-        if (isset($start)) {
-            $query->whereBetween('created_at', [$start, $end ?? now()])->get();
+        if ($start && $end) {
+            $query->whereBetween('borrows.created_at', [$start, $end]);
+        } elseif ($start) {
+            $query->where('borrows.created_at', '>=', $start);
+        } elseif ($end) {
+            $query->where('borrows.created_at', '<=', $end);
         }
+    }
+
+    /**
+     * Filter by block for borrow query
+     */
+    private function filterByBlock(Builder &$query, Request $request): void
+    {
+        $query->when(! is_null($request->block), function ($query) use ($request) {
+            return $query->whereHas('keys.room.block', function ($query) use ($request) {
+                return $query->where('blocks.id', $request->block);
+            });
+        });
+    }
+
+    /**
+     * Filter by room for borrow query
+     */
+    private function filterByRoom(Builder &$query, Request $request): void
+    {
+        $query->when(! is_null($request->room), function ($query) use ($request) {
+            return $query->whereHas('keys.room', function ($query) use ($request) {
+                return $query->where('rooms.id', $request->room);
+            });
+        });
+    }
+
+    /**
+     * Filter by key for borrow query
+     */
+    private function filterByKey(Builder &$query, Request $request): void
+    {
+        $query->when(! is_null($request->key), function ($query) use ($request) {
+            return $query->whereHas('keys', function ($query) use ($request) {
+                return $query->where('keys.id', $request->key);
+            });
+        });
     }
 
     public function receivedKeys(): array

@@ -15,3 +15,13 @@
     visibility: visible;
     transition: opacity 0.5s, visibility 0s;
 }
+
+@media print {
+    nav, footer, .print\:hidden {
+        display: none !important;
+    }
+    main {
+        width: 100% !important;
+        padding: 0 !important;
+    }
+}

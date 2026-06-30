@@ -21,7 +21,7 @@ class HomeController extends Controller
         $countKeys = Key::count();
         $keysOut = count(Borrow::keysNotReceived());
         $openBorrows = Borrow::whereNull('devolution')->count();
-        $overdueCount = Borrow::whereNull('devolution')->where('created_at', '<', now()->subDay())->count();
+        $overdueCount = Borrow::whereNull('devolution')->where('created_at', '<', now()->subHours(Borrow::OVERDUE_AFTER_HOURS))->count();
 
         $recentBorrows = [];
         $overdueList = [];
@@ -46,7 +46,7 @@ class HomeController extends Controller
             $overdueList = Borrow::with('employee')
                 ->withCount('keys')
                 ->whereNull('devolution')
-                ->where('created_at', '<', now()->subDay())
+                ->where('created_at', '<', now()->subHours(Borrow::OVERDUE_AFTER_HOURS))
                 ->orderBy('created_at', 'asc')
                 ->take(10)
                 ->get()
