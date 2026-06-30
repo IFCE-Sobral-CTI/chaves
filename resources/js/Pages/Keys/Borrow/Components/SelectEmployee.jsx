@@ -8,6 +8,8 @@ function SelectEmployee({ data, onChange, value, error }) {
     const [selected, setSelected] = useState({id: null, registry: null, name: null});
     const ref = useRef(null);
 
+    const emptySelected = {id: null, registry: null, name: null};
+
     const inputRef = useCallback((inputElement) => {
         if (inputElement) {
             inputElement.focus();
@@ -16,12 +18,12 @@ function SelectEmployee({ data, onChange, value, error }) {
 
     useEffect(() => {
         if (value) {
-            setSelected(data.filter(item => item.id === value).pop());
+            setSelected(data.filter(item => String(item.id) === String(value)).pop() ?? emptySelected);
         }
     }, []);
 
     useEffect(() => {
-        onChange(selected.id);
+        onChange(selected?.id ?? null);
     }, [selected]);
 
     useEffect(() => {
@@ -40,7 +42,7 @@ function SelectEmployee({ data, onChange, value, error }) {
     }, []);
 
     const handleSelect = (event) => {
-        setSelected(data.filter(item => item.id === event.target.value).pop())
+        setSelected(data.filter(item => String(item.id) === event.target.value).pop() ?? emptySelected)
         toggleHandle();
     }
 
@@ -71,7 +73,7 @@ function SelectEmployee({ data, onChange, value, error }) {
             <label htmlFor={inputId} className="font-light">Mutuário</label>
             <div className="flex border border-neutral-400 rounded-lg p-2" onClick={toggleHandle}>
                 <div className="flex-1">
-                    {selected.id !== null
+                    {selected?.id != null
                     ?<span className="text-neutral-700 font-normal">{selected.registry} - {selected.name}</span>
                     :<span className="text-neutral-500">Nenhum mutuário selecionado</span>}
                 </div>
