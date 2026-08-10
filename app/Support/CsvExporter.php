@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use Illuminate\Support\Stream;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CsvExporter
@@ -12,7 +11,6 @@ class CsvExporter
      *
      * @param  array<int, array<string, mixed>>  $rows
      * @param  array<string, string>  $headers  Map of column key => label
-     * @param  string  $filename
      */
     public static function download(array $rows, array $headers, string $filename = 'relatorio.csv'): StreamedResponse
     {

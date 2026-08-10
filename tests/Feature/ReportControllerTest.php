@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Block;
 use App\Models\Borrow;
 use App\Models\Employee;
+use App\Models\Group;
 use App\Models\Key;
 use App\Models\Permission;
 use App\Models\Room;
@@ -12,7 +13,6 @@ use App\Models\Rule;
 use App\Models\User;
 use App\Providers\AuthServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class ReportControllerTest extends TestCase
@@ -21,7 +21,7 @@ class ReportControllerTest extends TestCase
 
     private function seedRules(): void
     {
-        $reportsGroup = \App\Models\Group::factory()->create(['description' => 'Relatórios']);
+        $reportsGroup = Group::factory()->create(['description' => 'Relatórios']);
         Rule::factory()->create([
             'control' => 'reports.viewAny',
             'group_id' => $reportsGroup->id,
@@ -50,6 +50,7 @@ class ReportControllerTest extends TestCase
     private function createUserWithoutReportsAccess(): User
     {
         $permission = Permission::factory()->create();
+
         return User::factory()->create([
             'permission_id' => $permission->id,
             'status' => User::ACTIVE,
@@ -331,8 +332,8 @@ class ReportControllerTest extends TestCase
 
         $baselineTotal = Borrow::count();
         $baselineReturned = Borrow::where('devolution', '!=', null)->count();
-        $baselineOpen = Borrow::where('devolution', null)->where('created_at', '>=', now()->subHours(\App\Models\Borrow::OVERDUE_AFTER_HOURS))->count();
-        $baselineOverdue = Borrow::where('devolution', null)->where('created_at', '<', now()->subHours(\App\Models\Borrow::OVERDUE_AFTER_HOURS))->count();
+        $baselineOpen = Borrow::where('devolution', null)->where('created_at', '>=', now()->subHours(Borrow::OVERDUE_AFTER_HOURS))->count();
+        $baselineOverdue = Borrow::where('devolution', null)->where('created_at', '<', now()->subHours(Borrow::OVERDUE_AFTER_HOURS))->count();
 
         Borrow::factory()->create([
             'employee_id' => $employee->id,
