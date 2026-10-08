@@ -5,7 +5,9 @@ function SelectBlock({ data, onChange, error, value }) {
     const [toggle, setToggle] = useState(false);
     const [term, setTerm] = useState('');
     const [list, setList] = useState([]);
-    const [selected, setSelected] = useState({id: null, description: null});
+    const [selected, setSelected] = useState(() =>
+        data.find(item => String(item.id) === String(value)) ?? {id: null, description: null}
+    );
     const ref = useRef(null);
 
     const inputRef = useCallback((inputElement) => {
@@ -13,12 +15,6 @@ function SelectBlock({ data, onChange, error, value }) {
             inputElement.focus();
         }
     });
-
-    useEffect(() => {
-        if (value) {
-            setSelected(data.filter(item => item.id === value).pop());
-        }
-    }, []);
 
     useEffect(() => {
         onChange(selected.id);
@@ -39,16 +35,16 @@ function SelectBlock({ data, onChange, error, value }) {
         return () => document.removeEventListener('click', handleClickOutside, true);
     }, []);
 
-    const handleSelect = (event) => {
-        setSelected(data.filter(item => item.id === event.target.value).pop())
-        toggleHandle();
+    const handleSelect = (item) => {
+        setSelected(item);
+        setToggle(false);
     }
 
     const items = list.map((item) => {
         if (selected?.id !== item.id)
             return (
                 <li key={item.id}>
-                    <button type="button" className="w-full px-2 py-1 text-left rounded-lg transition cursor-pointer font-light hover:bg-neutral-100" onClick={handleSelect} value={item.id}>{item.description}</button>
+                    <button type="button" className="w-full px-2 py-1 text-left rounded-lg transition cursor-pointer font-light hover:bg-neutral-100" onClick={() => handleSelect(item)}>{item.description}</button>
                 </li>
             );
     });
