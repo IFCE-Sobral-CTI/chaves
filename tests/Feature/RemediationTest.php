@@ -50,6 +50,7 @@ class RemediationTest extends TestCase
         $borrow = Borrow::factory()->create([
             'employee_id' => $employee->id,
             'user_id' => $admin->id,
+            'devolution' => null,
         ]);
         $borrow->keys()->sync([$key1->id]);
 
@@ -79,6 +80,7 @@ class RemediationTest extends TestCase
         $borrow = Borrow::factory()->create([
             'employee_id' => $employee->id,
             'user_id' => $admin->id,
+            'devolution' => null,
         ]);
         $borrow->keys()->sync([$key->id]);
 

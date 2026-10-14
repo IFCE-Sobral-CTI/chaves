@@ -426,39 +426,40 @@ class Borrow extends Model
 
     public function receivedKeys(): array
     {
-        $list = collect([]);
-
-        $this->received->map(function ($item) use (&$list) {
-            $list = $list->merge($item->keys->pluck('id'));
-        });
-
-        return $list->unique()->toArray();
+        return DB::table('key_received')
+            ->join('receiveds', 'key_received.received_id', '=', 'receiveds.id')
+            ->where('receiveds.borrow_id', $this->id)
+            ->distinct()
+            ->pluck('key_received.key_id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
     }
 
     /**
-     * Get keys that have not been returned.
-     * Returns key IDs that are currently on open borrows
-     * and have not yet been marked as received.
+     * Pending key IDs, correlated with their own borrow's returns.
+     * Keep the query in SQL so callers can filter without loading global ID lists.
+     */
+    public function scopePendingKeyIds(Builder $query): \Illuminate\Database\Query\Builder
+    {
+        return DB::table('borrow_key')
+            ->whereIn('borrow_key.borrow_id', $query->whereNull('devolution')->select('borrows.id'))
+            ->whereNotExists(function (\Illuminate\Database\Query\Builder $received) {
+                $received->selectRaw('1')
+                    ->from('key_received')
+                    ->join('receiveds', 'key_received.received_id', '=', 'receiveds.id')
+                    ->whereColumn('receiveds.borrow_id', 'borrow_key.borrow_id')
+                    ->whereColumn('key_received.key_id', 'borrow_key.key_id');
+            })
+            ->select('borrow_key.key_id')
+            ->distinct();
+    }
+
+    /**
+     * Compatibility wrapper for callers that need an array of pending key IDs.
      */
     public function scopeKeysNotReceived(Builder $query): array
     {
-        $activeBorrowIds = $query->where('devolution', null)->pluck('id');
-
-        if ($activeBorrowIds->isEmpty()) {
-            return [];
-        }
-
-        $receivedKeyIds = DB::table('key_received')
-            ->join('receiveds', 'key_received.received_id', '=', 'receiveds.id')
-            ->whereIn('receiveds.borrow_id', $activeBorrowIds)
-            ->pluck('key_received.key_id');
-
-        return DB::table('borrow_key')
-            ->whereIn('borrow_id', $activeBorrowIds)
-            ->whereNotIn('key_id', $receivedKeyIds)
-            ->pluck('key_id')
-            ->unique()
-            ->values()
-            ->toArray();
+        return $this->scopePendingKeyIds($query)->pluck('borrow_key.key_id')->all();
     }
 }

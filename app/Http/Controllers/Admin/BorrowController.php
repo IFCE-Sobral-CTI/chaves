@@ -45,11 +45,9 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.create', Borrow::class);
 
-        // dd(Key::with('room')->whereNotIn('id', Borrow::KeysReceived())->get());
-
         return Inertia::render('Keys/Borrow/Create', [
             'employees' => fn () => Employee::getActiveEmployees(),
-            'keys' => fn () => Key::with('room')->whereNotIn('id', Borrow::KeysNotReceived())->get(),
+            'keys' => fn () => Key::with('room')->whereNotIn('id', Borrow::pendingKeyIds())->get(),
         ]);
     }
 
@@ -66,8 +64,8 @@ class BorrowController extends Controller
         $this->authorize('borrows.create', Borrow::class);
 
         try {
-            $borrow = $request->user()->borrows()->create($request->validated());
-            $borrow->keys()->sync($request->keys);
+            $borrow = $request->user()->borrows()->create($request->safe()->except('keys'));
+            $borrow->keys()->sync($request->validated('keys'));
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
@@ -86,12 +84,12 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.view', $borrow);
 
-        $borrow = Borrow::with(['employee', 'user', 'keys' => ['room'], 'received' => ['keys' => ['room'], 'user']])->find($borrow->id);
+        $borrow->load(['employee', 'user', 'keys.room', 'received.keys.room', 'received.user']);
         $received = $borrow->receivedKeys();
 
         return Inertia::render('Keys/Borrow/Show', [
             'borrow' => $borrow,
-            'received' => $borrow->receivedKeys(),
+            'received' => $received,
             'can' => [
                 'update' => $request->user()->can('borrows.update'),
                 'delete' => $request->user()->can('borrows.delete'),
@@ -110,15 +108,13 @@ class BorrowController extends Controller
         $this->authorize('borrows.update', $borrow);
 
         $borrowKeys = $borrow->keys->pluck('id')->toArray();
-        $borrow = Borrow::with(['employee', 'keys' => ['room']])->find($borrow->id);
-
-        $borrowed = Key::borrowed()->pluck('id')->toArray();
+        $borrow->load(['employee', 'keys.room']);
 
         return Inertia::render('Keys/Borrow/Edit', [
             'borrow' => $borrow,
             'employees' => Employee::select('id', 'registry', 'name')->orderBy('name')->get(),
             'borrowKeys' => $borrowKeys,
-            'keys' => Key::with('room')->whereNotIn('id', array_diff($borrowed, $borrowKeys))->get(),
+            'keys' => Key::with('room')->whereNotIn('id', Borrow::where('id', '!=', $borrow->id)->pendingKeyIds())->get(),
         ]);
     }
 
@@ -131,19 +127,10 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.update', $borrow);
 
-        $result = $this->keysBorrowed($request, $borrow);
-        if ($result) {
-            return $result;
-        }
-
         try {
-            // Verifica se foi adicionado ou removido alguma chave
-            // if (array_diff($request->keys, $borrow->keys()->get()->pluck('id')->toArray()))
-            //     $borrow->update(array_merge($request->except(['devolution', 'received_by']), ['devolution' => null, 'received_by' => null]));
-            // else
-            $borrow->update($request->validated());
+            $borrow->update($request->safe()->except('keys'));
 
-            $borrow->keys()->sync($request->keys);
+            $borrow->keys()->sync($request->validated('keys'));
             // Cria um log separado para alterações nas chaves
             if ($request->keys) {
                 $properties = function (Request $request) {
@@ -166,32 +153,6 @@ class BorrowController extends Controller
             report($e);
 
             return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
-        }
-    }
-
-    /**
-     * @return RedirectResponse|void
-     */
-    private function keysBorrowed(Request $request, Borrow $borrow)
-    {
-        /*
-         * Verifica se as chaves a serem emprestadas já estão emprestadas
-         * por outro empréstimo ativo (excluindo as chaves do próprio empréstimo)
-         */
-        $borrowed = Key::borrowed()->pluck('id')->toArray();
-        $ownKeys = $borrow->keys()->pluck('keys.id')->toArray();
-        $foreignBorrowed = array_diff($borrowed, $ownKeys);
-
-        $filtered = array_reduce($foreignBorrowed, function ($carry, $item) use ($request) {
-            if (in_array($item, $request->keys)) {
-                return ++$carry;
-            }
-
-            return $carry;
-        });
-
-        if ($filtered) {
-            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Alguma das chaves já estão emprestada.']);
         }
     }
 

@@ -52,9 +52,11 @@ class Key extends Model
         return $this->belongsToMany(Received::class);
     }
 
-    public function scopeBorrowed(Builder $keys): Builder
+    public function scopeBorrowed(Builder $keys, ?int $exceptBorrowId = null): Builder
     {
-        return $keys->whereIn('id', Borrow::KeysNotReceived());
+        return $keys->whereIn('keys.id', Borrow::query()
+            ->when($exceptBorrowId !== null, fn (Builder $query) => $query->where('borrows.id', '!=', $exceptBorrowId))
+            ->pendingKeyIds());
     }
 
     public function scopeSearch($query, Request $request): array
