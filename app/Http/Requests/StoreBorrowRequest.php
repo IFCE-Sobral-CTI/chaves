@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Actions\Borrows\EnsureBorrowerEligible;
 use App\Models\Employee;
 use App\Models\Key;
-use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
 
 class StoreBorrowRequest extends FormRequest
@@ -18,7 +19,7 @@ class StoreBorrowRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'devolution' => 'nullable|date',
+            'devolution' => 'prohibited',
             'observation' => 'nullable|string',
             'employee_id' => 'required|integer|exists:employees,id',
             'keys' => 'bail|required|array|min:1|exists:keys,id',
@@ -35,22 +36,19 @@ class StoreBorrowRequest extends FormRequest
 
             $keyIds = $this->input('keys');
             $borrow = $this->route('borrow');
-            if (Key::borrowed($borrow?->id)->whereIn('keys.id', $keyIds)->exists()) {
+            $pendingIds = $borrow === null ? $keyIds : array_values(array_diff($keyIds, $borrow->receivedKeys()));
+            if (Key::borrowed($borrow?->id)->whereIn('keys.id', $pendingIds)->exists()) {
                 $validator->errors()->add('keys', 'Alguma das chaves selecionadas já está emprestada e ainda não foi devolvida.');
             }
 
             $employee = Employee::findOrFail($this->input('employee_id'));
-            if (in_array((int) $employee->type, [Employee::STUDENT, Employee::EXTERNAL], true)) {
-                $validUntil = $employee->getRawOriginal('valid_until');
-                if ($validUntil === null || Carbon::parse($validUntil)->isPast()) {
-                    $validator->errors()->add('employee_id', 'O mutuário não possui permissão válida para empréstimos.');
-
-                    return;
-                }
-
-                $allowedCount = $employee->borrowable_keys()->whereIn('keys.id', $keyIds)->distinct()->count('keys.id');
-                if ($allowedCount !== count($keyIds)) {
-                    $validator->errors()->add('keys', 'O mutuário não possui permissão para todas as chaves selecionadas.');
+            try {
+                app(EnsureBorrowerEligible::class)->handle($employee, $keyIds);
+            } catch (ValidationException $exception) {
+                foreach ($exception->errors() as $field => $messages) {
+                    foreach ($messages as $message) {
+                        $validator->errors()->add($field, $message);
+                    }
                 }
             }
         }];

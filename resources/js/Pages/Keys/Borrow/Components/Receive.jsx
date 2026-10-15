@@ -79,6 +79,7 @@ export default function Receive({ borrow, keys, received }) {
                                     <label htmlFor="returned_by" className="font-light">Devolução</label>
                                     <Input value={data.returned_by} type={'text'} name={'returned_by'} handleChange={(e) => setData('returned_by', e.target.value)} required={true} placeholder={'Quem entregou a(s) chave(s)?'} />
                                     <InputError message={errors.returned_by} />
+                                    <InputError message={errors.keys} />
                                 </div>
                                 <div className="font-light">Chaves</div>
                                 <div className="p-2 mb-4 border border-gray-400 rounded-md">
@@ -93,7 +94,6 @@ export default function Receive({ borrow, keys, received }) {
                                                 <div className="flex gap-2 mb-2" key={key.id}>
                                                     <input type="checkbox" name={"keys" + i} value={key.id} id={'key-'+key.id} checked={chaves.includes(key.id)} onChange={onHandleChangeKeys} className="w-5 h-5 border border-gray-400 rounded-md cursor-pointer text-green-dark focus:ring-green-light" />
                                                     <label className="text-sm cursor-pointer" htmlFor={'key-' + key.id}>{key.number} - {key.room.description}</label>
-                                                    <InputError message={errors.keys} />
                                                 </div>
                                             ))}
                                         </>

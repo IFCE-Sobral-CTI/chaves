@@ -165,13 +165,13 @@ class BorrowAvailabilityTest extends TestCase
         $this->assertSame([$x->id], $a->keys()->pluck('keys.id')->all());
     }
 
-    public function test_availability_validation_uses_one_query_for_one_or_five_keys(): void
+    public function test_preflight_and_transaction_validation_use_constant_queries_for_one_or_five_keys(): void
     {
         $user = $this->admin();
         $employee = Employee::factory()->create(['type' => Employee::COLLABORATOR]);
         $count = 0;
         DB::listen(function (QueryExecuted $query) use (&$count) {
-            if (str_contains($query->sql, 'borrow_key') && str_contains($query->sql, 'key_received')) {
+            if (str_contains($query->sql, 'borrow_key') && str_contains($query->sql, 'borrows')) {
                 $count++;
             }
         });
@@ -182,7 +182,7 @@ class BorrowAvailabilityTest extends TestCase
             $this->actingAs($user)->post(route('borrows.store'), [
                 'employee_id' => $employee->id, 'keys' => $ids,
             ])->assertSessionHasNoErrors();
-            $this->assertSame(1, $count);
+            $this->assertSame(2, $count);
         }
     }
 }

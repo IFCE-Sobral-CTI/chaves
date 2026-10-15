@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Borrows\CreateBorrow;
+use App\Actions\Borrows\DeleteBorrow;
+use App\Actions\Borrows\DeleteReceived;
+use App\Actions\Borrows\ReceiveKeys;
+use App\Actions\Borrows\UpdateBorrow;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBorrowRequest;
 use App\Http\Requests\UpdateBorrowRequest;
@@ -13,7 +18,7 @@ use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -59,15 +64,16 @@ class BorrowController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function store(StoreBorrowRequest $request)
+    public function store(StoreBorrowRequest $request, CreateBorrow $action)
     {
         $this->authorize('borrows.create', Borrow::class);
 
         try {
-            $borrow = $request->user()->borrows()->create($request->safe()->except('keys'));
-            $borrow->keys()->sync($request->validated('keys'));
+            $borrow = $action->handle($request->user(), $request->validated());
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
             report($e);
 
@@ -114,7 +120,10 @@ class BorrowController extends Controller
             'borrow' => $borrow,
             'employees' => Employee::select('id', 'registry', 'name')->orderBy('name')->get(),
             'borrowKeys' => $borrowKeys,
-            'keys' => Key::with('room')->whereNotIn('id', Borrow::where('id', '!=', $borrow->id)->pendingKeyIds())->get(),
+            'keys' => Key::with('room')->where(function ($query) use ($borrow, $borrowKeys) {
+                $query->whereNotIn('id', Borrow::where('id', '!=', $borrow->id)->pendingKeyIds())
+                    ->orWhereIn('id', $borrowKeys);
+            })->get(),
         ]);
     }
 
@@ -123,32 +132,16 @@ class BorrowController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function update(UpdateBorrowRequest $request, Borrow $borrow): RedirectResponse
+    public function update(UpdateBorrowRequest $request, Borrow $borrow, UpdateBorrow $action): RedirectResponse
     {
         $this->authorize('borrows.update', $borrow);
 
         try {
-            $borrow->update($request->safe()->except('keys'));
-
-            $borrow->keys()->sync($request->validated('keys'));
-            // Cria um log separado para alterações nas chaves
-            if ($request->keys) {
-                $properties = function (Request $request) {
-                    $keys = Key::whereIn('id', $request->keys)->get()->map(function ($item) {
-                        return $item->number;
-                    })->toArray();
-
-                    return ['Chaves' => implode(' - ', $keys)];
-                };
-
-                activity()
-                    ->by(Auth::user())
-                    ->on($borrow)
-                    ->withProperty('attributes', $properties($request))
-                    ->log('updated');
-            }
+            $action->handle($borrow, $request->user(), $request->validated());
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
             report($e);
 
@@ -161,66 +154,45 @@ class BorrowController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function receive(Borrow $borrow, Request $request, string $keys): RedirectResponse
+    public function receive(Borrow $borrow, Request $request, string $keys, ReceiveKeys $action): RedirectResponse
     {
         $this->authorize('borrows.receive', $borrow);
 
-        $request->validate([
-            'returned_by' => 'required|min:2',
-        ], [], [
-            'returned_by' => 'devolução',
-        ]);
+        $data = $request->validate([
+            'returned_by' => 'required|string|min:2|max:255',
+        ], [], ['returned_by' => 'devolução']);
 
-        // Garante que as chaves recebidas pertencem a este empréstimo (evita IDOR:
-        // os IDs vêm crus da URL e não podem ser confiados).
-        $requestedKeyIds = array_filter(array_map('intval', explode('|', $keys)));
-        $borrowKeyIds = $borrow->keys->pluck('id')->all();
-        $invalidKeyIds = array_diff($requestedKeyIds, $borrowKeyIds);
-
-        if (empty($requestedKeyIds) || ! empty($invalidKeyIds)) {
+        $parts = explode('|', $keys);
+        if (array_filter($parts, fn ($id) => ! ctype_digit($id) || (int) $id < 1)) {
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Chaves inválidas para este empréstimo.']);
         }
+        $keyIds = array_values(array_unique(array_map('intval', $parts)));
 
         try {
-            $received = Received::create([
-                'receiver' => $request->returned_by,
-                'user_id' => Auth::user()->id,
-                'borrow_id' => $borrow->id,
-            ]);
-            $received->keys()->sync($requestedKeyIds);
+            $action->handle($borrow, $request->user(), $keyIds, $data['returned_by']);
+
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
+        } catch (ValidationException $e) {
+            return to_route('borrows.show', $borrow)->withErrors($e->errors())
+                ->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         } catch (Exception $e) {
             report($e);
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Não foi possível registrar a devolução.']);
         }
-
-        try {
-            if ($borrow->keys()->count() == count($borrow->receivedKeys())) {
-                $borrow->update(['devolution' => now(), 'received_by' => Auth::user()->id, 'returned_by' => $request->returned_by]);
-            }
-
-            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
-        } catch (Exception $e) {
-            report($e);
-
-            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
-        }
     }
 
-    public function receiveDestroy(Borrow $borrow, Received $received): RedirectResponse
+    public function receiveDestroy(Borrow $borrow, Received $received, Request $request, DeleteReceived $action): RedirectResponse
     {
         $this->authorize('borrows.received.delete', $borrow);
+        abort_unless($received->borrow_id === $borrow->id, 404);
 
         try {
-            $received->delete();
-
-            $borrow->refresh();
-
-            if ($borrow->keys()->count() != count($borrow->receivedKeys())) {
-                $borrow->update(['devolution' => null, 'received_by' => null, 'returned_by' => null]);
-            }
+            $action->handle($borrow, $received, $request->user());
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
+        } catch (ValidationException $e) {
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         } catch (Exception $e) {
             report($e);
 
@@ -233,14 +205,16 @@ class BorrowController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function destroy(Borrow $borrow): RedirectResponse
+    public function destroy(Borrow $borrow, DeleteBorrow $action): RedirectResponse
     {
         $this->authorize('borrows.delete', $borrow);
 
         try {
-            $borrow->delete();
+            $action->handle($borrow);
 
             return to_route('borrows.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
+        } catch (ValidationException $e) {
+            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         } catch (Exception $e) {
             report($e);
 

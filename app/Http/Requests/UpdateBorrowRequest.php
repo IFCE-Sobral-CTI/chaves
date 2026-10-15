@@ -12,7 +12,7 @@ class UpdateBorrowRequest extends StoreBorrowRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'returned_by' => 'nullable|string|max:255',
+            'returned_by' => 'prohibited',
         ]);
     }
 }
