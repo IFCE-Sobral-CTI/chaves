@@ -45,12 +45,14 @@ class BorrowController extends Controller
     public function createEmployeeOptions(Request $request)
     {
         $this->authorize('borrows.create', Borrow::class);
+
         return $this->employeeOptions($request);
     }
 
     public function editEmployeeOptions(Borrow $borrow, Request $request)
     {
         $this->authorize('borrows.update', $borrow);
+
         return $this->employeeOptions($request);
     }
 
@@ -64,7 +66,7 @@ class BorrowController extends Controller
 
         return Employee::query()->select('id', 'registry', 'name')
             ->where(fn ($query) => $query->where('valid_until', '>=', now())->orWhereNull('valid_until'))
-            ->where(fn ($query) => $query->where('name', 'like', "%{$term}%")->orWhere('registry', 'like', "%{$term}%"))
+            ->when($term !== '', fn ($query) => $query->where(fn ($query) => $query->where('name', 'like', "%{$term}%")->orWhere('registry', 'like', "%{$term}%")))
             ->orderBy('name')->paginate(20);
     }
 
@@ -98,10 +100,10 @@ class BorrowController extends Controller
                     $query->orWhereIn('keys.id', $borrow->keys()->select('keys.id'));
                 }
             })
-            ->where(function ($query) use ($term) {
+            ->when($term !== '', fn ($query) => $query->where(function ($query) use ($term) {
                 $query->where('number', 'like', "%{$term}%")
                     ->orWhereHas('room', fn ($room) => $room->where('description', 'like', "%{$term}%"));
-            });
+            }));
 
         return $query->orderBy('number')->paginate(20);
     }

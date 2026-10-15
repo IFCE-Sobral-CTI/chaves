@@ -64,7 +64,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [EM_VALIDACAO] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação. Busca limitada a 20 por página e autorizada por permissão de criação/edição; testes HTTP e navegação no navegador pendentes.
 - [CONCLUIDO] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React no seletor. IDs do formulário permanecem selecionados ao mudar termo/página; objetos das chaves escolhidas ficam em cache no componente.
 - [CONCLUIDO] E5.6 Evitar busca inicial redundante, reiniciar na página 1 e tratar respostas antigas. Validado localmente com temporizadores e visitas controlados; navegação real no navegador pendente.
-- [PENDENTE] E5.7 Avaliar pesquisa no histórico e índices com planos de execução.
+- [EM_ANDAMENTO] E5.7 Busca no histórico preservada; filtros vazios removidos das consultas de seleção e listagem. Os índices atuais não atendem busca por substring; plano de execução com volume representativo pendente.
 - [PENDENTE] E5.8 Comparar tempo, queries e payload antes/depois; disponibilidade segue revalidada no banco.
 
 ## Etapa 6 — Dados, schema e implantação
@@ -260,3 +260,12 @@ Estado: `[EM_VALIDACAO]` no escopo de E5.4/E5.5, implementação local em 15/10/
 - Ambos os seletores carregam mais resultados, cancelam consultas antigas e mantêm a seleção no formulário; a lista de chaves retém os dados das selecionadas para continuar exibindo-as quando resultados mudam.
 - `npm run build`, `php -l` no controller e rotas, e `git diff --check` passaram. A consulta de `route:list` não pôde iniciar porque o MySQL configurado como `mysql` está indisponível no ambiente.
 - Testes HTTP de autorização/paginação, teste de regressão para seleção entre páginas e validação no navegador continuam pendentes. Não alterar o limite de 20 sem revisar o fluxo de paginação e a experiência da recepção.
+
+### Entrega 10 — Filtros vazios e revisão inicial dos índices de busca
+
+Estado: `[EM_ANDAMENTO]` para E5.7; otimização segura implementada em 15/10/2026, análise de plano operacional pendente.
+
+- Quando o termo está vazio, as consultas da lista de empréstimos e dos seletores deixam de aplicar `LIKE '%%'` ou `whereHas` de pesquisa. Com termo, a busca por substring e os resultados permanecem iguais.
+- A migration existente cria índice B-tree em `keys.number`, mas a busca por chave usa `LIKE '%termo%'`; esse padrão não aproveita o índice B-tree. Não foi acrescentado índice sem `EXPLAIN` e volume representativo.
+- `./vendor/bin/pint --dirty`, `php -l` em `BorrowController.php` e `Borrow.php`, e `git diff --check` passaram. Não rodei testes; MySQL local continua indisponível para planos de execução.
+- E5.7 segue aberto até confirmar demanda de busca em históricos, examinar planos reais e avaliar índices com dados representativos. E5.8 e medições de produção também permanecem pendentes.

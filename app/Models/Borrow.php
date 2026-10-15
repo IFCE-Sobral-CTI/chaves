@@ -125,10 +125,12 @@ class Borrow extends Model
         }
 
         $query->with(['employee', 'user', 'keys.room'])
-            ->whereHas('employee', function (Builder $query) use ($request) {
-                $query->where(function (Builder $q) use ($request) {
-                    $q->where('name', 'like', "%{$request->term}%")
-                        ->orWhere('registry', 'like', "%{$request->term}%");
+            ->when($request->term !== null && $request->term !== '', function (Builder $query) use ($request) {
+                $query->whereHas('employee', function (Builder $query) use ($request) {
+                    $query->where(function (Builder $q) use ($request) {
+                        $q->where('name', 'like', "%{$request->term}%")
+                            ->orWhere('registry', 'like', "%{$request->term}%");
+                    });
                 });
             });
 
