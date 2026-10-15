@@ -47,6 +47,14 @@ function Show({ employee, can, keys }) {
                         <div className="">{employee.name}</div>
                     </div>
                     <div className="flex flex-col">
+                        <div className="text-sm font-light">Nome usual</div>
+                        <div className="">{employee.usual_name ?? '-'}</div>
+                    </div>
+                    <div className="flex flex-col">
+                        <div className="text-sm font-light">Função/ocupação</div>
+                        <div className="">{employee.occupation ?? '-'}</div>
+                    </div>
+                    <div className="flex flex-col">
                         <div className="text-sm font-light">E-mail</div>
                         <div className="">{employee.email}</div>
                     </div>

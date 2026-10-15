@@ -7,10 +7,14 @@ import InputError from "@/Components/InputError";
 import Button from "@/Components/Form/Button";
 import Textarea from "@/Components/Form/Textarea";
 import Select from "@/Components/Form/Select";
+import SelectMulti from "@/Components/Form/SelectMulti";
+import { formatPhone } from "./phone";
 
-function Create({ employeeType }) {
+function Create({ employeeType, keys }) {
     const { data, setData, post, processing, errors } = useForm({
         name: "",
+        usual_name: "",
+        occupation: "",
         email: "",
         alternative_email: "",
         tel: "",
@@ -18,10 +22,15 @@ function Create({ employeeType }) {
         valid_until: "",
         observation: "",
         type: "",
+        borrowable_key_ids: [],
     });
 
     const onHandleChange = (event) => {
-        setData(event.target.name, event.target.value);
+        setData(event.target.name, event.target.name === 'tel' ? formatPhone(event.target.value) : event.target.value);
+
+        if (event.target.name === 'type' && ![3, 4].includes(Number(event.target.value))) {
+            setData('borrowable_key_ids', []);
+        }
     };
 
     const handleSubmit = (e) => {
@@ -35,49 +44,75 @@ function Create({ employeeType }) {
             <AuthenticatedLayout titleChildren={'Cadastro de novo Mutuário'} breadcrumbs={[{ label: 'Mutuários', url: route('employees.index') }, { label: 'Novo', url: route('employees.create') }]}>
                 <Panel>
                     <form onSubmit={handleSubmit} autoComplete="off">
-                        <div className="mb-4">
-                            <label htmlFor="type" className="font-light">Vínculo do Mutuário</label>
-                            <Select value={data.type} name={'type'} handleChange={onHandleChange} required={true}>
-                                <option>Selecione um vínculo</option>
-                                {employeeType.map((item, index) => {
-                                    return (
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            <div>
+                                <label htmlFor="type" className="font-light">Vínculo do Mutuário</label>
+                                <Select value={data.type} name={'type'} handleChange={onHandleChange} required={true}>
+                                    <option>Selecione um vínculo</option>
+                                    {employeeType.map((item, index) => (
                                         <option value={item.value} key={item.value}>{item.label}</option>
-                                    );
-                                })}
-                            </Select>
-                            <InputError message={errors.type} />
+                                    ))}
+                                </Select>
+                                <InputError message={errors.type} />
+                            </div>
+                            <div>
+                                <label htmlFor="occupation" className="font-light">Função/ocupação</label>
+                                <Input value={data.occupation} name={'occupation'} handleChange={onHandleChange} required={false} placeholder="Digite a função ou ocupação do mutuário" />
+                                <InputError message={errors.occupation} />
+                            </div>
+                            <div>
+                                <label htmlFor="registry" className="font-light">Matricula</label>
+                                <Input value={data.registry} type={'number'} name={'registry'} handleChange={onHandleChange} required={true} placeholder="Digite a matricula" />
+                                <InputError message={errors.registry} />
+                            </div>
+                            <div>
+                                <label htmlFor="valid_until" className="font-light">Válido até</label>
+                                <Input value={data.valid_until} type={'date'} name={'valid_until'} handleChange={onHandleChange} />
+                                <InputError message={errors.valid_until} />
+                            </div>
                         </div>
-                        <div className="mb-4">
-                            <label htmlFor="registry" className="font-light">Matricula</label>
-                            <Input value={data.registry} type={'number'} name={'registry'} handleChange={onHandleChange} required={true} placeholder="Digite a matricula" />
-                            <InputError message={errors.registry} />
+                        {[3, 4].includes(Number(data.type)) && (
+                            <div className="mt-4">
+                                <SelectMulti
+                                    data={keys}
+                                    value={data.borrowable_key_ids}
+                                    onChange={onHandleChange}
+                                    error={errors.borrowable_key_ids ?? errors['borrowable_key_ids.0']}
+                                    label="Chaves autorizadas"
+                                    name="borrowable_key_ids"
+                                />
+                            </div>
+                        )}
+                        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label htmlFor="name" className="font-light">Nome</label>
+                                <Input value={data.name} name={'name'} handleChange={onHandleChange} required={true} placeholder="Digite o nome do mutuário" />
+                                <InputError message={errors.name} />
+                            </div>
+                            <div>
+                                <label htmlFor="usual_name" className="font-light">Nome usual</label>
+                                <Input value={data.usual_name} name={'usual_name'} handleChange={onHandleChange} required={false} placeholder="Digite o nome usual do mutuário" />
+                                <InputError message={errors.usual_name} />
+                            </div>
                         </div>
-                        <div className="mb-4">
-                            <label htmlFor="name" className="font-light">Nome</label>
-                            <Input value={data.name} name={'name'} handleChange={onHandleChange} required={true} placeholder="Digite o nome do mutuário" />
-                            <InputError message={errors.name} />
+                        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            <div>
+                                <label htmlFor="email" className="font-light">E-mail</label>
+                                <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do mutuário" />
+                                <InputError message={errors.email} />
+                            </div>
+                            <div>
+                                <label htmlFor="alternative_email" className="font-light">E-mail Alternativo</label>
+                                <Input value={data.alternative_email} type={'email'} name={'alternative_email'} handleChange={onHandleChange} required={false} placeholder="Digite o e-mail alternativo do mutuário" />
+                                <InputError message={errors.alternative_email} />
+                            </div>
+                            <div>
+                                <label htmlFor="tel" className="font-light">Telefone</label>
+                                <Input value={data.tel} type={'tel'} name={'tel'} handleChange={onHandleChange} required={false} placeholder="(88) 99999-8888" />
+                                <InputError message={errors.tel} />
+                            </div>
                         </div>
-                        <div className="mb-4">
-                            <label htmlFor="email" className="font-light">E-mail</label>
-                            <Input value={data.email} type={'email'} name={'email'} handleChange={onHandleChange} required={true} placeholder="Digite o e-mail do mutuário" />
-                            <InputError message={errors.email} />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="alternative_email" className="font-light">E-mail Alternativo</label>
-                            <Input value={data.alternative_email} type={'email'} name={'alternative_email'} handleChange={onHandleChange} required={false} placeholder="Digite o e-mail alternativo do mutuário" />
-                            <InputError message={errors.alternative_email} />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="tel" className="font-light">Telefone</label>
-                            <Input value={data.tel} type={'tel'} name={'tel'} handleChange={onHandleChange} required={false} placeholder="Digite o telefone do mutuário" />
-                            <InputError message={errors.tel} />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="valid_until" className="font-light">Válido até</label>
-                            <Input value={data.valid_until} type={'date'} name={'valid_until'} handleChange={onHandleChange} />
-                            <InputError message={errors.valid_until} />
-                        </div>
-                        <div className="mb-4">
+                        <div className="mt-4">
                             <label htmlFor="observation" className="font-light">Observações</label>
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o mutuário" />
                             <InputError message={errors.observation} />

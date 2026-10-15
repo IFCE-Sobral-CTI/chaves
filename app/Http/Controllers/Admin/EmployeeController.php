@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,6 +47,7 @@ class EmployeeController extends Controller
 
         return Inertia::render('Keys/Employee/Create', [
             'employeeType' => Employee::TYPES,
+            'keys' => Key::getForSelect(),
         ]);
     }
 
@@ -59,7 +61,16 @@ class EmployeeController extends Controller
         $this->authorize('employees.create', Employee::class);
 
         try {
-            $employee = Employee::create($request->validated());
+            $data = $request->validated();
+            $keyIds = $data['borrowable_key_ids'];
+            unset($data['borrowable_key_ids']);
+
+            $employee = DB::transaction(function () use ($data, $keyIds): Employee {
+                $employee = Employee::create($data);
+                $employee->borrowable_keys()->sync($keyIds);
+
+                return $employee;
+            });
 
             return redirect()->route('employees.show', $employee)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
@@ -98,8 +109,9 @@ class EmployeeController extends Controller
         $this->authorize('employees.update', $employee);
 
         return Inertia::render('Keys/Employee/Edit', [
-            'employee' => $employee,
+            'employee' => $employee->load('borrowable_keys'),
             'employeeType' => Employee::TYPES,
+            'keys' => Key::getForSelect(),
         ]);
     }
 
@@ -113,7 +125,15 @@ class EmployeeController extends Controller
         $this->authorize('employees.update', $employee);
 
         try {
-            $employee->update($request->validated());
+            $data = $request->validated();
+            $keyIds = $data['borrowable_key_ids'];
+            unset($data['borrowable_key_ids']);
+
+            DB::transaction(function () use ($employee, $data, $keyIds): void {
+                $lockedEmployee = Employee::whereKey($employee->id)->lockForUpdate()->firstOrFail();
+                $lockedEmployee->update($data);
+                $lockedEmployee->borrowable_keys()->sync($keyIds);
+            });
 
             return redirect()->route('employees.show', $employee)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {

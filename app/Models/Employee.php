@@ -44,6 +44,8 @@ class Employee extends Model
      */
     protected $fillable = [
         'name',
+        'usual_name',
+        'occupation',
         'registry',
         'email',
         'alternative_email',
@@ -58,6 +60,8 @@ class Employee extends Model
         return LogOptions::defaults()
             ->logOnly([
                 'name',
+                'usual_name',
+                'occupation',
                 'registry',
                 'email',
                 'alternative_email',
@@ -97,6 +101,9 @@ class Employee extends Model
         $query->with(['borrowable_keys' => ['room']])
             ->where(function (Builder $q) use ($request) {
                 $q->where('name', 'like', "%{$request->term}%")
+                    ->orWhere('usual_name', 'like', "%{$request->term}%")
+                    ->orWhere('occupation', 'like', "%{$request->term}%")
+                    ->orWhere('observation', 'like', "%{$request->term}%")
                     ->orWhere('registry', 'like', "%{$request->term}%");
             });
 

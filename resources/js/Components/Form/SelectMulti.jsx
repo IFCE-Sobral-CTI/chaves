@@ -9,10 +9,10 @@ function SelectMulti({ data, onChange, value, error, label, name }) {
     const ref = useRef(null);
 
     const inputRef = useCallback((inputElement) => {
-        if (inputElement) {
+        if (inputElement && toggle) {
             inputElement.focus();
         }
-    });
+    }, [toggle]);
 
     useEffect(() => {
         if (value) {
@@ -46,7 +46,7 @@ function SelectMulti({ data, onChange, value, error, label, name }) {
     }, []);
 
     const handleSelect = (event) => {
-        let value = list.filter(item => item.id === event.target.value);
+        let value = list.filter(item => String(item.id) === event.target.value);
         setSelected([...selected, value.pop()]);
     }
 

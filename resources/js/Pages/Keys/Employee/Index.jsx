@@ -51,8 +51,13 @@ function Index({ employees, count, page, termSearch, can }) {
                 </td>
                 <td className="px-1 py-3 font-light">
                     <Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>
-                        {item.name}
+                        <span>{item.name}</span>
+                        {item.usual_name && <span className="block text-sm text-neutral-500">Nome usual: {item.usual_name}</span>}
+                        {item.occupation && <span className="block text-sm text-neutral-500">{item.occupation}</span>}
                     </Link>
+                </td>
+                <td className="hidden max-w-md px-1 py-3 font-light break-words md:table-cell">
+                    {item.observation || '-'}
                 </td>
                 <td className="hidden px-1 py-3 font-light md:table-cell">
                     <Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>
@@ -111,6 +116,7 @@ function Index({ employees, count, page, termSearch, can }) {
                             <tr className="border-b border-neutral-300">
                                 <th className="px-1 pt-3 font-semibold text-left">Matricula</th>
                                 <th className="px-1 pt-3 font-semibold text-left">Nome</th>
+                                <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Observações</th>
                                 <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Vínculo</th>
                                 <th className="hidden px-1 pt-3 font-semibold text-left md:table-cell">Autorizadas</th>
                                 <th></th>
