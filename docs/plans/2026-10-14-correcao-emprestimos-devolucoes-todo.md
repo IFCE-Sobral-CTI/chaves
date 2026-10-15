@@ -313,3 +313,15 @@ Validação realizada:
 - `./vendor/bin/sail bin pint --dirty --format agent`: passou, ajustando a ordem dos imports dos testes novos. `git diff --check`: sem erros.
 - O PHPUnit foi executado diretamente pelo Sail porque o wrapper `artisan test` encaminha `--no-interaction` ao runner, que não aceita essa opção.
 - Não repetidos suíte completa, concorrência MySQL, navegador, distribuição da amostra de GETs, overhead da instrumentação ou medições em produção. Auditoria das transições (entrega 11) e validação das otimizações da listagem (entrega 8) seguem com as pendências registradas. Alterações preexistentes de ferramentas, dependências, ambiente e E2E no workspace foram preservadas.
+
+### Entrega 14 — Exibição dos estados da auditoria
+
+Estado: `[CONCLUIDO]` no escopo da exibição local dos registros, em 15/10/2026. E4.9 permanece em andamento para conferir o conteúdo persistido de cada transição e as demais pendências já registradas.
+
+- Corrigida a tela de detalhes: alterações automáticas do Activitylog v5 passam a usar `attribute_changes`, mantendo compatibilidade com `properties.attributes/old` dos registros antigos.
+- Estados manuais `before/after` e metadados como `key_ids` e `received_id` agora aparecem. Exclusões com `after: null`, listas vazias, objetos, zero e booleanos preservam seu conteúdo; strings continuam escapadas pelo React.
+- Cinco testes novos de renderização cobrem formatos atual/legado, metadados, exclusão, valores estruturados, escape de conteúdo e registros sem propriedades. A suíte frontend passou com 12 testes, 0 falhas (525,76 ms); houve aviso de porta WebSocket 24678 já ocupada.
+- Build de produção via Sail aprovado; permanece o aviso existente sobre o futuro carregador nativo da configuração Vite. Sem mudanças de schema, dependências ou escritores de auditoria.
+- Validação visual no navegador, conferência dos snapshots gravados por transição, custo das consultas de auditoria e suíte completa não executados nesta entrega.
+- Regressão transacional: `./vendor/bin/sail bin phpunit tests/Feature/BorrowTransactionTest.php` passou (exit code 0): 17 testes, 144 assertions, 1 min 56,043 s. Inclui os casos existentes de rollback da auditoria junto com empréstimos, pivots e recebimentos; permanece uma depreciação do runtime e uma do PHPUnit. Esses casos não conferem o conteúdo de cada snapshot persistido.
+- `git diff --check` passou. Não houve alteração de PHP, portanto Pint não se aplica a este incremento.

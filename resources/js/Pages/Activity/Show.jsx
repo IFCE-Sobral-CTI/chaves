@@ -27,7 +27,7 @@ function Show({ activity, can }) {
                     </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Propriedades</div>
-                        <div className=""><Properties properties={activity.properties} /></div>
+                        <div className=""><Properties properties={activity.properties} attributeChanges={activity.attribute_changes} /></div>
                     </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Criado em</div>
