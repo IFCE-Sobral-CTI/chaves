@@ -37,10 +37,10 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 - [CONCLUIDO] E3.1 Extrair ações de aplicação para cada transição.
 - [CONCLUIDO] E3.2 Transacionar gravações, associações, encerramento e auditoria.
-- [EM_ANDAMENTO] E3.3 Documentar e aplicar ordem única de bloqueio das chaves e demais registros em todos os escritores. Aplicada às ações do fluxo; auditoria dos demais escritores segue em E3.6.
+- [EM_ANDAMENTO] E3.3 Documentar e aplicar ordem única de bloqueio das chaves e demais registros em todos os escritores. Aplicada às ações do fluxo; exclusões indiretas protegidas pelas FKs da entrega 5 após aplicação da migration. Confirmação operacional dos escritores segue em E3.6.
 - [CONCLUIDO] E3.4 Revalidar disponibilidade e elegibilidade dentro da transação após os bloqueios.
 - [CONCLUIDO] E3.5 Tratar conflitos e deadlocks com respostas previsíveis e tentativas limitadas.
-- [EM_ANDAMENTO] E3.6 Auditar scripts/imports e avaliar necessidade de restrição estrutural de ocupação. Auditoria estática registrada na entrega 4; exclusões em cascata e escritores externos ainda precisam ser tratados antes do fechamento.
+- [EM_ANDAMENTO] E3.6 Auditar scripts/imports e avaliar necessidade de restrição estrutural de ocupação. Auditoria estática na entrega 4 e proteção das exclusões na entrega 5; implantação da migration e confirmação de escritores externos ainda pendentes. Exclusividade de ocupação segue dependente do protocolo das ações.
 - [CONCLUIDO] E3.7 Testar disputa entre conexões MySQL independentes, devolução concorrente e rollback com falha injetada.
 
 ## Etapa 4 — Segurança e coerência
@@ -54,7 +54,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
 - [EM_ANDAMENTO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação por conjuntos implementada; diagnóstico e validação abrangente dos dados legados pendentes.
 - [EM_ANDAMENTO] E4.9 Completar auditoria anterior/posterior com usuário e motivo de correção. Eventos transacionais com IDs e executor implementados; cobertura completa anterior/posterior e motivo de correção pendentes.
-- [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Cobertos vínculo, reenvio, edição, autorização da devolução antes da validação e disputa entre exclusão de recebimento e novo empréstimo; matriz completa de autorização e disputas de edição pendente.
+- [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Cobertos vínculo, reenvio, edição, autorização da devolução antes da validação e disputas de novo empréstimo com exclusão de recebimento ou de chave; matriz completa de autorização e disputas de edição pendente.
 
 ## Etapa 5 — Consultas e interface
 
@@ -77,7 +77,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [EM_VALIDACAO] E6.6 Executar suíte completa e build quando necessário antes de publicar o conjunto. Build passou; suíte executada com 38 falhas fora dos testes de empréstimos, detalhadas na entrega 2.
 - [PENDENTE] E6.7 Confirmar backup/restauração e estratégia para evitar escritores de versões incompatíveis.
 - [PENDENTE] E6.8 Implantar em janela apropriada e observar erros, conflitos, deadlocks e latência.
-- [PENDENTE] E6.9 Preparar reversão segura do código e reconciliação específica dos reparos de dados.
+- [EM_ANDAMENTO] E6.9 Preparar reversão segura do código e reconciliação específica dos reparos de dados. Para a entrega 5, preservar FKs restritivas ao reverter código; executar o `down` reabre o risco das cascatas e de perda do responsável final. Estratégia operacional completa ainda pendente.
 - [PENDENTE] E6.10 Verificar metas de desempenho e observar período representativo de atendimento.
 
 ## Registro das entregas
@@ -177,3 +177,30 @@ Validação realizada:
 - A primeira execução revelou dependência do ID fixo 1 na factory; a fixture nova foi corrigida para escolher um usuário existente, sem alterar a factory compartilhada.
 - `./vendor/bin/sail php vendor/bin/pint --dirty --test`: passou. `git diff --check`: sem erros.
 - Sem alterações de frontend, schema ou ações transacionais; build, suíte completa, testes de concorrência e execução operacional não foram repetidos. Permanecem os avisos de depreciação e as falhas da última suíte completa registradas em E6.6.
+
+### Entrega 5 — Preservação do histórico nas exclusões de cadastros
+
+Estado: `[CONCLUIDO]` no escopo local da proteção de referências históricas, validado em 15/10/2026. Nenhuma migration foi aplicada no banco da aplicação ou em produção, apenas em `testing`. E3.6 continua em andamento pelas pendências operacionais e de escritores externos.
+
+- A migration `2026_10_15_000000_protect_borrow_history_from_cascading_deletes.php` substitui por `RESTRICT` seis FKs: `borrow_key.key_id`, `key_received.key_id`, `borrows.employee_id`, `borrows.user_id`, `borrows.received_by` e `receiveds.user_id`.
+- Chaves, mutuários, criadores, recebedores e responsáveis finais com histórico não podem ser excluídos, mesmo por SQL direto. A restrição também impede as cascatas originadas por exclusão de salas, blocos e permissões. Empréstimos abertos e encerrados são preservados; chaves de recebimentos legados fora do vínculo atual também ficam protegidas.
+- Cadastros sem histórico continuam excluíveis, inclusive suas cascatas sem uso. A exclusão explícita de empréstimos e recebimentos pelas ações existentes continua permitida; suas FKs para os respectivos pivots não foram alteradas.
+- Os seis controllers de cadastros usam uma resposta compartilhada para o erro MySQL 1451, explicando que existe histórico de empréstimos/devoluções. Outros erros continuam reportados, com resposta genérica, sem expor detalhes SQL.
+- A migration adiciona cada FK substituta antes de remover a anterior, sem desativar `foreign_key_checks` ou remover dados. Mantém `ON UPDATE CASCADE`; o `down` restaura cinco `ON DELETE CASCADE` e o `SET NULL` original de `received_by`.
+
+Aplicação e reversão:
+
+- A proteção só vale depois que a migration for aplicada no ambiente. Antes da implantação, confirmar os nomes das FKs e migrations reais (E1.4), backup/restauração e janela sem escritores incompatíveis (E6.7/E6.8).
+- As alterações de FKs executam DDL por tabela e não formam uma transação atômica para toda a migration no MySQL. Podem copiar tabelas e bloquear operações; duração com volume operacional ainda não foi medida. Suspender as escritas na janela da alteração.
+- Preferir reverter apenas o código e manter as FKs restritivas. O `down` existe para reversibilidade técnica, mas restaura o comportamento que permite perda de histórico e de `received_by`; não executar indiscriminadamente sobre dados operacionais.
+- Esta restrição preserva referências históricas; ela não cria exclusividade estrutural de chave emprestada entre dois empréstimos. Escritores externos ainda precisam respeitar as ações/protocolo ou ser tratados em E3.6.
+
+Validação:
+
+- `./vendor/bin/sail artisan test --compact tests/Feature/BorrowHistoryDeletionTest.php tests/Feature/BorrowTransactionTest.php`: exit code 0, 22 testes `deprecated`, 320 assertions, duração de 162,00 s.
+- `./vendor/bin/sail artisan test --compact tests/Feature/BorrowConcurrencyTest.php tests/Feature/BorrowHistoryDeletionTest.php --filter='test_key_deletion_waits_for_creation_and_preserves_committed_history|test_history_constraint_rollback_and_reapply_preserve_data|test_unused_descendants_can_still_be_cascade_deleted'`: exit code 0, 3 testes `deprecated`, 31 assertions, duração de 132,40 s. São 24 testes distintos validados nas duas execuções, com um caso repetido após a recriação do banco.
+- Cobertas as seis exclusões por HTTP com empréstimo aberto e encerrado, sem perda de pivots, recebimentos ou auditoria; exclusões permitidas de cadastros/cascatas sem histórico; SQL direto sobre chave de recebimento legado, usuário recebedor e usuário presente apenas em `received_by`; e exclusão explícita de empréstimo com seus recebimentos/pivots.
+- Em processos MySQL independentes, a exclusão da chave aguarda a criação concorrente e recebe conflito, preservando chave e empréstimo confirmado. Conferidos os seis `RESTRICT`, os seis `ON UPDATE CASCADE` e a restauração exata das regras anteriores no `down`, com dados preservados após `down/up`.
+- Corrigida a fixture nova para registrar os Gates após o seed, inclusive quando a classe de concorrência anterior recria e desfaz o schema. Não houve alteração da autorização da aplicação.
+- `./vendor/bin/sail php vendor/bin/pint --dirty --test`: passou. `git diff --check`: sem erros.
+- Sem alterações de frontend; não há build novo nesta entrega. Suíte completa, volume operacional, implantação e medição em produção permanecem pendentes. Os avisos de depreciação e as 38 falhas da última suíte completa continuam registrados em E6.6.

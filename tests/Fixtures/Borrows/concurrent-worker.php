@@ -8,6 +8,7 @@ use App\Models\Received;
 use App\Models\User;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -36,7 +37,7 @@ if ($input['role'] === 'contender') {
     DB::beginTransaction();
     DB::table('borrows')->count();
     DB::connection()->beforeExecuting(function (string $sql) use ($isKeyLock, $input) {
-        if ($isKeyLock($sql)) {
+        if ($isKeyLock($sql) || ($input['operation'] === 'delete-key' && str_starts_with($sql, 'delete from `keys`'))) {
             touch($input['barrier'].'/attempting');
         }
     });
@@ -58,6 +59,7 @@ try {
         'create' => app(CreateBorrow::class)->handle($user, ['employee_id' => $input['employee_id'], 'keys' => [$input['key_id']]]),
         'receive' => app(ReceiveKeys::class)->handle($borrow, $user, [$input['key_id']], 'Recepção'),
         'delete-return' => app(DeleteReceived::class)->handle($borrow, Received::findOrFail($input['received_id']), $user),
+        'delete-key' => DB::table('keys')->where('id', $input['key_id'])->delete(),
     };
     if ($input['role'] === 'contender') {
         DB::commit();
@@ -72,6 +74,10 @@ try {
     if ($input['role'] === 'contender' && DB::transactionLevel() > 0) {
         DB::rollBack();
     }
-    echo json_encode(['status' => 'error', 'exception' => get_class($exception), 'message' => $exception->getMessage()], JSON_THROW_ON_ERROR);
-    exit(1);
+    if ($exception instanceof QueryException && (int) ($exception->errorInfo[1] ?? 0) === 1451) {
+        echo json_encode(['status' => 'conflict'], JSON_THROW_ON_ERROR);
+    } else {
+        echo json_encode(['status' => 'error', 'exception' => get_class($exception), 'message' => $exception->getMessage()], JSON_THROW_ON_ERROR);
+        exit(1);
+    }
 }

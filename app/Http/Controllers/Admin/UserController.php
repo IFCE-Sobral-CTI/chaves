@@ -201,9 +201,7 @@ class UserController extends Controller
 
             return redirect()->route('users.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso!']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('users.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->deletionFailed($e, 'users.index');
         }
     }
 }

@@ -133,9 +133,7 @@ class KeyController extends Controller
 
             return redirect()->route('keys.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('keys.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->deletionFailed($e, 'keys.index');
         }
     }
 }

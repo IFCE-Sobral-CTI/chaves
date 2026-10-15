@@ -137,9 +137,7 @@ class EmployeeController extends Controller
 
             return redirect()->route('employees.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => 'Não foi possível apagar o registro.']);
+            return $this->deletionFailed($e, 'employees.index');
         }
     }
 }

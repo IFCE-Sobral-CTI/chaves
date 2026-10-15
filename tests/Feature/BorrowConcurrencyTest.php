@@ -110,6 +110,51 @@ class BorrowConcurrencyTest extends TestCase
         $this->assertSame(1, DB::table('borrow_key')->where('key_id', $this->key->id)->count());
     }
 
+    public function test_key_deletion_waits_for_creation_and_preserves_committed_history(): void
+    {
+        $before = Borrow::count();
+        [$holder, $contender] = $this->race(['operation' => 'create'], ['operation' => 'delete-key']);
+
+        $this->assertSame('success', $holder['status']);
+        $this->assertSame('conflict', $contender['status']);
+        $this->assertSame($before + 1, Borrow::count());
+        $this->assertDatabaseHas('keys', ['id' => $this->key->id]);
+        $this->assertSame(1, DB::table('borrow_key')->where('key_id', $this->key->id)->count());
+    }
+
+    public function test_history_constraint_rollback_and_reapply_preserve_data(): void
+    {
+        $borrow = $this->borrow();
+        $receipt = app(ReceiveKeys::class)->handle($borrow, $this->user, [$this->key->id], 'Recepção');
+        $assertRule = function (string $rule): void {
+            $constraints = DB::table('information_schema.REFERENTIAL_CONSTRAINTS')
+                ->where('CONSTRAINT_SCHEMA', DB::connection()->getDatabaseName())
+                ->whereIn('TABLE_NAME', ['borrow_key', 'key_received', 'borrows', 'receiveds'])
+                ->whereIn('REFERENCED_TABLE_NAME', ['keys', 'employees', 'users'])->get();
+            $this->assertCount(6, $constraints);
+            $this->assertEquals(
+                $rule === 'RESTRICT' ? ['RESTRICT' => 6] : ['CASCADE' => 5, 'SET NULL' => 1],
+                $constraints->countBy('DELETE_RULE')->all(),
+            );
+            $this->assertSame(['CASCADE'], $constraints->pluck('UPDATE_RULE')->unique()->values()->all());
+        };
+        $migration = require database_path('migrations/2026_10_15_000000_protect_borrow_history_from_cascading_deletes.php');
+        $assertRule('RESTRICT');
+
+        $migration->down();
+        try {
+            $assertRule('CASCADE');
+        } finally {
+            $migration->up();
+        }
+
+        $assertRule('RESTRICT');
+        $this->assertDatabaseHas('borrows', ['id' => $borrow->id]);
+        $this->assertDatabaseHas('receiveds', ['id' => $receipt->id]);
+        $this->assertDatabaseHas('borrow_key', ['borrow_id' => $borrow->id, 'key_id' => $this->key->id]);
+        $this->assertDatabaseHas('key_received', ['received_id' => $receipt->id, 'key_id' => $this->key->id]);
+    }
+
     public function test_simultaneous_returns_create_only_one_receipt(): void
     {
         $borrow = $this->borrow();
