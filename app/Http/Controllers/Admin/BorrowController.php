@@ -8,6 +8,7 @@ use App\Actions\Borrows\DeleteReceived;
 use App\Actions\Borrows\ReceiveKeys;
 use App\Actions\Borrows\UpdateBorrow;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ReceiveKeysRequest;
 use App\Http\Requests\StoreBorrowRequest;
 use App\Http\Requests\UpdateBorrowRequest;
 use App\Models\Borrow;
@@ -154,22 +155,14 @@ class BorrowController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function receive(Borrow $borrow, Request $request, string $keys, ReceiveKeys $action): RedirectResponse
+    public function receive(Borrow $borrow, ReceiveKeysRequest $request, ReceiveKeys $action): RedirectResponse
     {
         $this->authorize('borrows.receive', $borrow);
 
-        $data = $request->validate([
-            'returned_by' => 'required|string|min:2|max:255',
-        ], [], ['returned_by' => 'devolução']);
-
-        $parts = explode('|', $keys);
-        if (array_filter($parts, fn ($id) => ! ctype_digit($id) || (int) $id < 1)) {
-            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Chaves inválidas para este empréstimo.']);
-        }
-        $keyIds = array_values(array_unique(array_map('intval', $parts)));
+        $data = $request->validated();
 
         try {
-            $action->handle($borrow, $request->user(), $keyIds, $data['returned_by']);
+            $action->handle($borrow, $request->user(), $data['keys'], $data['returned_by']);
 
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (ValidationException $e) {

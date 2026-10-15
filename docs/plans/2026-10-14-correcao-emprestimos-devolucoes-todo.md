@@ -46,7 +46,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 ## Etapa 4 — Segurança e coerência
 
 - [CONCLUIDO] E4.1 Restringir exclusão ao recebimento pertencente ao empréstimo autorizado.
-- [PENDENTE] E4.2 Criar Form Request de devolução e migrar IDs para lista no corpo da requisição.
+- [CONCLUIDO] E4.2 Criar Form Request de devolução e migrar IDs para lista no corpo da requisição.
 - [CONCLUIDO] E4.3 Rejeitar chaves já devolvidas e empréstimos encerrados; definir reenvio/idempotência. Reenvio rejeitado como conflito, sem novo recebimento.
 - [CONCLUIDO] E4.4 Consultar IDs distintos recebidos e retornar array JSON com índices contíguos.
 - [CONCLUIDO] E4.5 Definir e aplicar edição segura preservando o histórico.
@@ -54,7 +54,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
 - [EM_ANDAMENTO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação por conjuntos implementada; diagnóstico e validação abrangente dos dados legados pendentes.
 - [EM_ANDAMENTO] E4.9 Completar auditoria anterior/posterior com usuário e motivo de correção. Eventos transacionais com IDs e executor implementados; cobertura completa anterior/posterior e motivo de correção pendentes.
-- [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Cobertos vínculo, reenvio, edição e disputa entre exclusão de recebimento e novo empréstimo; matriz completa de autorização e disputas de edição pendente.
+- [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Cobertos vínculo, reenvio, edição, autorização da devolução antes da validação e disputa entre exclusão de recebimento e novo empréstimo; matriz completa de autorização e disputas de edição pendente.
 
 ## Etapa 5 — Consultas e interface
 
@@ -124,3 +124,22 @@ Validação realizada:
 - `./vendor/bin/sail npm run build`: passou, com aviso sobre o carregamento futuro da configuração Vite.
 - `./vendor/bin/sail php vendor/bin/pint --dirty --test`: passou. `git diff --check`: sem erros.
 - Não foram validados navegador, latência operacional, dados reais, implantação, auditoria de scripts/imports ou todos os casos de autorização/edição concorrente. Sem novas dependências ou mudanças de schema.
+
+### Entrega 3 — Contrato de entrada da devolução
+
+Estado: `[CONCLUIDO]` no escopo de E4.2, com validação local em 15/10/2026. Implantação não realizada.
+
+- `ReceiveKeysRequest` autoriza antes da validação e exige nome de quem devolveu como string de 2 a 255 caracteres e lista não vazia de IDs inteiros positivos distintos.
+- `borrows.receive` passa a aceitar `POST /admin/borrows/{borrow}/receive/keys`, com `keys` e `returned_by` no corpo. Removidos o parâmetro de IDs da URL e seu parser no controller.
+- A existência e a pendência das chaves continuam verificadas em lote sob bloqueio pela ação transacional. A validação da estrutura ocorre antes de qualquer consulta dessa ação, inclusive para entradas aninhadas.
+- O formulário usa `useForm` como estado único da seleção, envia a lista no corpo e exibe erros gerais e de cada item. Os consumidores da rota e os testes de regressão foram migrados juntos.
+- Frontend e backend precisam ser implantados juntos; telas abertas com o formulário antigo precisam ser recarregadas. A URL anterior não foi mantida como rota de compatibilidade.
+
+Validação realizada:
+
+- `./vendor/bin/sail artisan test --compact tests/Feature/BorrowTransactionTest.php tests/Feature/RemediationTest.php`: 20 testes sem falhas, classificados como `deprecated`, e uma falha na asserção do novo teste de entradas inválidas, corrigida de `keys` para `keys.0`; 114 assertions, duração de 138,96 s.
+- Reexecução do caso corrigido: `./vendor/bin/sail artisan test --compact tests/Feature/BorrowTransactionTest.php --filter=test_return_validates_body_without_writing_receipts_or_audit`: exit code 0, 1 teste `deprecated`, 64 assertions, duração de 15,66 s. Cobertos 15 corpos inválidos sem recebimento, pivot, encerramento ou auditoria parcial.
+- Os 21 testes afetados foram validados entre essas execuções, incluindo autorização, chave de outro empréstimo, reenvio, devolução parcial/total, responsáveis e rollback.
+- `./vendor/bin/sail npm run build`: passou, com o aviso já registrado sobre o carregamento futuro da configuração Vite.
+- `./vendor/bin/sail php vendor/bin/pint --dirty --test`: passou. `git diff --check`: sem erros.
+- Suíte completa e concorrência entre processos não foram repetidas nesta entrega: a ação e o protocolo de bloqueio não mudaram. As 38 falhas da última suíte completa permanecem como pendência de E6.6. Navegador e produção não foram validados.

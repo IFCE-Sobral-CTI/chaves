@@ -6,32 +6,31 @@ import InputError from '@/Components/InputError';
 
 export default function Receive({ borrow, keys, received }) {
     const [open, setOpen] = useState(false);
-    const [chaves, setChaves] = useState([]);
     const { data, setData, post, processing, errors, reset } = useForm({
-        returned_by: ''
+        returned_by: '',
+        keys: [],
     });
 
     const pendingKeys = keys.filter(key => !received.includes(key.id));
-    const allSelected = pendingKeys.length > 0 && chaves.length === pendingKeys.length;
+    const allSelected = pendingKeys.length > 0 && data.keys.length === pendingKeys.length;
 
     const onHandleChangeKeys = (event) => {
         const value = parseInt(event.target.value);
 
-        setChaves(prev => prev.includes(value)
-            ? prev.filter(id => id !== value)
-            : [...prev, value]);
+        setData('keys', data.keys.includes(value)
+            ? data.keys.filter(id => id !== value)
+            : [...data.keys, value]);
     }
 
     const onHandleToggleAll = (event) => {
-        setChaves(event.target.checked ? pendingKeys.map(key => key.id) : []);
+        setData('keys', event.target.checked ? pendingKeys.map(key => key.id) : []);
     }
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('borrows.receive', {borrow: borrow.id, chaves: chaves.join('|')}), {
+        post(route('borrows.receive', {borrow: borrow.id}), {
             preserveScroll: true,
             onSuccess: () => {
-                setChaves([]);
                 setOpen(false);
                 reset();
             }
@@ -79,9 +78,11 @@ export default function Receive({ borrow, keys, received }) {
                                     <label htmlFor="returned_by" className="font-light">Devolução</label>
                                     <Input value={data.returned_by} type={'text'} name={'returned_by'} handleChange={(e) => setData('returned_by', e.target.value)} required={true} placeholder={'Quem entregou a(s) chave(s)?'} />
                                     <InputError message={errors.returned_by} />
-                                    <InputError message={errors.keys} />
                                 </div>
                                 <div className="font-light">Chaves</div>
+                                {Object.entries(errors)
+                                    .filter(([field]) => field === 'keys' || field.startsWith('keys.'))
+                                    .map(([field, message]) => <InputError key={field} message={message} />)}
                                 <div className="p-2 mb-4 border border-gray-400 rounded-md">
                                     {pendingKeys.length > 0
                                     ? (
@@ -92,7 +93,7 @@ export default function Receive({ borrow, keys, received }) {
                                             </div>
                                             {pendingKeys.map((key, i) => (
                                                 <div className="flex gap-2 mb-2" key={key.id}>
-                                                    <input type="checkbox" name={"keys" + i} value={key.id} id={'key-'+key.id} checked={chaves.includes(key.id)} onChange={onHandleChangeKeys} className="w-5 h-5 border border-gray-400 rounded-md cursor-pointer text-green-dark focus:ring-green-light" />
+                                                    <input type="checkbox" name={"keys" + i} value={key.id} id={'key-'+key.id} checked={data.keys.includes(key.id)} onChange={onHandleChangeKeys} className="w-5 h-5 border border-gray-400 rounded-md cursor-pointer text-green-dark focus:ring-green-light" />
                                                     <label className="text-sm cursor-pointer" htmlFor={'key-' + key.id}>{key.number} - {key.room.description}</label>
                                                 </div>
                                             ))}

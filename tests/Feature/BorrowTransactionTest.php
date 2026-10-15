@@ -156,12 +156,86 @@ class BorrowTransactionTest extends TestCase
         $this->assertSame($logs, DB::table('activity_log')->count());
     }
 
+    public function test_return_validates_body_without_writing_receipts_or_audit(): void
+    {
+        $borrow = $this->borrow();
+        $logs = DB::table('activity_log')->count();
+        $valid = ['returned_by' => 'Recepção', 'keys' => [$this->key->id]];
+        $cases = [
+            [['keys' => null], 'keys'],
+            [['keys' => []], 'keys'],
+            [['keys' => (string) $this->key->id], 'keys'],
+            [['keys' => ['selected' => $this->key->id]], 'keys'],
+            [['keys' => [$this->key->id, $this->key->id]], 'keys.0'],
+            [['keys' => ['invalid']], 'keys.0'],
+            [['keys' => [0]], 'keys.0'],
+            [['keys' => [null]], 'keys.0'],
+            [['keys' => [[$this->key->id]]], 'keys.0'],
+            [['keys' => [Key::max('id') + 1]], 'keys'],
+            [['returned_by' => null], 'returned_by'],
+            [['returned_by' => ['Recepção']], 'returned_by'],
+            [['returned_by' => 123], 'returned_by'],
+            [['returned_by' => 'A'], 'returned_by'],
+            [['returned_by' => str_repeat('A', 256)], 'returned_by'],
+        ];
+
+        foreach ($cases as [$invalid, $field]) {
+            $this->actingAs($this->user)->from(route('borrows.show', $borrow))
+                ->post(route('borrows.receive', $borrow), array_replace($valid, $invalid))
+                ->assertRedirect(route('borrows.show', $borrow))->assertSessionHasErrors($field);
+        }
+
+        $this->assertSame(0, $borrow->received()->count());
+        $this->assertDatabaseMissing('key_received', ['key_id' => $this->key->id]);
+        $this->assertNull($borrow->fresh()->devolution);
+        $this->assertSame($logs, DB::table('activity_log')->count());
+    }
+
+    public function test_return_authorizes_before_validating_body(): void
+    {
+        $borrow = $this->borrow();
+        $viewer = User::factory()->create([
+            'permission_id' => Permission::where('description', 'Visualizador')->firstOrFail()->id,
+        ]);
+
+        $this->actingAs($viewer)->postJson(route('borrows.receive', $borrow), [])->assertForbidden();
+        $this->actingAs($viewer)->postJson(route('borrows.receive', $borrow), [
+            'returned_by' => 'Recepção', 'keys' => [$this->key->id],
+        ])->assertForbidden();
+
+        $this->assertSame(0, $borrow->received()->count());
+        $this->assertNull($borrow->fresh()->devolution);
+    }
+
+    public function test_partial_and_final_returns_use_key_lists_in_body(): void
+    {
+        $borrow = $this->borrow();
+        $otherKey = Key::factory()->create();
+        app(UpdateBorrow::class)->handle($borrow, $this->user, [
+            'employee_id' => $this->employee->id, 'keys' => [$this->key->id, $otherKey->id],
+        ]);
+
+        foreach ([$this->key->id, $otherKey->id] as $index => $keyId) {
+            $this->actingAs($this->user)->post(route('borrows.receive', $borrow), [
+                'returned_by' => 'Recepção', 'keys' => [$keyId],
+            ])->assertSessionHasNoErrors()->assertSessionHas('flash.status', 'success');
+
+            $this->assertDatabaseHas('key_received', ['key_id' => $keyId]);
+            $this->assertSame($index + 1, $borrow->received()->count());
+            $this->assertSame($index === 0, $borrow->fresh()->devolution === null);
+        }
+
+        $this->assertSame($this->user->id, $borrow->fresh()->received_by);
+        $this->assertSame('Recepção', $borrow->fresh()->returned_by);
+    }
+
     public function test_duplicate_return_is_rejected_without_a_second_receipt(): void
     {
         $borrow = $this->borrow();
         app(ReceiveKeys::class)->handle($borrow, $this->user, [$this->key->id], 'Recepção');
 
-        $this->actingAs($this->user)->post(route('borrows.receive', ['borrow' => $borrow->id, 'chaves' => $this->key->id]), [
+        $this->actingAs($this->user)->post(route('borrows.receive', ['borrow' => $borrow->id]), [
+            'keys' => [$this->key->id],
             'returned_by' => 'Recepção',
         ])->assertSessionHasErrors('keys');
 

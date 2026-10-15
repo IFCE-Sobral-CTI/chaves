@@ -57,8 +57,7 @@ class RemediationTest extends TestCase
         $this->actingAs($admin)
             ->post(route('borrows.receive', [
                 'borrow' => $borrow->id,
-                'chaves' => $key2->id, // key2 não pertence ao borrow
-            ]), ['returned_by' => 'João'])
+            ]), ['returned_by' => 'João', 'keys' => [$key2->id]])
             ->assertRedirect()
             ->assertSessionHas('flash');
 
@@ -87,8 +86,7 @@ class RemediationTest extends TestCase
         $this->actingAs($admin)
             ->post(route('borrows.receive', [
                 'borrow' => $borrow->id,
-                'chaves' => $key->id,
-            ]), ['returned_by' => 'Maria'])
+            ]), ['returned_by' => 'Maria', 'keys' => [$key->id]])
             ->assertRedirect();
 
         $borrow->refresh();
