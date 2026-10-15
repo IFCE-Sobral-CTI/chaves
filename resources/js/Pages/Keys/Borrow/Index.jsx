@@ -8,16 +8,25 @@ import React, { useEffect, useState } from "react";
 
 function Index({ borrows, count, page, termSearch, can }) {
     const [term, setTerm] = useState(termSearch?? '');
-    const [currentPage, setCurrentPage] = useState(page);
+    const currentPage = page;
 
     useEffect(() => {
+        if (term === (termSearch ?? '')) return;
+
+        let cancelToken;
         const debounce = setTimeout(() => {
-            setCurrentPage(1);
-            router.get(route(route().current()), {term: term, page: currentPage}, {preserveState: true, replace: true});
+            router.get(route('borrows.index'), {term, page: 1}, {
+                preserveState: true,
+                replace: true,
+                onCancelToken: token => { cancelToken = token; },
+            });
         }, 300);
 
-        return () => clearTimeout(debounce);
-    }, [term]);
+        return () => {
+            clearTimeout(debounce);
+            cancelToken?.cancel();
+        };
+    }, [term, termSearch]);
 
     const status = (created_at, devolution) => {
         let start = moment(created_at, "DD/MM/YYYY hh:mm:ss");

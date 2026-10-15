@@ -63,7 +63,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [PENDENTE] E5.3 Remover relações não usadas e revisar custo das consultas da auditoria.
 - [PENDENTE] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação.
 - [CONCLUIDO] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React no seletor local atual. Seleção controlada pelo formulário e linhas identificadas por `item.id`; adaptação à busca/paginação remota acompanha E5.4.
-- [PENDENTE] E5.6 Evitar busca inicial redundante, reiniciar na página 1 e tratar respostas antigas.
+- [CONCLUIDO] E5.6 Evitar busca inicial redundante, reiniciar na página 1 e tratar respostas antigas. Validado localmente com temporizadores e visitas controlados; navegação real no navegador pendente.
 - [PENDENTE] E5.7 Avaliar pesquisa no histórico e índices com planos de execução.
 - [PENDENTE] E5.8 Comparar tempo, queries e payload antes/depois; disponibilidade segue revalidada no banco.
 
@@ -224,3 +224,19 @@ Validação realizada:
 - São testes de renderização no servidor e chamada do handler, não testes de montagem/atualização no DOM, digitação ou navegação real por teclado. Esses fluxos ainda não foram exercitados no navegador.
 - `./vendor/bin/sail npm run build`: passou, com o aviso já registrado sobre o futuro carregamento nativo da configuração Vite. `git diff --check`: sem erros.
 - Suíte PHP completa, concorrência MySQL, navegador e medições de desempenho não foram repetidos; a entrega não altera ações, rotas ou schema. As falhas da última suíte completa continuam pendentes em E6.6.
+
+### Entrega 7 — Busca da listagem sem requisição redundante
+
+Estado: `[CONCLUIDO]` no escopo local de E5.6, validado em 15/10/2026. Sem implantação.
+
+- A listagem não agenda uma visita quando o termo local já corresponde ao termo recebido do servidor, inclusive na montagem e após a resposta da pesquisa.
+- Pesquisa e limpeza do campo enviam explicitamente `page: 1` após 300 ms. Os links das linhas usam a página atual recebida do servidor, sem cópia em estado local.
+- A limpeza do efeito remove o temporizador e cancela sua visita pelo token do Inertia quando o termo muda ou a página é desmontada, impedindo que uma busca anterior ainda pendente substitua a atual.
+- Mantidos `preserveState` e `replace`, sem alterar consultas, autorização, rotas ou seletores de criação/edição.
+
+Validação realizada:
+
+- `./vendor/bin/sail npm run test:frontend`: 7 testes aprovados, 0 falhas. Os quatro novos testes executam o efeito extraído do componente com hooks, temporizadores e router controlados: montagem com/sem termo, pesquisa/limpeza na página 1, limpeza do debounce, cancelamento de visita e resposta reconhecida sem nova busca.
+- Essa verificação não monta o componente no DOM nem comprova navegação real ou comportamento de rede do Inertia. O contrato de `onCancelToken` foi conferido na documentação v3 via Context7.
+- `./vendor/bin/sail npm run build`: passou; permanece o aviso existente sobre o futuro carregamento nativo da configuração Vite. `git diff --check`: sem erros.
+- Não repetidos testes PHP, concorrência MySQL, navegador ou medições operacionais. As pendências de E5.4, E6.6 e de implantação permanecem.
