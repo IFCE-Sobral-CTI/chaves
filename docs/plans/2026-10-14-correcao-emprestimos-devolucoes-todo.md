@@ -15,8 +15,8 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 ## Etapa 1 — Medição e diagnóstico dos dados
 
-- [PENDENTE] E1.1 Instrumentar duração, consultas, payload, resultado e identificador de requisição sem dados pessoais.
-- [PENDENTE] E1.2 Separar métricas do POST e do GET após redirecionamento.
+- [EM_VALIDACAO] E1.1 Instrumentar duração, consultas, payload, resultado e identificador de requisição sem dados pessoais. Middleware local mede rotas `borrows.*`, amostra 10% dos GETs e registra todas as gravações.
+- [EM_VALIDACAO] E1.2 Separar métricas do POST e do GET após redirecionamento por método/rota; runtime ainda não observado.
 - [PENDENTE] E1.3 Medir renderização e tempo até interação em equipamento representativo.
 - [PENDENTE] E1.4 Confirmar migrations e índices reais do ambiente operacional.
 - [CONCLUIDO] E1.5 Criar diagnóstico somente de leitura das inconsistências, com relatório por IDs. Comando `borrows:diagnose` validado em MySQL `testing`; execução operacional ainda pendente.
@@ -280,3 +280,14 @@ Estado: `[EM_ANDAMENTO]` para E4.9; transições cobertas no código em 15/10/20
 - Os motivos não foram adicionados a operações comuns. Não há fluxo de correção administrativa que possa solicitar e validar esse motivo.
 - Na exclusão de recebimento, o registro do recebimento é bloqueado antes de ler os pivots para capturar o estado anterior, mantendo a ordem de bloqueios documentada.
 - `./vendor/bin/pint --dirty`, `php -l` nos arquivos alterados e `git diff --check` passaram. Não rodei testes; inspeção de `activity_log` no MySQL e validação de rollback seguem pendentes.
+
+### Entrega 12 — Métricas de requisições de empréstimo
+
+Estado: `[EM_VALIDACAO]` para E1.1/E1.2; instrumentação local implementada em 15/10/2026. Ainda não observada em ambiente operacional.
+
+- Middleware registra em `borrow.request_metrics` o ID da requisição, nome da rota, método, status, duração no servidor, tamanho do corpo da resposta, quantidade de consultas e tempo acumulado no banco. POST e GET após redirecionamento aparecem como eventos separados.
+- Registra todas as rotas de empréstimo que não são GET e amostra 10% dos GETs. A amostra é fixa no código.
+- Listener de consultas registra apenas duração e contagem; não grava SQL, bindings, URL, parâmetros de busca ou dados pessoais. O ID também retorna no cabeçalho `X-Request-ID` das respostas medidas.
+- Coletor é scoped por ciclo de requisição para não acumular consultas entre requisições em workers persistentes. Falha no logger não altera o resultado da operação.
+- `php -l` nos arquivos alterados, `./vendor/bin/pint --dirty` e `git diff --check` passaram. Não rodei testes nem medi overhead; MySQL não está disponível no ambiente para validar o runtime.
+- E1.3 (navegador), volume/privacidade operacional e calibragem da amostra permanecem pendentes; os tempos registrados são apenas do servidor e não substituem TTI.

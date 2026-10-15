@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Support\BorrowRequestMetrics;
 use Carbon\Carbon;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -17,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(BorrowRequestMetrics::class);
     }
 
     /**
@@ -25,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        DB::listen(fn (QueryExecuted $query) => app(BorrowRequestMetrics::class)->recordQuery($query->time));
+
         Carbon::setLocale('pt_BR');
 
         Carbon::macro('local', function () {

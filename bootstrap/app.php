@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\MeasureBorrowRequests;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\ValidateSignature;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             HandleInertiaRequests::class,
+            MeasureBorrowRequests::class,
         ]);
 
         $middleware->api(append: [
