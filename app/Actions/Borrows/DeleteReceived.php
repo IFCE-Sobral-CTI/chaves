@@ -14,14 +14,14 @@ class DeleteReceived
     public function handle(Borrow $borrow, Received $received, User $user): void
     {
         $this->transaction->run($borrow->id, [], function (Borrow $current) use ($received, $user) {
-            $pendingBefore = $this->state->pendingIds($current);
-            $devolutionBefore = $current->getRawOriginal('devolution');
-            $receivedByBefore = $current->getRawOriginal('received_by');
             $receipt = $current->received()->whereKey($received->id)->lockForUpdate()->first();
             if ($receipt === null) {
                 throw ValidationException::withMessages(['keys' => 'Esta devolução não pertence ao empréstimo ou já foi excluída.']);
             }
 
+            $pendingBefore = $this->state->pendingIds($current);
+            $devolutionBefore = $current->getRawOriginal('devolution');
+            $receivedByBefore = $current->getRawOriginal('received_by');
             $receipt->delete();
             $pendingIds = $this->state->pendingIds($current);
             $this->state->ensureAvailable($pendingIds, $current->id);

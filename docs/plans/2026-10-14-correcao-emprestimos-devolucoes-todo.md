@@ -278,4 +278,5 @@ Estado: `[EM_ANDAMENTO]` para E4.9; transições cobertas no código em 15/10/20
 - Devolução registra pendências e encerramento/responsável antes/depois junto ao recebimento; exclusão de devolução registra o mesmo estado e o ID do recebimento removido.
 - Exclusão de empréstimo grava evento transacional `borrow_deleted` com estado anterior e ausência posterior, incluindo executor no caminho HTTP. O parâmetro do executor é opcional para preservar chamadas internas existentes.
 - Os motivos não foram adicionados a operações comuns. Não há fluxo de correção administrativa que possa solicitar e validar esse motivo.
+- Na exclusão de recebimento, o registro do recebimento é bloqueado antes de ler os pivots para capturar o estado anterior, mantendo a ordem de bloqueios documentada.
 - `./vendor/bin/pint --dirty`, `php -l` nos arquivos alterados e `git diff --check` passaram. Não rodei testes; inspeção de `activity_log` no MySQL e validação de rollback seguem pendentes.
