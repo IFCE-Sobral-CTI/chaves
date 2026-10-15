@@ -60,7 +60,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 - [CONCLUIDO] E5.1 Reutilizar model resolvido pela rota e evitar cálculo repetido de recebimentos.
 - [CONCLUIDO] E5.2 Eliminar N+1 na agregação das chaves recebidas, com teste da quantidade de consultas.
-- [PENDENTE] E5.3 Remover relações não usadas e revisar custo das consultas da auditoria.
+- [EM_ANDAMENTO] E5.3 Removida relação não usada da listagem e carga repetida de chaves na edição; revisão do custo das consultas da auditoria ainda pendente.
 - [PENDENTE] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação.
 - [CONCLUIDO] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React no seletor local atual. Seleção controlada pelo formulário e linhas identificadas por `item.id`; adaptação à busca/paginação remota acompanha E5.4.
 - [CONCLUIDO] E5.6 Evitar busca inicial redundante, reiniciar na página 1 e tratar respostas antigas. Validado localmente com temporizadores e visitas controlados; navegação real no navegador pendente.
@@ -240,3 +240,12 @@ Validação realizada:
 - Essa verificação não monta o componente no DOM nem comprova navegação real ou comportamento de rede do Inertia. O contrato de `onCancelToken` foi conferido na documentação v3 via Context7.
 - `./vendor/bin/sail npm run build`: passou; permanece o aviso existente sobre o futuro carregamento nativo da configuração Vite. `git diff --check`: sem erros.
 - Não repetidos testes PHP, concorrência MySQL, navegador ou medições operacionais. As pendências de E5.4, E6.6 e de implantação permanecem.
+
+### Entrega 8 — Remoção de carregamentos redundantes
+
+Estado: `[EM_ANDAMENTO]` para E5.3; otimizações locais concluídas, revisão do custo da auditoria ainda pendente.
+
+- `Borrow::search()` deixa de carregar `received` na listagem de empréstimos. A página `Keys/Borrow/Index` não consome essa relação; relatórios e detalhes usam caminhos próprios e preservados.
+- A edição carrega uma vez `employee` e `keys.room` e deriva os IDs das chaves desse conjunto carregado, evitando a consulta de chaves anterior ao `load()`.
+- A auditoria relacional de alterações ainda não foi medida no volume operacional e permanece pendente em E5.3.
+- Não rodei testes ou build nesta alteração; o diff foi conferido. Sem mudanças de contrato, schema ou dados.

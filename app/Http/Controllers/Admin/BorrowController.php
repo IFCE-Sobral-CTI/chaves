@@ -114,8 +114,8 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.update', $borrow);
 
-        $borrowKeys = $borrow->keys->pluck('id')->toArray();
         $borrow->load(['employee', 'keys.room']);
+        $borrowKeys = $borrow->keys->pluck('id')->toArray();
 
         return Inertia::render('Keys/Borrow/Edit', [
             'borrow' => $borrow,

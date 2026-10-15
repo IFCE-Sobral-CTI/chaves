@@ -124,7 +124,7 @@ class Borrow extends Model
             $query->where('devolution', null);
         }
 
-        $query->with(['employee', 'user', 'received', 'keys' => ['room']])
+        $query->with(['employee', 'user', 'keys.room'])
             ->whereHas('employee', function (Builder $query) use ($request) {
                 $query->where(function (Builder $q) use ($request) {
                     $q->where('name', 'like', "%{$request->term}%")
