@@ -1,40 +1,41 @@
 import InputError from "@/Components/InputError";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-function SelectEmployee({ data, onChange, value, error }) {
+function SelectEmployee({ data, endpoint, onChange, value, error }) {
     const [toggle, setToggle] = useState(false);
     const [term, setTerm] = useState('');
-    const [list, setList] = useState([]);
-    const [selected, setSelected] = useState({id: null, registry: null, name: null});
+    const [list, setList] = useState(data);
+    const [page, setPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
+    const [selected, setSelected] = useState(() => data.find(item => String(item.id) === String(value)) ?? {id: null, registry: null, name: null});
     const ref = useRef(null);
-
-    const emptySelected = {id: null, registry: null, name: null};
-
-    const inputRef = useCallback((inputElement) => {
-        if (inputElement) {
-            inputElement.focus();
-        }
-    });
+    const moreController = useRef(null);
 
     useEffect(() => {
-        if (value) {
-            setSelected(data.filter(item => String(item.id) === String(value)).pop() ?? emptySelected);
-        }
-    }, []);
+        setList(data);
+    }, [data]);
 
     useEffect(() => {
-        onChange(selected?.id ?? null);
-    }, [selected]);
-
-    useEffect(() => {
-        const debounce = setTimeout(() => {
-            setList(data.filter((item) => {
-                return item.registry?.toString()?.includes(term) || item.name.toLowerCase().includes(term.toLowerCase());
-            }));
-        }, 300);
-
-        return () => clearTimeout(debounce);
-    }, [term, data]);
+        if (!toggle || !endpoint) return;
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            try {
+                const params = new URLSearchParams({ term, page: '1' });
+                const response = await fetch(`${endpoint}?${params}`, { signal: controller.signal, headers: { Accept: 'application/json' } });
+                if (!response.ok) {
+                    setList([]);
+                    return;
+                }
+                const result = await response.json();
+                setList(result.data);
+                setPage(result.current_page);
+                setLastPage(result.last_page);
+            } catch (error) {
+                if (error.name !== 'AbortError') setList([]);
+            }
+        }, 250);
+        return () => { clearTimeout(timer); controller.abort(); moreController.current?.abort(); };
+    }, [term, toggle, endpoint]);
 
     useEffect(() => {
         document.addEventListener('click', handleClickOutside, true);
@@ -42,9 +43,29 @@ function SelectEmployee({ data, onChange, value, error }) {
     }, []);
 
     const handleSelect = (event) => {
-        setSelected(data.filter(item => String(item.id) === event.target.value).pop() ?? emptySelected)
+        const employee = list.find(item => String(item.id) === event.currentTarget.value);
+        if (employee) {
+            setSelected(employee);
+            onChange(employee.id);
+        }
         toggleHandle();
     }
+
+    const loadMore = async () => {
+        const params = new URLSearchParams({ term, page: String(page + 1) });
+        moreController.current?.abort();
+        moreController.current = new AbortController();
+        try {
+            const response = await fetch(`${endpoint}?${params}`, { signal: moreController.current.signal, headers: { Accept: 'application/json' } });
+            if (!response.ok) return;
+            const result = await response.json();
+            setList(items => [...items, ...result.data]);
+            setPage(result.current_page);
+            setLastPage(result.last_page);
+        } catch (error) {
+            if (error.name !== 'AbortError') setList([]);
+        }
+    };
 
     const items = list.map((item) => {
         if (selected?.id !== item.id)
@@ -62,8 +83,8 @@ function SelectEmployee({ data, onChange, value, error }) {
     const handleClickOutside = (event) => {
         if (ref.current && !ref.current.contains(event.target)) {
             setToggle(false);
+            setTerm('');
         }
-        setTerm('');
     }
 
     const inputId = 'select-employee-borrow';
@@ -86,12 +107,13 @@ function SelectEmployee({ data, onChange, value, error }) {
             <InputError message={error} />
             <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} ref={ref}>
                 <div className="">
-                    <input id={inputId} type="text" value={term} ref={inputRef} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
+                        <input id={inputId} type="text" value={term} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
                 </div>
                 <div className="max-h-32 p-1 shadow-md rounded-b-lg border-b border-l border-r border-neutral-400 bg-white overflow-auto scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-ful">
                     <ul>
                         {items}
                     </ul>
+                    {page < lastPage && <button type="button" className="w-full p-2 text-sm text-blue-700" onClick={loadMore}>Carregar mais mutuários</button>}
                 </div>
             </div>
         </div>

@@ -61,8 +61,8 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E5.1 Reutilizar model resolvido pela rota e evitar cálculo repetido de recebimentos.
 - [CONCLUIDO] E5.2 Eliminar N+1 na agregação das chaves recebidas, com teste da quantidade de consultas.
 - [EM_ANDAMENTO] E5.3 Removida relação não usada da listagem e carga repetida de chaves na edição; revisão do custo das consultas da auditoria ainda pendente.
-- [PENDENTE] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação.
-- [CONCLUIDO] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React no seletor local atual. Seleção controlada pelo formulário e linhas identificadas por `item.id`; adaptação à busca/paginação remota acompanha E5.4.
+- [EM_VALIDACAO] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação. Busca limitada a 20 por página e autorizada por permissão de criação/edição; testes HTTP e navegação no navegador pendentes.
+- [CONCLUIDO] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React no seletor. IDs do formulário permanecem selecionados ao mudar termo/página; objetos das chaves escolhidas ficam em cache no componente.
 - [CONCLUIDO] E5.6 Evitar busca inicial redundante, reiniciar na página 1 e tratar respostas antigas. Validado localmente com temporizadores e visitas controlados; navegação real no navegador pendente.
 - [PENDENTE] E5.7 Avaliar pesquisa no histórico e índices com planos de execução.
 - [PENDENTE] E5.8 Comparar tempo, queries e payload antes/depois; disponibilidade segue revalidada no banco.
@@ -249,3 +249,14 @@ Estado: `[EM_ANDAMENTO]` para E5.3; otimizações locais concluídas, revisão d
 - A edição carrega uma vez `employee` e `keys.room` e deriva os IDs das chaves desse conjunto carregado, evitando a consulta de chaves anterior ao `load()`.
 - A auditoria relacional de alterações ainda não foi medida no volume operacional e permanece pendente em E5.3.
 - Não rodei testes ou build nesta alteração; o diff foi conferido. Sem mudanças de contrato, schema ou dados.
+
+### Entrega 9 — Busca limitada para seleção de mutuário e chaves
+
+Estado: `[EM_VALIDACAO]` no escopo de E5.4/E5.5, implementação local em 15/10/2026. Sem implantação.
+
+- Formulários de criação e edição recebem no máximo 20 chaves disponíveis, mais as chaves já vinculadas no empréstimo em edição. A lista inicial de mutuários foi removida; a edição recebe somente o mutuário atual.
+- Novas rotas JSON buscam mutuários ativos por nome/matrícula e chaves disponíveis por número/sala, em páginas de 20, com projeções mínimas (`id`, identificação e relação necessária da sala). A edição pode consultar as mesmas opções, mantendo as chaves vinculadas ao próprio empréstimo elegíveis para exibição.
+- Cada rota exige `borrows.create` ou `borrows.update` para o empréstimo resolvido. Termo e página passam por validação; a gravação continua validando elegibilidade/permissão e disponibilidade transacionalmente.
+- Ambos os seletores carregam mais resultados, cancelam consultas antigas e mantêm a seleção no formulário; a lista de chaves retém os dados das selecionadas para continuar exibindo-as quando resultados mudam.
+- `npm run build`, `php -l` no controller e rotas, e `git diff --check` passaram. A consulta de `route:list` não pôde iniciar porque o MySQL configurado como `mysql` está indisponível no ambiente.
+- Testes HTTP de autorização/paginação, teste de regressão para seleção entre páginas e validação no navegador continuam pendentes. Não alterar o limite de 20 sem revisar o fluxo de paginação e a experiência da recepção.

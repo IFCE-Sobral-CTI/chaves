@@ -4,7 +4,7 @@ import { Head, useForm } from "@inertiajs/react";
 import Panel from "@/Components/Dashboard/Panel";
 import FormEdit from "@/Pages/Keys/Borrow/Components/FormEdit";
 
-function Edit({ borrow, employees, keys, borrowKeys }) {
+function Edit({ borrow, employees, keys, keysLastPage, borrowKeys }) {
     const { data, setData, put, processing, errors } = useForm({
         observation: borrow.observation,
         employee_id: borrow.employee_id,
@@ -28,7 +28,7 @@ function Edit({ borrow, employees, keys, borrowKeys }) {
                 ]}
             >
                 <Panel>
-                    <FormEdit data={data} employees={employees} keys={keys} setData={setData} errors={errors} processing={processing} handleSubmit={handleSubmit} borrow={borrow} />
+                    <FormEdit data={data} employees={employees} keys={keys} keysLastPage={keysLastPage} employeeSearch={route('borrows.options.employees.edit', borrow.id)} keySearch={route('borrows.options.keys.edit', borrow.id)} setData={setData} errors={errors} processing={processing} handleSubmit={handleSubmit} borrow={borrow} />
                 </Panel>
             </AuthenticatedLayout>
         </>

@@ -1,13 +1,62 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import SearchItem from "@/Pages/Keys/Borrow/Components/SearchItem";
 
-export default function Search({ data, onChange, values = [], error = '' }) {
+export default function Search({ data, lastPage: initialLastPage = 1, endpoint, onChange, values = [], error = '' }) {
     const [term, setTerm] = useState('');
-    const list = data.filter(item => !values.includes(item.id) && (
-        item.number.toString().includes(term) || item.room.description.toLowerCase().includes(term.toLowerCase())
-    ));
+    const [results, setResults] = useState(data);
+    const [known, setKnown] = useState(data);
+    const [page, setPage] = useState(1);
+    const [lastPage, setLastPage] = useState(initialLastPage);
+    const moreController = useRef(null);
+
+    useEffect(() => {
+        setKnown(items => [...items, ...data].filter((item, index, all) => all.findIndex(other => other.id === item.id) === index));
+        setResults(data);
+    }, [data]);
+
+    useEffect(() => {
+        if (!endpoint) return;
+        const controller = new AbortController();
+        const timer = setTimeout(async () => {
+            try {
+                const params = new URLSearchParams({ term, page: '1' });
+                const response = await fetch(`${endpoint}?${params}`, { signal: controller.signal, headers: { Accept: 'application/json' } });
+                if (!response.ok) {
+                    setResults([]);
+                    return;
+                }
+                const result = await response.json();
+                setResults(result.data);
+                setKnown(items => [...items, ...result.data].filter((item, index, all) => all.findIndex(other => other.id === item.id) === index));
+                setPage(result.current_page);
+                setLastPage(result.last_page);
+            } catch (error) {
+                if (error.name !== 'AbortError') setResults([]);
+            }
+        }, 250);
+        return () => { clearTimeout(timer); controller.abort(); moreController.current?.abort(); };
+    }, [term, endpoint]);
+
+    const loadMore = async () => {
+        const params = new URLSearchParams({ term, page: String(page + 1) });
+        moreController.current?.abort();
+        moreController.current = new AbortController();
+        try {
+            const response = await fetch(`${endpoint}?${params}`, { signal: moreController.current.signal, headers: { Accept: 'application/json' } });
+            if (!response.ok) return;
+            const result = await response.json();
+            setResults(items => [...items, ...result.data]);
+            setKnown(items => [...items, ...result.data].filter((item, index, all) => all.findIndex(other => other.id === item.id) === index));
+            setPage(result.current_page);
+            setLastPage(result.last_page);
+        } catch (error) {
+            if (error.name !== 'AbortError') setResults([]);
+        }
+    };
+
+    const list = results.filter(item => !values.some(id => String(id) === String(item.id)));
 
     const onHandleChange = (event) => {
         setTerm(event.target.value);
@@ -21,7 +70,7 @@ export default function Search({ data, onChange, values = [], error = '' }) {
         <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={item.id} icon="add" />
     ));
 
-    const itemsAdd = data.filter(item => values.includes(item.id)).map(item => (
+    const itemsAdd = known.filter(item => values.some(id => String(id) === String(item.id))).map(item => (
         <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={item.id} icon="rem" />
     ));
 
@@ -51,6 +100,7 @@ export default function Search({ data, onChange, values = [], error = '' }) {
                                 {items}
                             </tbody>
                         </table>
+                        {page < lastPage && <button type="button" className="w-full p-2 text-sm text-blue-700" onClick={loadMore}>Carregar mais chaves</button>}
                     </div>
                 </div>
                 <div className="flex-1 border rounded-lg border-neutral-400">

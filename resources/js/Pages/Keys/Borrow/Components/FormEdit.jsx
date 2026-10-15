@@ -5,7 +5,7 @@ import InputError from "@/Components/InputError";
 import Search from "@/Pages/Keys/Borrow/Components/Search";
 import Button from "@/Components/Form/Button";
 
-export default function FormEdit({ data, employees, keys, setData, handleSubmit, errors, processing, borrow}) {
+export default function FormEdit({ data, employees, keys, keysLastPage, employeeSearch, keySearch, setData, handleSubmit, errors, processing, borrow}) {
     const onHandleChange = (event) => {
         setData(event.target.name, event.target.value);
     };
@@ -16,14 +16,14 @@ export default function FormEdit({ data, employees, keys, setData, handleSubmit,
 
     return (
         <form onSubmit={handleSubmit} autoComplete="off">
-            <SelectEmployee value={data.employee_id} data={employees} onChange={(id) => setData('employee_id', id)}  error={errors.employee_id} />
+            <SelectEmployee value={data.employee_id} data={employees} endpoint={employeeSearch} onChange={(id) => setData('employee_id', id)}  error={errors.employee_id} />
             <div className="mb-4">
                 <label htmlFor="observation" className="font-light">Observações</label>
                 <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o empréstimo" />
                 <InputError message={errors.observation} />
             </div>
             <p className="mb-4 text-sm text-neutral-600">O encerramento é atualizado ao registrar ou excluir uma devolução.</p>
-            <Search data={keys} onChange={onChangeKeys} values={data.keys} error={errors.keys} />
+            <Search data={keys} lastPage={keysLastPage} endpoint={keySearch} onChange={onChangeKeys} values={data.keys} error={errors.keys} />
             <div className="flex items-center justify-center gap-4 mt-6">
                 <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">

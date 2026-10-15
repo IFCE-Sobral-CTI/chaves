@@ -42,6 +42,70 @@ class BorrowController extends Controller
         ]));
     }
 
+    public function createEmployeeOptions(Request $request)
+    {
+        $this->authorize('borrows.create', Borrow::class);
+        return $this->employeeOptions($request);
+    }
+
+    public function editEmployeeOptions(Borrow $borrow, Request $request)
+    {
+        $this->authorize('borrows.update', $borrow);
+        return $this->employeeOptions($request);
+    }
+
+    private function employeeOptions(Request $request)
+    {
+        $filters = $request->validate([
+            'term' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
+        $term = $filters['term'] ?? '';
+
+        return Employee::query()->select('id', 'registry', 'name')
+            ->where(fn ($query) => $query->where('valid_until', '>=', now())->orWhereNull('valid_until'))
+            ->where(fn ($query) => $query->where('name', 'like', "%{$term}%")->orWhere('registry', 'like', "%{$term}%"))
+            ->orderBy('name')->paginate(20);
+    }
+
+    public function createKeyOptions(Request $request)
+    {
+        $this->authorize('borrows.create', Borrow::class);
+
+        return $this->keyOptions($request);
+    }
+
+    public function editKeyOptions(Borrow $borrow, Request $request)
+    {
+        $this->authorize('borrows.update', $borrow);
+
+        return $this->keyOptions($request, $borrow);
+    }
+
+    private function keyOptions(Request $request, ?Borrow $borrow = null)
+    {
+        $filters = $request->validate([
+            'term' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
+        $term = $filters['term'] ?? '';
+        $query = Key::query()->select('id', 'number', 'room_id')->with('room:id,description')
+            ->where(function ($query) use ($borrow) {
+                $query->whereNotIn('keys.id', Borrow::query()
+                    ->when($borrow, fn ($borrows) => $borrows->where('borrows.id', '!=', $borrow->id))
+                    ->pendingKeyIds());
+                if ($borrow) {
+                    $query->orWhereIn('keys.id', $borrow->keys()->select('keys.id'));
+                }
+            })
+            ->where(function ($query) use ($term) {
+                $query->where('number', 'like', "%{$term}%")
+                    ->orWhereHas('room', fn ($room) => $room->where('description', 'like', "%{$term}%"));
+            });
+
+        return $query->orderBy('number')->paginate(20);
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -51,9 +115,12 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.create', Borrow::class);
 
+        $keys = Key::with('room:id,description')->whereNotIn('id', Borrow::pendingKeyIds())->orderBy('number')->paginate(20);
+
         return Inertia::render('Keys/Borrow/Create', [
-            'employees' => fn () => Employee::getActiveEmployees(),
-            'keys' => fn () => Key::with('room')->whereNotIn('id', Borrow::pendingKeyIds())->get(),
+            'employees' => [],
+            'keys' => $keys->items(),
+            'keysLastPage' => $keys->lastPage(),
         ]);
     }
 
@@ -116,15 +183,15 @@ class BorrowController extends Controller
 
         $borrow->load(['employee', 'keys.room']);
         $borrowKeys = $borrow->keys->pluck('id')->toArray();
+        $availableKeys = Key::with('room:id,description')
+            ->whereNotIn('id', Borrow::pendingKeyIds())->orderBy('number')->paginate(20);
 
         return Inertia::render('Keys/Borrow/Edit', [
             'borrow' => $borrow,
-            'employees' => Employee::select('id', 'registry', 'name')->orderBy('name')->get(),
+            'employees' => Employee::select('id', 'registry', 'name')->whereKey($borrow->employee_id)->get(),
             'borrowKeys' => $borrowKeys,
-            'keys' => Key::with('room')->where(function ($query) use ($borrow, $borrowKeys) {
-                $query->whereNotIn('id', Borrow::where('id', '!=', $borrow->id)->pendingKeyIds())
-                    ->orWhereIn('id', $borrowKeys);
-            })->get(),
+            'keys' => collect($availableKeys->items())->merge($borrow->keys)->unique('id')->values(),
+            'keysLastPage' => $availableKeys->lastPage(),
         ]);
     }
 

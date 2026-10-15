@@ -5,7 +5,7 @@ import InputError from "@/Components/InputError";
 import Search from "@/Pages/Keys/Borrow/Components/Search";
 import Button from "@/Components/Form/Button";
 
-function FormCreate({ data, setData, errors, processing, handleSubmit, employees, keys}) {
+function FormCreate({ data, setData, errors, processing, handleSubmit, employees, keys, keysLastPage, employeeSearch, keySearch}) {
     const onHandleChange = (event) => {
         setData(event.target.name, event.target.value);
     };
@@ -15,13 +15,13 @@ function FormCreate({ data, setData, errors, processing, handleSubmit, employees
     }
     return (
         <form onSubmit={handleSubmit} autoComplete="off">
-            <SelectEmployee data={employees} onChange={(id) => setData('employee_id', id)}  error={errors.employee_id} />
+            <SelectEmployee data={employees} endpoint={employeeSearch} onChange={(id) => setData('employee_id', id)}  error={errors.employee_id} />
             <div className="mb-4">
                 <label htmlFor="observation" className="font-light">Observações</label>
                 <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o empréstimo" />
                 <InputError message={errors.observation} />
             </div>
-            <Search values={data.keys} data={keys} onChange={onChangeKeys} error={errors.keys} />
+            <Search values={data.keys} data={keys} lastPage={keysLastPage} endpoint={keySearch} onChange={onChangeKeys} error={errors.keys} />
             <div className="flex items-center justify-center gap-4 mt-6">
                 <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">

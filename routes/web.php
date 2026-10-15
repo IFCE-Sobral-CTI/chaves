@@ -36,6 +36,10 @@ Route::redirect('/', 'admin')->name('home');
 
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('admin');
+    Route::get('borrows/options/employees', [BorrowController::class, 'createEmployeeOptions'])->name('borrows.options.employees.create');
+    Route::get('borrows/options/keys', [BorrowController::class, 'createKeyOptions'])->name('borrows.options.keys.create');
+    Route::get('borrows/{borrow}/options/employees', [BorrowController::class, 'editEmployeeOptions'])->name('borrows.options.employees.edit');
+    Route::get('borrows/{borrow}/options/keys', [BorrowController::class, 'editKeyOptions'])->name('borrows.options.keys.edit');
     Route::resource('users', UserController::class);
     Route::get('users/{user}/edit/password', [UserController::class, 'editPassword'])->name('users.edit.password');
     Route::put('users/{user}/edit/password', [UserController::class, 'updatePassword'])->name('users.update.password');
