@@ -63,9 +63,9 @@ P0 e P1 devem ser tratados de forma coordenada: otimizar a consulta incorreta an
 - Substituir `Borrow::scopeKeysNotReceived()` por uma consulta que correlacione `borrow_key.borrow_id`, `receiveds.borrow_id` e `key_received.key_id`. Usar subconsultas/`EXISTS` para evitar listas globais de IDs no PHP.
 - Centralizar a semântica de disponibilidade e reutilizá-la em criação, edição, seleção de chaves e validação final da gravação.
 - Validar a existência e disponibilidade de todas as chaves selecionadas em lote. Remover a consulta global dentro de `keys.*` e a verificação duplicada em `keysBorrowed()`.
-- Exigir `keys` como lista não vazia de IDs inteiros distintos. Definir limite operacional de itens coerente com a quantidade de chaves do campus, sem número arbitrário que bloqueie o trabalho real.
+- Exigir `keys` como lista não vazia de IDs inteiros distintos. Decisão do domínio em 15/10/2026: não há limite de quantidade de chaves por operação; manter validação em lote sem máximo artificial de itens.
 - Validar elegibilidade do mutuário e permissão de cada chave no servidor. A lista filtrada da interface não substitui essa verificação.
-- Tratar validade conforme o tipo e a semântica temporal existente; documentar se a validade é um instante ou o fim de um dia antes de alterar sua interpretação.
+- Tratar validade conforme o tipo. Decisão do domínio em 15/10/2026: a data de validade inclui todo o último dia no fuso da aplicação; a permissão expira à meia-noite do dia seguinte.
 - Usar apenas dados validados nas operações. Separar atributos do empréstimo dos IDs destinados à associação.
 
 ### Testes e aceite
@@ -151,7 +151,7 @@ P0 e P1 devem ser tratados de forma coordenada: otimizar a consulta incorreta an
 
 - Separar correção de código da reconciliação dos dados. Não inferir automaticamente qual empréstimo é correto quando a mesma chave aparece pendente em dois registros; a recepção precisa confirmar a situação física.
 - Criar ferramenta de diagnóstico com modo de simulação e relatório por IDs. Reparos devem ser explícitos, auditados, reexecutáveis e protegidos por transação.
-- Após reconciliação, avaliar índices únicos para os pares `(borrow_id, key_id)` e `(received_id, key_id)`. O segundo não impede duplicatas em recebimentos diferentes; a regra de devolução ainda depende do fluxo transacional.
+- Após reconciliação, implementar índices únicos para os pares `(borrow_id, key_id)` e `(received_id, key_id)`, conforme decisão do domínio em 15/10/2026. O segundo não impede duplicatas em recebimentos diferentes; a regra de devolução ainda depende do fluxo transacional.
 - Verificar o campo legado `borrow_key.received`, atualmente separado do histórico de recebimentos. Definir uma fonte de verdade e só remover o campo após checar todos os consumidores e garantir compatibilidade.
 - Testar migrations com volume semelhante ao real e avaliar duração e bloqueios antes da produção.
 

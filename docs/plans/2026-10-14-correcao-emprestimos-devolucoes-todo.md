@@ -28,9 +28,9 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E2.2 Reutilizar a consulta em criação, edição e `Key::borrowed`, preservando o wrapper de IDs para os demais consumidores.
 - [CONCLUIDO] E2.3 Validar existência e disponibilidade em lote e remover a checagem duplicada no controller.
 - [CONCLUIDO] E2.4 Exigir lista não vazia de IDs inteiros distintos e usar apenas IDs validados para associações.
-- [PENDENTE] E2.5 Definir limite operacional de itens sem restringir o atendimento indevidamente.
+- [CONCLUIDO] E2.5 Decisão do domínio em 15/10/2026: sem limite de quantidade de chaves por operação. Mantida validação em lote, sem máximo artificial de itens.
 - [CONCLUIDO] E2.6 Exigir validade e permissão de cada chave para discentes e externos no backend.
-- [PENDENTE] E2.7 Confirmar com o domínio se validade representa instante ou fim de dia. Confirmado que a coluna é `DATE`, armazenando meia-noite; preservada a comparação por instante, sem estender automaticamente a validade até o fim do dia.
+- [CONCLUIDO] E2.7 Decisão do domínio em 15/10/2026: validade inclui todo o último dia no fuso da aplicação. Backend, opções e lista de vencimentos ajustados e validados por HTTP; evidências na entrega 16.
 - [CONCLUIDO] E2.8 Testar regressão A/X/Y → devolução X → B/X, entradas inválidas, elegibilidade, edição e número constante de consultas.
 
 ## Etapa 3 — Atomicidade e concorrência
@@ -53,7 +53,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E4.6 Substituir encerramento manual comum por transição coerente e correção administrativa explícita, se necessária. Encerramento manual removido; não foi criada operação administrativa de correção.
 - [CONCLUIDO] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
 - [EM_ANDAMENTO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação por conjuntos implementada; diagnóstico e validação abrangente dos dados legados pendentes.
-- [EM_ANDAMENTO] E4.9 Eventos de atualização, devolução e exclusão agora registram estado anterior/posterior, IDs e executor na transação. Motivo permanece pendente para uma eventual operação administrativa explícita, que ainda não existe.
+- [CONCLUIDO] E4.9 Auditoria das operações atuais validada por HTTP: estados anterior/posterior, IDs, executor e preservação dos eventos após exclusão, além dos testes de rollback. Motivo será exigido caso seja criada uma operação administrativa explícita; não é pendência do fluxo comum. Evidências na entrega 15.
 - [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Cobertos vínculo, reenvio, edição, autorização da devolução antes da validação e disputas de novo empréstimo com exclusão de recebimento ou de chave; matriz completa de autorização e disputas de edição pendente.
 
 ## Etapa 5 — Consultas e interface
@@ -71,8 +71,8 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 - [PENDENTE] E6.1 Reconciliar conflitos com confirmação física da recepção, sem escolha automática do registro correto.
 - [PENDENTE] E6.2 Criar reparos explícitos com simulação, transação, auditoria e reexecução segura.
-- [PENDENTE] E6.3 Avaliar unicidade dos pivots após limpeza e testar migrations com volume representativo.
-- [EM_ANDAMENTO] E6.4 Auditar consumidores de `borrow_key.received` e planejar sua eventual remoção compatível. Encontrado apenas no model `BorrowKey` e na migration no repositório; confirmação de consumidores externos pendente, sem remoção de coluna.
+- [PENDENTE] E6.3 Unicidade aprovada pelo domínio em 15/10/2026 para `(borrow_id, key_id)` e `(received_id, key_id)`. Implementar após limpeza dos dados e testar migrations com volume representativo; não eliminar duplicatas automaticamente.
+- [CONCLUIDO] E6.4 Remoção de `borrow_key.received` autorizada em 15/10/2026 após verificação de uso. Nenhum consumidor encontrado no código/integrações versionadas nem em triggers, views ou rotinas do banco local. Migration de remoção validada e aplicada localmente; campo retirado do `$fillable`. Evidências na entrega 17. Integrações externas não acessíveis não puderam ser inspecionadas; implantação em produção não realizada.
 - [EM_ANDAMENTO] E6.5 Entregar incrementos revisáveis e executar formatação e testes afetados em cada entrega.
 - [EM_VALIDACAO] E6.6 Executar suíte completa e build quando necessário antes de publicar o conjunto. Build passou; suíte executada com 38 falhas fora dos testes de empréstimos, detalhadas na entrega 2.
 - [PENDENTE] E6.7 Confirmar backup/restauração e estratégia para evitar escritores de versões incompatíveis.
@@ -325,3 +325,38 @@ Estado: `[CONCLUIDO]` no escopo da exibição local dos registros, em 15/10/2026
 - Validação visual no navegador, conferência dos snapshots gravados por transição, custo das consultas de auditoria e suíte completa não executados nesta entrega.
 - Regressão transacional: `./vendor/bin/sail bin phpunit tests/Feature/BorrowTransactionTest.php` passou (exit code 0): 17 testes, 144 assertions, 1 min 56,043 s. Inclui os casos existentes de rollback da auditoria junto com empréstimos, pivots e recebimentos; permanece uma depreciação do runtime e uma do PHPUnit. Esses casos não conferem o conteúdo de cada snapshot persistido.
 - `git diff --check` passou. Não houve alteração de PHP, portanto Pint não se aplica a este incremento.
+
+### Entrega 15 — Validação dos snapshots persistidos
+
+Escopo: E4.9, validado por requisições HTTP e leitura dos eventos persistidos no banco de testes.
+
+- `BorrowAuditTest` acrescenta sete casos: criação com IDs das chaves; edição de mutuário/chaves preservando chave já devolvida; devoluções parcial e final; exclusão de recebimento que reabre o empréstimo; exclusão do empréstimo com cascata; e edição apenas da observação com `attribute_changes` do Activitylog v5.
+- Os casos de alteração usam executor diferente do criador. Conferem tipo/ID do sujeito, um único evento específico da operação, autoria e propriedades presentes com valores/tipos esperados, inclusive listas vazias e campos nulos. Exclusões verificam a persistência da auditoria mesmo após remoção do sujeito e dos pivots.
+- A primeira execução revelou formatos diferentes para `devolution`: o snapshot imediatamente após encerrar serializava o Carbon em ISO UTC; leituras posteriores do banco usavam data/hora textual no fuso da aplicação. A ação `ReceiveKeys` passa a atribuir `now()->toDateTimeString()`, mantendo o horário persistido e o formato consistente, sem consulta adicional nem alteração do schema.
+- O plano original exige motivo apenas quando houver correção administrativa. Como essa operação não existe, não foi acrescentado campo obrigatório ao fluxo comum.
+
+Validação realizada em 15/10/2026:
+
+- Primeira execução de `BorrowAuditTest`: 7 testes, 111 assertions e 1 falha no formato de `after.devolution`, que motivou a correção descrita acima.
+- Após a correção, `./vendor/bin/sail bin phpunit tests/Feature/BorrowAuditTest.php tests/Feature/BorrowTransactionTest.php`: exit code 0, 24 testes, 257 assertions, duração de 2 min 39,480 s. Permanecem uma depreciação do runtime e uma do PHPUnit. A regressão confirma rollback de operações e auditoria após falhas injetadas.
+- `./vendor/bin/sail bin pint --dirty --format agent` e `git diff --check` passaram.
+- E4.9 concluído para as operações atuais. Não foram repetidos navegador, concorrência entre conexões, suíte completa ou validação operacional. Não há frontend alterado nesta entrega; build e testes frontend não repetidos. Os registros antigos da auditoria não foram reescritos e podem conservar os formatos anteriores de data. Planos de melhorias de mutuários preexistentes no workspace foram preservados.
+
+### Entrega 16 — Decisões do domínio e validade até o fim do dia
+
+- Decisões confirmadas pelo responsável em 15/10/2026: sem máximo de chaves por operação; validade inclui todo o último dia; unicidade dos dois pivots aprovada após limpeza. Plano original atualizado para refletir essas decisões.
+- A elegibilidade compara dias no fuso da aplicação, tanto no preflight quanto na revalidação transacional. Opções de mutuários, consulta legada de ativos e lista de vencimentos do painel passam a incluir a data de hoje durante todo o dia.
+- Testes de opções e empréstimo agora usam o último instante do dia, em vez de meia-noite ou validade futura. O caso de empréstimo verifica também a rejeição de edição à meia-noite do dia seguinte. Adicionado caso HTTP do painel para incluir validade de hoje e excluir a de ontem.
+- `borrow_key.received` é uma marcação booleana antiga. A fonte atual das devoluções são `receiveds` e `key_received`. Sua remoção não foi aprovada nesta conversa; manter a coluna até confirmar os consumidores externos. Não houve limpeza de dados nem aplicação de restrições de unicidade nesta entrega.
+
+Validação: `./vendor/bin/sail bin phpunit tests/Feature/BorrowAvailabilityTest.php tests/Feature/BorrowOptionsTest.php tests/Feature/HomeControllerTest.php` passou (exit code 0): 19 testes, 244 assertions, 2 min 14,927 s. Permanecem uma depreciação do runtime e uma do PHPUnit. Pint (`--dirty --format agent`) e `git diff --check` passaram. E2.5 e E2.7 concluídos; E6.3 segue pendente da limpeza e implementação dos índices. Não repetidos suíte completa, navegador ou validação em produção; sem migration ou alteração de dados existentes.
+
+### Entrega 17 — Remoção do campo legado de devolução
+
+- Autorizada a remoção após verificação de uso em 15/10/2026. Busca no repositório não encontrou consumidores do campo nem uso do model `BorrowKey`: apenas a declaração em `$fillable` e a migration histórica. A relação `Borrow::received` e as tabelas `receiveds`/`key_received` são o histórico atual e foram preservadas.
+- Schema do MySQL local conferido via Boost: nenhuma trigger em `borrow_key`, nenhuma view ou rotina encontrada no ambiente inspecionado. Scripts e bancos externos fora deste ambiente não puderam ser verificados.
+- Retirado `received` do `$fillable` de `BorrowKey`. Nova migration `2026_10_15_135738_drop_received_from_borrow_key_table.php` remove somente essa coluna; a migration de 2022 permanece intacta para manter o histórico de instalação.
+- Teste da migration exercita remoção sobre vínculos existentes e um empréstimo parcialmente devolvido: mantém chaves vinculadas, recebimento e disponibilidade correta mesmo com a marcação antiga incoerente. O rollback recria a coluna com `false`, sem recuperar seus valores antigos; o histórico real de recebimentos continua preservado.
+- Migration aplicada apenas no banco local, por `--path`, com sucesso (28,61 ms); schema conferido após aplicação, sem a coluna. A migration anterior de proteção do histórico, que já estava pendente nesse banco, não foi aplicada nesta operação. Nenhuma execução em produção.
+- Validação: `./vendor/bin/sail bin phpunit tests/Feature/RemoveLegacyBorrowReceivedTest.php tests/Feature/BorrowTransactionTest.php` passou (exit code 0), com 18 testes, 154 assertions e duração de 3 min 7,973 s. Persistem uma depreciação do runtime e uma do PHPUnit. O teste de schema usa `DatabaseMigrations`, sem DDL dentro das transações do `RefreshDatabase`.
+- Pint (`--dirty --format agent`) e `git diff --check` passaram. Não repetidos suíte completa, navegador, testes de concorrência ou build, pois não houve mudança de frontend. Alterações das entregas anteriores e planos de mutuários no workspace foram preservados.

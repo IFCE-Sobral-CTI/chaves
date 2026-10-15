@@ -16,7 +16,7 @@ class EnsureBorrowerEligible
         }
 
         $validUntil = $employee->getRawOriginal('valid_until');
-        if ($validUntil === null || Carbon::parse($validUntil)->isPast()) {
+        if ($validUntil === null || Carbon::parse($validUntil)->startOfDay()->lt(now()->startOfDay())) {
             throw ValidationException::withMessages(['employee_id' => 'O mutuário não possui permissão válida para empréstimos.']);
         }
 

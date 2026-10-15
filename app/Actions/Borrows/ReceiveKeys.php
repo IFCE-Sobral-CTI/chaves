@@ -25,7 +25,7 @@ class ReceiveKeys
             $received->keys()->sync($keyIds);
             $pendingAfter = array_values(array_diff($pendingIds, $keyIds));
             if ($pendingAfter === []) {
-                $current->update(['devolution' => now(), 'received_by' => $user->id, 'returned_by' => $returnedBy]);
+                $current->update(['devolution' => now()->toDateTimeString(), 'received_by' => $user->id, 'returned_by' => $returnedBy]);
             }
             activity()->by($user)->on($received)->withProperties([
                 'key_ids' => $keyIds,

@@ -80,7 +80,7 @@ class BorrowOptionsTest extends TestCase
 
     public function test_employee_options_paginate_eligible_borrowers_and_omit_private_fields(): void
     {
-        $this->travelTo(now()->startOfDay());
+        $this->travelTo(now()->endOfDay());
         $user = $this->userWithRule('borrows.create');
         $employees = Employee::factory()->count(21)->create([
             'name' => 'OptionsEmployee Available', 'type' => Employee::EMPLOYEE, 'valid_until' => null,

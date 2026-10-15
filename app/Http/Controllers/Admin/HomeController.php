@@ -61,7 +61,7 @@ class HomeController extends Controller
                 });
 
             $expiringEmployees = Employee::whereNotNull('valid_until')
-                ->whereBetween('valid_until', [now(), now()->addDays(30)])
+                ->whereBetween('valid_until', [now()->toDateString(), now()->addDays(30)->toDateString()])
                 ->whereIn('type', [Employee::STUDENT, Employee::EXTERNAL])
                 ->orderBy('valid_until', 'asc')
                 ->take(10)

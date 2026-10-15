@@ -117,7 +117,7 @@ class Employee extends Model
 
     public function scopeGetActiveEmployees(Builder $query)
     {
-        return $query->where('valid_until', '>=', now())
+        return $query->where('valid_until', '>=', now()->toDateString())
             ->orWhere('valid_until', null)
             ->orderBy('name', 'ASC')
             ->get();

@@ -71,7 +71,7 @@ class BorrowController extends Controller
                 ->whereIn('type', [Employee::EMPLOYEE, Employee::COLLABORATOR])
                 ->orWhere(fn (Builder $restricted): Builder => $restricted
                     ->whereIn('type', [Employee::STUDENT, Employee::EXTERNAL])
-                    ->where('valid_until', '>=', now())))
+                    ->where('valid_until', '>=', now()->toDateString())))
             ->when($term !== '', fn ($query) => $query->where(fn ($query) => $query->where('name', 'like', "%{$term}%")->orWhere('registry', 'like', "%{$term}%")))
             ->orderBy('name')->orderBy('id')->paginate(20);
     }

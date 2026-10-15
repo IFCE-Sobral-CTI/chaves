@@ -134,8 +134,9 @@ class BorrowAvailabilityTest extends TestCase
 
     public function test_valid_student_can_borrow_an_authorized_key(): void
     {
+        $this->travelTo(now()->endOfDay());
         $user = $this->admin();
-        $employee = Employee::factory()->create(['type' => Employee::STUDENT, 'valid_until' => now()->addDay()]);
+        $employee = Employee::factory()->create(['type' => Employee::STUDENT, 'valid_until' => now()->toDateString()]);
         $key = Key::factory()->create();
         $employee->borrowable_keys()->sync([$key->id]);
 
@@ -146,6 +147,12 @@ class BorrowAvailabilityTest extends TestCase
         $this->assertDatabaseHas('borrow_key', [
             'borrow_id' => Borrow::latest('id')->firstOrFail()->id, 'key_id' => $key->id,
         ]);
+
+        $borrow = Borrow::latest('id')->firstOrFail();
+        $this->travelTo(now()->addDay()->startOfDay());
+        $this->actingAs($user)->put(route('borrows.update', $borrow), [
+            'employee_id' => $employee->id, 'keys' => [$key->id],
+        ])->assertSessionHasErrors('employee_id');
     }
 
     public function test_update_ignores_own_borrow_but_rejects_other_occupations(): void

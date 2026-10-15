@@ -16,7 +16,6 @@ class BorrowKey extends Model
      * @var <string>
      */
     protected $fillable = [
-        'received',
         'borrow_id',
         'key_id',
     ];

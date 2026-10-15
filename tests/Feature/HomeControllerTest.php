@@ -36,6 +36,25 @@ class HomeControllerTest extends TestCase
         ]);
     }
 
+    public function test_expiring_list_includes_today_until_end_of_day(): void
+    {
+        $this->travelTo(now()->endOfDay());
+        $user = $this->createUserWithBorrowViewAny();
+        (new AuthServiceProvider($this->app))->boot(new Rule);
+        $employee = Employee::factory()->create([
+            'type' => Employee::EXTERNAL, 'valid_until' => now()->toDateString(),
+        ]);
+        $expired = Employee::factory()->create([
+            'type' => Employee::EXTERNAL, 'valid_until' => now()->subDay()->toDateString(),
+        ]);
+
+        $this->actingAs($user)->get(route('admin'))->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Dashboard', false)
+                ->where('expiringEmployees', fn ($employees) => collect($employees)->pluck('id')->contains($employee->id)
+                    && ! collect($employees)->pluck('id')->contains($expired->id)));
+    }
+
     public function test_user_without_borrow_view_any_receives_kpis_and_charts_but_empty_lists()
     {
         $user = $this->createUserWithoutBorrowViewAny();
