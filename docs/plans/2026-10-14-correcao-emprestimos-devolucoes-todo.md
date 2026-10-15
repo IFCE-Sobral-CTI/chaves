@@ -53,7 +53,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E4.6 Substituir encerramento manual comum por transição coerente e correção administrativa explícita, se necessária. Encerramento manual removido; não foi criada operação administrativa de correção.
 - [CONCLUIDO] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
 - [EM_ANDAMENTO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação por conjuntos implementada; diagnóstico e validação abrangente dos dados legados pendentes.
-- [EM_ANDAMENTO] E4.9 Completar auditoria anterior/posterior com usuário e motivo de correção. Eventos transacionais com IDs e executor implementados; cobertura completa anterior/posterior e motivo de correção pendentes.
+- [EM_ANDAMENTO] E4.9 Eventos de atualização, devolução e exclusão agora registram estado anterior/posterior, IDs e executor na transação. Motivo permanece pendente para uma eventual operação administrativa explícita, que ainda não existe.
 - [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Cobertos vínculo, reenvio, edição, autorização da devolução antes da validação e disputas de novo empréstimo com exclusão de recebimento ou de chave; matriz completa de autorização e disputas de edição pendente.
 
 ## Etapa 5 — Consultas e interface
@@ -269,3 +269,13 @@ Estado: `[EM_ANDAMENTO]` para E5.7; otimização segura implementada em 15/10/20
 - A migration existente cria índice B-tree em `keys.number`, mas a busca por chave usa `LIKE '%termo%'`; esse padrão não aproveita o índice B-tree. Não foi acrescentado índice sem `EXPLAIN` e volume representativo.
 - `./vendor/bin/pint --dirty`, `php -l` em `BorrowController.php` e `Borrow.php`, e `git diff --check` passaram. Não rodei testes; MySQL local continua indisponível para planos de execução.
 - E5.7 segue aberto até confirmar demanda de busca em históricos, examinar planos reais e avaliar índices com dados representativos. E5.8 e medições de produção também permanecem pendentes.
+
+### Entrega 11 — Estados anterior e posterior na auditoria do empréstimo
+
+Estado: `[EM_ANDAMENTO]` para E4.9; transições cobertas no código em 15/10/2026, revisão dos registros e testes pendentes.
+
+- Atualização registra mutuário, chaves totais, chaves pendentes e encerramento antes/depois quando muda mutuário ou conjunto de chaves.
+- Devolução registra pendências e encerramento/responsável antes/depois junto ao recebimento; exclusão de devolução registra o mesmo estado e o ID do recebimento removido.
+- Exclusão de empréstimo grava evento transacional `borrow_deleted` com estado anterior e ausência posterior, incluindo executor no caminho HTTP. O parâmetro do executor é opcional para preservar chamadas internas existentes.
+- Os motivos não foram adicionados a operações comuns. Não há fluxo de correção administrativa que possa solicitar e validar esse motivo.
+- `./vendor/bin/pint --dirty`, `php -l` nos arquivos alterados e `git diff --check` passaram. Não rodei testes; inspeção de `activity_log` no MySQL e validação de rollback seguem pendentes.

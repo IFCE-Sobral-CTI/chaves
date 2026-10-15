@@ -14,6 +14,9 @@ class DeleteReceived
     public function handle(Borrow $borrow, Received $received, User $user): void
     {
         $this->transaction->run($borrow->id, [], function (Borrow $current) use ($received, $user) {
+            $pendingBefore = $this->state->pendingIds($current);
+            $devolutionBefore = $current->getRawOriginal('devolution');
+            $receivedByBefore = $current->getRawOriginal('received_by');
             $receipt = $current->received()->whereKey($received->id)->lockForUpdate()->first();
             if ($receipt === null) {
                 throw ValidationException::withMessages(['keys' => 'Esta devolução não pertence ao empréstimo ou já foi excluída.']);
@@ -25,7 +28,11 @@ class DeleteReceived
             if ($pendingIds !== []) {
                 $current->update(['devolution' => null, 'received_by' => null, 'returned_by' => null]);
             }
-            activity()->by($user)->on($current)->withProperties(['received_id' => $received->id, 'pending_key_ids' => $pendingIds])->log('return_deleted');
+            activity()->by($user)->on($current)->withProperties([
+                'received_id' => $received->id,
+                'before' => ['pending_key_ids' => $pendingBefore, 'devolution' => $devolutionBefore, 'received_by' => $receivedByBefore],
+                'after' => ['pending_key_ids' => $pendingIds, 'devolution' => $current->getRawOriginal('devolution'), 'received_by' => $current->getRawOriginal('received_by')],
+            ])->log('return_deleted');
         });
     }
 }

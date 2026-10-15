@@ -267,12 +267,12 @@ class BorrowController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function destroy(Borrow $borrow, DeleteBorrow $action): RedirectResponse
+    public function destroy(Request $request, Borrow $borrow, DeleteBorrow $action): RedirectResponse
     {
         $this->authorize('borrows.delete', $borrow);
 
         try {
-            $action->handle($borrow);
+            $action->handle($borrow, $request->user());
 
             return to_route('borrows.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (ValidationException $e) {

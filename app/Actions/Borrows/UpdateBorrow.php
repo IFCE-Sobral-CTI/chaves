@@ -17,6 +17,8 @@ class UpdateBorrow
         $this->transaction->run($borrow->id, $data['keys'], function (Borrow $current) use ($user, $data) {
             $oldIds = $this->state->keyIds($current);
             $receivedIds = $this->state->receivedIds($current);
+            $oldEmployeeId = (int) $current->employee_id;
+            $devolution = $current->getRawOriginal('devolution');
             $newIds = array_map('intval', $data['keys']);
             if (array_diff($receivedIds, $newIds)) {
                 throw ValidationException::withMessages(['keys' => 'Não é possível remover chaves que possuem devolução registrada.']);
@@ -32,8 +34,11 @@ class UpdateBorrow
             $this->state->ensureAvailable(array_values(array_diff($newIds, $receivedIds)), $current->id);
             $current->update(Arr::only($data, ['employee_id', 'observation']));
             $current->keys()->sync($newIds);
-            if (array_diff($oldIds, $newIds) || array_diff($newIds, $oldIds)) {
-                activity()->by($user)->on($current)->withProperties(['old_key_ids' => $oldIds, 'key_ids' => $newIds])->log('keys_updated');
+            if ($oldEmployeeId !== (int) $data['employee_id'] || array_diff($oldIds, $newIds) || array_diff($newIds, $oldIds)) {
+                activity()->by($user)->on($current)->withProperties([
+                    'before' => ['employee_id' => $oldEmployeeId, 'key_ids' => $oldIds, 'pending_key_ids' => array_values(array_diff($oldIds, $receivedIds)), 'devolution' => $devolution],
+                    'after' => ['employee_id' => (int) $data['employee_id'], 'key_ids' => $newIds, 'pending_key_ids' => array_values(array_diff($newIds, $receivedIds)), 'devolution' => $devolution],
+                ])->log('borrow_updated');
             }
         });
     }
