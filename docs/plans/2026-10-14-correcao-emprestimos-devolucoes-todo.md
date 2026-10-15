@@ -1,7 +1,7 @@
 # Acompanhamento da correção de empréstimos e devoluções
 
 Plano: [correcao-emprestimos-devolucoes](2026-10-14-correcao-emprestimos-devolucoes.md).  
-Última atualização: 14/10/2026.
+Última atualização: 15/10/2026.
 
 ## Estados
 
@@ -35,26 +35,26 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 ## Etapa 3 — Atomicidade e concorrência
 
-- [PENDENTE] E3.1 Extrair ações de aplicação para cada transição.
-- [PENDENTE] E3.2 Transacionar gravações, associações, encerramento e auditoria.
-- [PENDENTE] E3.3 Documentar e aplicar ordem única de bloqueio das chaves e demais registros em todos os escritores.
-- [PENDENTE] E3.4 Revalidar disponibilidade e elegibilidade dentro da transação após os bloqueios.
-- [PENDENTE] E3.5 Tratar conflitos e deadlocks com respostas previsíveis e tentativas limitadas.
+- [CONCLUIDO] E3.1 Extrair ações de aplicação para cada transição.
+- [CONCLUIDO] E3.2 Transacionar gravações, associações, encerramento e auditoria.
+- [EM_ANDAMENTO] E3.3 Documentar e aplicar ordem única de bloqueio das chaves e demais registros em todos os escritores. Aplicada às ações do fluxo; auditoria dos demais escritores segue em E3.6.
+- [CONCLUIDO] E3.4 Revalidar disponibilidade e elegibilidade dentro da transação após os bloqueios.
+- [CONCLUIDO] E3.5 Tratar conflitos e deadlocks com respostas previsíveis e tentativas limitadas.
 - [PENDENTE] E3.6 Auditar scripts/imports e avaliar necessidade de restrição estrutural de ocupação.
-- [PENDENTE] E3.7 Testar disputa entre conexões MySQL independentes, devolução concorrente e rollback com falha injetada.
+- [CONCLUIDO] E3.7 Testar disputa entre conexões MySQL independentes, devolução concorrente e rollback com falha injetada.
 
 ## Etapa 4 — Segurança e coerência
 
-- [PENDENTE] E4.1 Restringir exclusão ao recebimento pertencente ao empréstimo autorizado.
+- [CONCLUIDO] E4.1 Restringir exclusão ao recebimento pertencente ao empréstimo autorizado.
 - [PENDENTE] E4.2 Criar Form Request de devolução e migrar IDs para lista no corpo da requisição.
-- [PENDENTE] E4.3 Rejeitar chaves já devolvidas e empréstimos encerrados; definir reenvio/idempotência.
+- [CONCLUIDO] E4.3 Rejeitar chaves já devolvidas e empréstimos encerrados; definir reenvio/idempotência. Reenvio rejeitado como conflito, sem novo recebimento.
 - [CONCLUIDO] E4.4 Consultar IDs distintos recebidos e retornar array JSON com índices contíguos.
-- [PENDENTE] E4.5 Definir e aplicar edição segura preservando o histórico.
-- [PENDENTE] E4.6 Substituir encerramento manual comum por transição coerente e correção administrativa explícita, se necessária.
-- [PENDENTE] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
-- [PENDENTE] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados.
-- [PENDENTE] E4.9 Completar auditoria anterior/posterior com usuário e motivo de correção.
-- [PENDENTE] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes.
+- [CONCLUIDO] E4.5 Definir e aplicar edição segura preservando o histórico.
+- [CONCLUIDO] E4.6 Substituir encerramento manual comum por transição coerente e correção administrativa explícita, se necessária. Encerramento manual removido; não foi criada operação administrativa de correção.
+- [CONCLUIDO] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
+- [EM_ANDAMENTO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação por conjuntos implementada; diagnóstico e validação abrangente dos dados legados pendentes.
+- [EM_ANDAMENTO] E4.9 Completar auditoria anterior/posterior com usuário e motivo de correção. Eventos transacionais com IDs e executor implementados; cobertura completa anterior/posterior e motivo de correção pendentes.
+- [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Cobertos vínculo, reenvio, edição e disputa entre exclusão de recebimento e novo empréstimo; matriz completa de autorização e disputas de edição pendente.
 
 ## Etapa 5 — Consultas e interface
 
@@ -74,7 +74,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [PENDENTE] E6.3 Avaliar unicidade dos pivots após limpeza e testar migrations com volume representativo.
 - [PENDENTE] E6.4 Auditar consumidores de `borrow_key.received` e planejar sua eventual remoção compatível.
 - [EM_ANDAMENTO] E6.5 Entregar incrementos revisáveis e executar formatação e testes afetados em cada entrega.
-- [PENDENTE] E6.6 Executar suíte completa e build quando necessário antes de publicar o conjunto.
+- [EM_VALIDACAO] E6.6 Executar suíte completa e build quando necessário antes de publicar o conjunto. Build passou; suíte executada com 38 falhas fora dos testes de empréstimos, detalhadas na entrega 2.
 - [PENDENTE] E6.7 Confirmar backup/restauração e estratégia para evitar escritores de versões incompatíveis.
 - [PENDENTE] E6.8 Implantar em janela apropriada e observar erros, conflitos, deadlocks e latência.
 - [PENDENTE] E6.9 Preparar reversão segura do código e reconciliação específica dos reparos de dados.
@@ -102,3 +102,25 @@ Validação concluída:
 - Confirmada uma consulta de disponibilidade na gravação para 1 e 5 chaves; agregação de recebimentos em uma consulta mesmo com histórico duplicado.
 - A primeira execução dos testes existentes revelou um cenário aleatório em `RemediationTest`; ajustado para iniciar explicitamente com `devolution = null`.
 - Suíte completa, medição de latência e implantação continuam pendentes; não houve mudanças de schema ou frontend nesta entrega.
+
+### Entrega 2 — Transações e proteção contra concorrência
+
+Estado: `[EM_VALIDACAO]` para o conjunto; os itens concluídos acima têm validação local. Commit de implementação: `3c77eb7`, enviado para `origin/main` em 15/10/2026. Isso não comprova implantação em produção.
+
+- Ações em `app/Actions/Borrows/` centralizam criação, edição, devolução e exclusões em transações, incluindo pivots, encerramento e auditoria.
+- `BorrowTransaction` bloqueia chaves em ordem crescente de ID, depois empréstimo e demais registros. Reconfere os vínculos atuais e limita tentativas de transação a três; conflitos de disponibilidade e erros MySQL 1205/1213 recebem mensagens previsíveis.
+- Leituras com bloqueio revalidam disponibilidade e elegibilidade após espera, inclusive com snapshot anterior em `REPEATABLE READ`.
+- Exclusão verifica o vínculo do recebimento e impede reabrir chave pendente em outro empréstimo. Reenvios de devolução não criam segundo recebimento.
+- Edição preserva chaves já recebidas, proíbe alteração de chaves em empréstimo encerrado e impede encerramento pela remoção da última pendência. Chaves históricas continuam visíveis mesmo após novo empréstimo.
+- Encerramento manual retirado do formulário e proibido nos requests. Erros de devolução aparecem uma única vez no modal.
+- IDs da devolução ainda chegam pela URL, com validação estrita no controller; Form Request e migração para o corpo continuam pendentes em E4.2.
+
+Validação realizada:
+
+- `./vendor/bin/sail artisan test --compact`: 82 testes, 192 assertions, duração de 608,09 s; resultado do runner: 43 `deprecated`, 38 falhas e 1 sucesso sem avisos. Os 26 testes de `BorrowAvailabilityTest`, `BorrowConcurrencyTest` e `BorrowTransactionTest` terminaram sem falhas; avisos de depreciação permanecem.
+- Concorrência validada em MySQL `testing`, com processos/conexões independentes: duas criações, devoluções simultâneas, novo empréstimo após devolução total/parcial e exclusão de recebimento disputando a chave com novo empréstimo.
+- Falhas injetadas verificam rollback de empréstimo, recebimento, pivots, edição, exclusões, encerramento e auditoria.
+- As 38 falhas da suíte ocorreram em cadastro público, expectativa de HTTP 200 na raiz que redireciona e colisões de unicidade nos seeders de outros testes. A suíte completa não está aprovada.
+- `./vendor/bin/sail npm run build`: passou, com aviso sobre o carregamento futuro da configuração Vite.
+- `./vendor/bin/sail php vendor/bin/pint --dirty --test`: passou. `git diff --check`: sem erros.
+- Não foram validados navegador, latência operacional, dados reais, implantação, auditoria de scripts/imports ou todos os casos de autorização/edição concorrente. Sem novas dependências ou mudanças de schema.
