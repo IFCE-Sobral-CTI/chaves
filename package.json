@@ -2,7 +2,8 @@
     "private": true,
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "test:frontend": "node --test tests/Frontend/*.test.mjs"
     },
     "devDependencies": {
         "@headlessui/react": "^2.2.10",

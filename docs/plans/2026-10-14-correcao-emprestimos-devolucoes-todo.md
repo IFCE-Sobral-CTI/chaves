@@ -62,7 +62,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E5.2 Eliminar N+1 na agregação das chaves recebidas, com teste da quantidade de consultas.
 - [PENDENTE] E5.3 Remover relações não usadas e revisar custo das consultas da auditoria.
 - [PENDENTE] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação.
-- [PENDENTE] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React.
+- [CONCLUIDO] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React no seletor local atual. Seleção controlada pelo formulário e linhas identificadas por `item.id`; adaptação à busca/paginação remota acompanha E5.4.
 - [PENDENTE] E5.6 Evitar busca inicial redundante, reiniciar na página 1 e tratar respostas antigas.
 - [PENDENTE] E5.7 Avaliar pesquisa no histórico e índices com planos de execução.
 - [PENDENTE] E5.8 Comparar tempo, queries e payload antes/depois; disponibilidade segue revalidada no banco.
@@ -204,3 +204,23 @@ Validação:
 - Corrigida a fixture nova para registrar os Gates após o seed, inclusive quando a classe de concorrência anterior recria e desfaz o schema. Não houve alteração da autorização da aplicação.
 - `./vendor/bin/sail php vendor/bin/pint --dirty --test`: passou. `git diff --check`: sem erros.
 - Sem alterações de frontend; não há build novo nesta entrega. Suíte completa, volume operacional, implantação e medição em produção permanecem pendentes. Os avisos de depreciação e as 38 falhas da última suíte completa continuam registrados em E6.6.
+
+### Entrega 6 — Seleção de chaves controlada pelo formulário
+
+Estado: `[CONCLUIDO]` no escopo do seletor local de E5.5, validado em 15/10/2026. Sem implantação ou alteração de backend/schema.
+
+- `Search` usa `values` do formulário como fonte única da seleção. Removidas as cópias locais da lista e dos IDs e o efeito que notificava `onChange` ao montar ou apenas pesquisar.
+- A lista disponível é derivada dos dados, termo e seleção atuais a cada renderização. Os selecionados continuam separados do filtro textual; a busca local não altera seus IDs. Removido o atraso artificial de 300 ms do filtro local, sem introduzir requisições.
+- Linhas usam `item.id` como chave React. `SearchItem` renderiza o ícone diretamente conforme a ação, sem estado/efeito que prendia o ícone à primeira montagem.
+- Incluído botão nativo com `type="button"`, nome acessível indicando ação/chave/sala e foco visível. A ativação continua pelo evento da linha, inclusive o clique gerado pelo botão via teclado. Campo de busca recebeu rótulo associado ao seu ID.
+- Criação e edição já passam `data.keys` e atualizam essa lista via `setData`; ambas reutilizam o componente sem mudança de contrato. A validação transacional do backend continua sendo a verificação final da disponibilidade.
+- E5.4 permanece pendente: os dados ainda são carregados integralmente. Preservação dos objetos selecionados entre páginas de uma futura busca remota deverá acompanhar essa entrega. Busca da listagem, requisição inicial e respostas antigas continuam em E5.6.
+
+Validação realizada:
+
+- Adicionado `npm run test:frontend`, usando o runner nativo do Node, React e Vite já instalados, sem novas dependências. O Vite de testes usa configuração própria e cache separado do servidor de desenvolvimento; não carrega o plugin Laravel nem altera `public/hot`.
+- `./vendor/bin/sail npm run test:frontend`: exit code 0, 3 testes aprovados, 0 falhas; duração final de 568,29 ms.
+- Cobertos renderização imediata da seleção e das ações, renderizações com dados atualizados/reordenados e seleção alterada/limpa pelo formulário, encaminhamento do ID na ativação da linha e botão que não submete o formulário.
+- São testes de renderização no servidor e chamada do handler, não testes de montagem/atualização no DOM, digitação ou navegação real por teclado. Esses fluxos ainda não foram exercitados no navegador.
+- `./vendor/bin/sail npm run build`: passou, com o aviso já registrado sobre o futuro carregamento nativo da configuração Vite. `git diff --check`: sem erros.
+- Suíte PHP completa, concorrência MySQL, navegador e medições de desempenho não foram repetidos; a entrega não altera ações, rotas ou schema. As falhas da última suíte completa continuam pendentes em E6.6.

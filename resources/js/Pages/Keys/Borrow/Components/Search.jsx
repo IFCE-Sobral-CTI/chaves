@@ -1,56 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import SearchItem from "@/Pages/Keys/Borrow/Components/SearchItem";
 
 export default function Search({ data, onChange, values = [], error = '' }) {
-    const [list, setList] = useState(data);
     const [term, setTerm] = useState('');
-    const [add, setAdd] = useState(values);
-
-    useEffect(() => {
-        onChange(add);
-        const debounce = setTimeout(() => {
-            setList(data.filter((item) => {
-                return item.number.toString().includes(term) || item.room.description.toLowerCase().includes(term.toLowerCase());
-            }, term));
-        }, 300);
-
-        return () => clearTimeout(debounce);
-    }, [add, term]);
+    const list = data.filter(item => !values.includes(item.id) && (
+        item.number.toString().includes(term) || item.room.description.toLowerCase().includes(term.toLowerCase())
+    ));
 
     const onHandleChange = (event) => {
         setTerm(event.target.value);
     };
 
     const toggleItemHandler = (id) => {
-        if (add.includes(id))
-            setAdd(add.filter((item) => item !== id));
-        else
-            setAdd([id, ...add]);
+        onChange(values.includes(id) ? values.filter(item => item !== id) : [id, ...values]);
     };
 
+    const items = list.map(item => (
+        <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={item.id} icon="add" />
+    ));
 
-    const items = list.map((item, i) => {
-        if (!add.includes(item.id))
-            return (
-                <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={i} icon="add" />
-            )
-    });
-
-    const itemsAdd = data.map((item, i) => {
-        if (add.includes(item.id))
-            return (
-                <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={i} icon="rem" />
-            )
-    });
+    const itemsAdd = data.filter(item => values.includes(item.id)).map(item => (
+        <SearchItem item={item} toggleItemHandler={toggleItemHandler} key={item.id} icon="rem" />
+    ));
 
     return (
         <div className="flex flex-col gap-0">
             <span className="font-light">Chaves</span>
             <div className="flex gap-4">
                 <div className="flex flex-col flex-1 gap-2">
+                    <label htmlFor="borrow-key-search" className="sr-only">Pesquisar chave por número ou sala</label>
                     <Input
+                        name="borrow-key-search"
                         value={term}
                         type={'search'}
                         handleChange={onHandleChange}
@@ -72,7 +54,7 @@ export default function Search({ data, onChange, values = [], error = '' }) {
                     </div>
                 </div>
                 <div className="flex-1 border rounded-lg border-neutral-400">
-                    <div className="mx-2 mt-2 font-light border-b border-neutral-400">Item selecionados</div>
+                    <div className="mx-2 mt-2 font-light border-b border-neutral-400">Itens selecionados</div>
                     <div className="ml-2 overflow-auto max-h-96 scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
                         <table className="table w-full table-auto">
                             <thead className="">
