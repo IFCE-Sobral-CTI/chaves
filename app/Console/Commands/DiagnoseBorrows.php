@@ -31,6 +31,12 @@ class DiagnoseBorrows extends Command
         $pendingForBorrow = (clone $pending)->whereColumn('borrow_key.borrow_id', 'borrows.id');
 
         $queries = [
+            'duplicate_borrow_keys' => DB::table('borrow_key as pivot')->whereExists(fn ($query) => $query
+                ->selectRaw('1')->from('borrow_key as duplicate')
+                ->whereColumn('duplicate.borrow_id', 'pivot.borrow_id')
+                ->whereColumn('duplicate.key_id', 'pivot.key_id')
+                ->whereColumn('duplicate.id', '!=', 'pivot.id'))
+                ->select('pivot.id as pivot_id', 'pivot.borrow_id', 'pivot.key_id')->orderBy('pivot.id'),
             'multiple_pending_borrows' => (clone $activePending)->whereIn('borrow_key.key_id', $occupiedTwice)
                 ->orderBy('borrow_key.key_id')->orderBy('borrow_key.borrow_id'),
             'duplicate_returns' => (clone $returns)->joinSub($returnedTwice, 'duplicates', function (JoinClause $join) {

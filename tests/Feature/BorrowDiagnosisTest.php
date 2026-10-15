@@ -72,14 +72,15 @@ class BorrowDiagnosisTest extends TestCase
         $report = $this->diagnose();
 
         $this->assertCount(1, $report);
-        $this->assertCount(6, $report[0]['summary']);
+        $this->assertCount(7, $report[0]['summary']);
         $this->assertSame([0], array_values(array_unique($report[0]['summary'])));
     }
 
-    public function test_reports_all_six_issues_with_ids_and_does_not_change_data(): void
+    public function test_reports_all_seven_issues_with_ids_and_does_not_change_data(): void
     {
         [$x, $y, $z, $foreign] = Key::factory()->count(4)->create()->all();
         $a = $this->borrow([$x->id]);
+        $a->keys()->attach($x->id);
         $b = $this->borrow([$x->id]);
         $prematurelyClosed = $this->borrow([$y->id], closed: true);
         $emptyReceipt = $this->receipt($a, []);
@@ -95,6 +96,7 @@ class BorrowDiagnosisTest extends TestCase
         $report = collect($this->diagnose());
 
         $this->assertSame([
+            'duplicate_borrow_keys' => 2,
             'multiple_pending_borrows' => 2,
             'duplicate_returns' => 3,
             'empty_receipts' => 1,
@@ -103,6 +105,8 @@ class BorrowDiagnosisTest extends TestCase
             'closure_mismatches' => 2,
         ], $report->last()['summary']);
         $issues = $report->filter(fn ($row) => isset($row['issue']))->groupBy('issue');
+        $this->assertSame([$a->id], $issues['duplicate_borrow_keys']->pluck('borrow_id')->unique()->values()->all());
+        $this->assertCount(2, $issues['duplicate_borrow_keys']->pluck('pivot_id')->unique());
         $this->assertEqualsCanonicalizing([$a->id, $b->id], $issues['multiple_pending_borrows']->pluck('borrow_id')->all());
         $this->assertSame([$x->id], $issues['multiple_pending_borrows']->pluck('key_id')->unique()->values()->all());
         $this->assertSame([$fullyReturned->id], $issues['duplicate_returns']->pluck('borrow_id')->unique()->values()->all());

@@ -177,6 +177,7 @@ class BorrowController extends Controller
                 'update' => $request->user()->can('borrows.update'),
                 'delete' => $request->user()->can('borrows.delete'),
                 'receive' => $request->user()->can('borrows.receive'),
+                'deleteReceived' => $request->user()->can('borrows.receive.destroy', $borrow),
             ],
         ]);
     }
@@ -253,7 +254,7 @@ class BorrowController extends Controller
 
     public function receiveDestroy(Borrow $borrow, Received $received, Request $request, DeleteReceived $action): RedirectResponse
     {
-        $this->authorize('borrows.received.delete', $borrow);
+        $this->authorize('borrows.receive.destroy', $borrow);
         abort_unless($received->borrow_id === $borrow->id, 404);
 
         try {

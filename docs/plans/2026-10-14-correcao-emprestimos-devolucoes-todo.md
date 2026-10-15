@@ -54,7 +54,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
 - [EM_ANDAMENTO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação por conjuntos implementada; diagnóstico e validação abrangente dos dados legados pendentes.
 - [CONCLUIDO] E4.9 Auditoria das operações atuais validada por HTTP: estados anterior/posterior, IDs, executor e preservação dos eventos após exclusão, além dos testes de rollback. Motivo será exigido caso seja criada uma operação administrativa explícita; não é pendência do fluxo comum. Evidências na entrega 15.
-- [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Cobertos vínculo, reenvio, edição, autorização da devolução antes da validação e disputas de novo empréstimo com exclusão de recebimento ou de chave; matriz completa de autorização e disputas de edição pendente.
+- [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Matriz das sete permissões de empréstimo, bypass administrativo, recusas HTTP e exclusão de devolução por não administrador cobertos na entrega 19. Mantidos os casos anteriores de vínculo, reenvio e disputas com exclusão; disputas concorrentes de edição permanecem pendentes.
 
 ## Etapa 5 — Consultas e interface
 
@@ -70,7 +70,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 ## Etapa 6 — Dados, schema e implantação
 
 - [PENDENTE] E6.1 Reconciliar conflitos com confirmação física da recepção, sem escolha automática do registro correto.
-- [PENDENTE] E6.2 Criar reparos explícitos com simulação, transação, auditoria e reexecução segura.
+- [EM_ANDAMENTO] E6.2 Reparo explícito de pivots duplicados implementado com simulação, transação, motivo, administrador e reexecução segura (entrega 18). Reparos que mudam devoluções, encerramento ou ocupação física continuam pendentes de reconciliação e definição explícita.
 - [PENDENTE] E6.3 Unicidade aprovada pelo domínio em 15/10/2026 para `(borrow_id, key_id)` e `(received_id, key_id)`. Implementar após limpeza dos dados e testar migrations com volume representativo; não eliminar duplicatas automaticamente.
 - [CONCLUIDO] E6.4 Remoção de `borrow_key.received` autorizada em 15/10/2026 após verificação de uso. Nenhum consumidor encontrado no código/integrações versionadas nem em triggers, views ou rotinas do banco local. Migration de remoção validada e aplicada localmente; campo retirado do `$fillable`. Evidências na entrega 17. Integrações externas não acessíveis não puderam ser inspecionadas; implantação em produção não realizada.
 - [EM_ANDAMENTO] E6.5 Entregar incrementos revisáveis e executar formatação e testes afetados em cada entrega.
@@ -360,3 +360,36 @@ Validação: `./vendor/bin/sail bin phpunit tests/Feature/BorrowAvailabilityTest
 - Migration aplicada apenas no banco local, por `--path`, com sucesso (28,61 ms); schema conferido após aplicação, sem a coluna. A migration anterior de proteção do histórico, que já estava pendente nesse banco, não foi aplicada nesta operação. Nenhuma execução em produção.
 - Validação: `./vendor/bin/sail bin phpunit tests/Feature/RemoveLegacyBorrowReceivedTest.php tests/Feature/BorrowTransactionTest.php` passou (exit code 0), com 18 testes, 154 assertions e duração de 3 min 7,973 s. Persistem uma depreciação do runtime e uma do PHPUnit. O teste de schema usa `DatabaseMigrations`, sem DDL dentro das transações do `RefreshDatabase`.
 - Pint (`--dirty --format agent`) e `git diff --check` passaram. Não repetidos suíte completa, navegador, testes de concorrência ou build, pois não houve mudança de frontend. Alterações das entregas anteriores e planos de mutuários no workspace foram preservados.
+
+### Entrega 18 — Reparo explícito de pivots duplicados
+
+- Novo comando `borrows:remove-duplicate EMPRESTIMO_ID TABELA PIVOT_ID --user=ADMIN_ID --reason="Motivo conferido"`. Aceita somente `borrow_key` ou `key_received`. Sem `--apply`, apenas simula e apresenta JSON com o ID exato e os estados anterior/posterior do vínculo; não grava nem cria auditoria.
+- A aplicação exige `--apply`, administrador responsável e motivo não vazio. Usa `BorrowTransaction`, com os mesmos bloqueios ordenados das ações de empréstimo, e revalida o vínculo e a redundância dentro da transação. Remove somente o ID escolhido quando outro vínculo do mesmo par permanece.
+- Recusa vínculo de outro empréstimo, chave externa ao empréstimo e remoção do único vínculo do par. Recebimentos diferentes da mesma chave não são tratados como vínculos intercambiáveis: sua reconciliação exige decisão sobre o histórico real. Não escolhe automaticamente entre empréstimos concorrentes.
+- Registra `borrow_duplicate_removed` no empréstimo, com administrador, motivo, tabela, ID do pivot e seu estado anterior/posterior. Auditoria e exclusão são atômicas; falha injetada na gravação da auditoria deve restaurar o vínculo. Reexecutar um ID já ausente é uma operação sem mudanças e sem novo evento de sucesso.
+- `borrows:diagnose` agora também informa `duplicate_borrow_keys`, com os IDs de todos os vínculos repetidos do par empréstimo/chave. O relatório passa de seis para sete tipos de inconsistência; mantém JSON Lines e o resumo, sem escrita ou locks de escrita.
+- A ajuda do comando foi conferida via Sail. Nenhum reparo foi aplicado fora do banco isolado de testes; não há migration ou mudança de dependências nesta entrega.
+- E6.2 permanece em andamento: este comando cobre redundância estrutural de pivots. Não corrige automaticamente encerramentos, recebimentos vazios, chaves devolvidas sem vínculo ou conflitos de ocupação. E6.1 e E6.3 continuam pendentes da reconciliação/limpeza e das restrições de unicidade.
+
+Validação realizada:
+
+- Primeira execução: 11 testes, 123 assertions, 4 erros de fixture por referência a uma `ReceivedFactory` inexistente. Corrigido para `Received::create`, como nos testes vizinhos, sem acrescentar uma factory ou dependência.
+- Execução final de `./vendor/bin/sail bin phpunit tests/Feature/RemoveDuplicateBorrowPivotTest.php tests/Feature/BorrowDiagnosisTest.php`: exit code 0, 12 testes, 180 assertions, duração de 1 min 34,158 s. Persistem uma depreciação do runtime e uma do PHPUnit.
+- Cobertos os dois pivots em simulação/aplicação/reexecução, recusa do único vínculo, vínculo de outro empréstimo, chave externa, devoluções em recebimentos diferentes, entradas inválidas, administrador/motivo obrigatórios e rollback após falha na auditoria. Conferidas a preservação de disponibilidade/devoluções e ausência de escrita na simulação. Diagnóstico verifica os sete tipos, IDs e ausência de alterações.
+- `./vendor/bin/sail bin pint --dirty --format agent`, ajuda do comando e `git diff --check` passaram. Não repetidos suíte completa, concorrência entre conexões ou navegador; não há frontend alterado neste incremento. Sem reparos ou migrations aplicados no banco local/produção. Alterações paralelas de mutuários no workspace foram preservadas.
+
+### Entrega 19 — Autorização da exclusão de devoluções
+
+- Corrigida divergência entre o controller (`borrows.received.delete`, inexistente no cadastro padrão) e a regra cadastrada/rota (`borrows.receive.destroy`). O bypass administrativo escondia a falha; agora um usuário não administrador com a regra correta consegue excluir uma devolução.
+- A página recebe `can.deleteReceived`, independente de `can.receive` e de `can.delete`. Cabeçalho e controles de exclusão de recebimentos usam essa autorização, inclusive em empréstimos encerrados; a ação existente continua revalidando a reabertura e recusando conflitos de ocupação. Permissão de receber ou de apagar empréstimos não concede exclusão de devoluções.
+- `BorrowAuthorizationTest` cobre a matriz das sete regras (cada regra concede somente sua habilidade), usuário sem regras e bypass de administrador. Nove rotas exigem autenticação/autorização, inclusive antes de validar corpos vazios. Snapshots de atributos, pivots, recebimentos e contagens verificam ausência de efeitos e de auditoria nas recusas.
+- Casos específicos verificam exclusão parcial/final por não administrador, vínculo de recebimento de outro empréstimo recusado com 404, autoria da exclusão e os indicadores de permissão da página.
+- Três testes frontend exercitam a árvore de componentes da página para conferir que cada controle usa sua própria permissão, sem depender de permissão de recebimento ou de empréstimo aberto para excluir uma devolução. Não são testes de interação com o modal no navegador.
+- A reprodução inicial confirmou 403 com a regra correta. Também revelou a premissa incorreta de `user_id = 1` da factory genérica nas fixtures novas; o helper passou a criar o usuário explicitamente, sem alterar a factory do projeto.
+
+Validação realizada:
+
+- `./vendor/bin/sail bin phpunit tests/Feature/BorrowAuthorizationTest.php tests/Feature/BorrowTransactionTest.php`: exit code 0, 24 testes, 269 assertions, duração de 2 min 44,663 s. Persistem uma depreciação do runtime e uma do PHPUnit.
+- `./vendor/bin/sail npm run test:frontend`: 17 testes aprovados, 0 falhas, 923,46 ms, incluindo os testes de telefone presentes no workspace. Houve avisos de porta WebSocket 24678 ocupada. `npm run build` via Sail passou; permanece o aviso existente do futuro carregador nativo da configuração Vite.
+- Pint (`--dirty --format agent`) e `git diff --check` passaram. O Pint também ordenou imports no teste paralelo `EmployeeProfileTest.php`; não alterou sua lógica. As demais alterações paralelas de mutuários foram preservadas.
+- Não repetidos navegador, suíte completa, concorrência entre conexões ou validação em produção. Sem migration, alteração de dependências ou reparo de dados nesta entrega. E4.10 permanece em andamento pelos cenários de edição concorrente.
