@@ -19,7 +19,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [PENDENTE] E1.2 Separar métricas do POST e do GET após redirecionamento.
 - [PENDENTE] E1.3 Medir renderização e tempo até interação em equipamento representativo.
 - [PENDENTE] E1.4 Confirmar migrations e índices reais do ambiente operacional.
-- [PENDENTE] E1.5 Criar diagnóstico somente de leitura das inconsistências, com relatório por IDs.
+- [CONCLUIDO] E1.5 Criar diagnóstico somente de leitura das inconsistências, com relatório por IDs. Comando `borrows:diagnose` validado em MySQL `testing`; execução operacional ainda pendente.
 - [PENDENTE] E1.6 Examinar planos de execução e registrar baseline p50/p95, queries e payload.
 
 ## Etapa 2 — Disponibilidade e validação em lote
@@ -40,7 +40,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [EM_ANDAMENTO] E3.3 Documentar e aplicar ordem única de bloqueio das chaves e demais registros em todos os escritores. Aplicada às ações do fluxo; auditoria dos demais escritores segue em E3.6.
 - [CONCLUIDO] E3.4 Revalidar disponibilidade e elegibilidade dentro da transação após os bloqueios.
 - [CONCLUIDO] E3.5 Tratar conflitos e deadlocks com respostas previsíveis e tentativas limitadas.
-- [PENDENTE] E3.6 Auditar scripts/imports e avaliar necessidade de restrição estrutural de ocupação.
+- [EM_ANDAMENTO] E3.6 Auditar scripts/imports e avaliar necessidade de restrição estrutural de ocupação. Auditoria estática registrada na entrega 4; exclusões em cascata e escritores externos ainda precisam ser tratados antes do fechamento.
 - [CONCLUIDO] E3.7 Testar disputa entre conexões MySQL independentes, devolução concorrente e rollback com falha injetada.
 
 ## Etapa 4 — Segurança e coerência
@@ -72,7 +72,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [PENDENTE] E6.1 Reconciliar conflitos com confirmação física da recepção, sem escolha automática do registro correto.
 - [PENDENTE] E6.2 Criar reparos explícitos com simulação, transação, auditoria e reexecução segura.
 - [PENDENTE] E6.3 Avaliar unicidade dos pivots após limpeza e testar migrations com volume representativo.
-- [PENDENTE] E6.4 Auditar consumidores de `borrow_key.received` e planejar sua eventual remoção compatível.
+- [EM_ANDAMENTO] E6.4 Auditar consumidores de `borrow_key.received` e planejar sua eventual remoção compatível. Encontrado apenas no model `BorrowKey` e na migration no repositório; confirmação de consumidores externos pendente, sem remoção de coluna.
 - [EM_ANDAMENTO] E6.5 Entregar incrementos revisáveis e executar formatação e testes afetados em cada entrega.
 - [EM_VALIDACAO] E6.6 Executar suíte completa e build quando necessário antes de publicar o conjunto. Build passou; suíte executada com 38 falhas fora dos testes de empréstimos, detalhadas na entrega 2.
 - [PENDENTE] E6.7 Confirmar backup/restauração e estratégia para evitar escritores de versões incompatíveis.
@@ -143,3 +143,37 @@ Validação realizada:
 - `./vendor/bin/sail npm run build`: passou, com o aviso já registrado sobre o carregamento futuro da configuração Vite.
 - `./vendor/bin/sail php vendor/bin/pint --dirty --test`: passou. `git diff --check`: sem erros.
 - Suíte completa e concorrência entre processos não foram repetidas nesta entrega: a ação e o protocolo de bloqueio não mudaram. As 38 falhas da última suíte completa permanecem como pendência de E6.6. Navegador e produção não foram validados.
+
+### Entrega 4 — Diagnóstico de inconsistências e auditoria dos escritores
+
+Estado: `[CONCLUIDO]` no escopo da ferramenta de E1.5, validada localmente em 15/10/2026. A auditoria de E3.6 permanece em andamento; nenhuma correção automática ou execução em produção foi realizada.
+
+- Adicionado `app/Console/Commands/DiagnoseBorrows.php`, registrado automaticamente como `borrows:diagnose`.
+- O comando executa seis consultas de leitura em uma transação, sem `FOR UPDATE`, gravação de auditoria ou alteração dos registros. A consistência do snapshot entre as consultas depende do isolamento da conexão; em MySQL `REPEATABLE READ`, as consultas compartilham o snapshot da transação.
+- Saída em JSON Lines: uma linha por ocorrência, com `issue` e apenas os IDs necessários (`borrow_id`, `key_id`, `received_id`, `pivot_id`) ou o indicador `closed`; a última linha contém `summary` com a quantidade de ocorrências de cada categoria. Uma chave com dois empréstimos pendentes produz duas ocorrências, uma por vínculo.
+- Categorias: `multiple_pending_borrows`, `duplicate_returns`, `empty_receipts`, `empty_borrows`, `foreign_returned_keys` e `closure_mismatches`.
+- Devoluções são correlacionadas por empréstimo/chave. Histórico de devolução parcial seguido de novos empréstimos não gera falso conflito. Pendências de empréstimos já encerrados também são examinadas, sem depender do filtro de disponibilidade usado no atendimento.
+- Duplicatas em um mesmo recebimento e em recebimentos distintos são identificadas pelos IDs dos pivots. Não há nomes, matrículas, contatos, observações ou nome de quem devolveu no relatório.
+
+Uso e interpretação:
+
+```bash
+./vendor/bin/sail artisan borrows:diagnose --no-ansi
+```
+
+O comando usa a conexão configurada do ambiente em que for executado; os testes usam exclusivamente `testing`. Exit code 0 indica diagnóstico executado, inclusive quando encontra inconsistências. A linha final `summary` confirma que todas as categorias foram processadas; zero em todas as categorias significa ausência dos seis tipos examinados naquele snapshot. O relatório por IDs deve ter acesso restrito. As consultas percorrem o histórico; custo e duração no volume operacional ainda não foram medidos.
+
+Auditoria estática do repositório:
+
+- As gravações diretas do fluxo HTTP de empréstimos passam pelas ações transacionais. Não foram encontrados imports ou scripts operacionais adicionais de gravação de empréstimos; `BorrowSeeder`/factories escrevem dados de exemplo, e o worker de concorrência é exclusivo dos testes.
+- Exclusões em `KeyController`, `RoomController`, `BlockController`, `EmployeeController`, `UserController` e `PermissionController` têm caminhos de cascata até empréstimos, recebimentos ou pivots, conforme as migrations. Esses caminhos ainda não seguem o protocolo de bloqueio das ações e podem remover histórico sem a auditoria de cada registro filho. Precisam de tratamento antes de declarar todos os escritores protegidos.
+- Um índice único histórico por `(borrow_id, key_id)` não impede dupla ocupação entre empréstimos diferentes. A decisão de restrição estrutural fica pendente da revisão das cascatas, dos escritores externos e da reconciliação dos dados; nenhuma migration foi adicionada.
+- `borrow_key.received` aparece na migration e no `$fillable` de `BorrowKey`, sem consumidores desse model encontrados no código da aplicação. A coluna será preservada até confirmar integrações/SQL externos e preparar remoção compatível; o diagnóstico usa o histórico de recebimentos como fonte de verdade.
+
+Validação realizada:
+
+- `./vendor/bin/sail artisan test --compact tests/Feature/BorrowDiagnosisTest.php`: exit code 0, 2 testes `deprecated`, 54 assertions, duração de 22,75 s, em MySQL `testing`.
+- Cobertos os seis tipos de anomalia, duplicatas no mesmo recebimento e em recebimentos distintos, devolução parcial, novo empréstimo após devolução, encerramento prematuro e empréstimo totalmente recebido ainda aberto. Conferidos SQL somente de leitura, ausência de locks de escrita, campos da saída e preservação das contagens dos dados e da auditoria.
+- A primeira execução revelou dependência do ID fixo 1 na factory; a fixture nova foi corrigida para escolher um usuário existente, sem alterar a factory compartilhada.
+- `./vendor/bin/sail php vendor/bin/pint --dirty --test`: passou. `git diff --check`: sem erros.
+- Sem alterações de frontend, schema ou ações transacionais; build, suíte completa, testes de concorrência e execução operacional não foram repetidos. Permanecem os avisos de depreciação e as falhas da última suíte completa registradas em E6.6.
