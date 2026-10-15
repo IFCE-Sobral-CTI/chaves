@@ -26,7 +26,7 @@ class MeasureBorrowRequests
 
         $requestId = (string) Str::uuid();
         $start = hrtime(true);
-        $metrics->start();
+        $this->metrics->start();
         $status = 500;
         $bytes = 0;
 

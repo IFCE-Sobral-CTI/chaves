@@ -3,11 +3,13 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "test:frontend": "node --test tests/Frontend/*.test.mjs"
+        "test:frontend": "node --test tests/Frontend/*.test.mjs",
+        "test:e2e": "playwright test"
     },
     "devDependencies": {
         "@headlessui/react": "^2.2.10",
         "@inertiajs/react": "^3.5.0",
+        "@playwright/test": "^1.64.1",
         "@tailwindcss/forms": "^0.5.11",
         "@tailwindcss/postcss": "^4.3.1",
         "@vitejs/plugin-react": "^6.0.1",

@@ -15,8 +15,8 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 ## Etapa 1 — Medição e diagnóstico dos dados
 
-- [EM_VALIDACAO] E1.1 Instrumentar duração, consultas, payload, resultado e identificador de requisição sem dados pessoais. Middleware local mede rotas `borrows.*`, amostra 10% dos GETs e registra todas as gravações.
-- [EM_VALIDACAO] E1.2 Separar métricas do POST e do GET após redirecionamento por método/rota; runtime ainda não observado.
+- [EM_VALIDACAO] E1.1 Instrumentar duração, consultas, payload, resultado e identificador de requisição sem dados pessoais. Gravações, isolamento entre requisições, privacidade e falha do logger validados em testes HTTP na entrega 13; amostragem de GETs e runtime operacional ainda pendentes.
+- [EM_VALIDACAO] E1.2 Separar métricas do POST e do GET após redirecionamento por método/rota. POST e status de validação verificados localmente na entrega 13; GET após redirecionamento e observação operacional ainda pendentes.
 - [PENDENTE] E1.3 Medir renderização e tempo até interação em equipamento representativo.
 - [PENDENTE] E1.4 Confirmar migrations e índices reais do ambiente operacional.
 - [CONCLUIDO] E1.5 Criar diagnóstico somente de leitura das inconsistências, com relatório por IDs. Comando `borrows:diagnose` validado em MySQL `testing`; execução operacional ainda pendente.
@@ -30,7 +30,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E2.4 Exigir lista não vazia de IDs inteiros distintos e usar apenas IDs validados para associações.
 - [PENDENTE] E2.5 Definir limite operacional de itens sem restringir o atendimento indevidamente.
 - [CONCLUIDO] E2.6 Exigir validade e permissão de cada chave para discentes e externos no backend.
-- [PENDENTE] E2.7 Confirmar com o domínio se validade representa instante ou fim de dia. A entrega inicial preserva comparação por instante.
+- [PENDENTE] E2.7 Confirmar com o domínio se validade representa instante ou fim de dia. Confirmado que a coluna é `DATE`, armazenando meia-noite; preservada a comparação por instante, sem estender automaticamente a validade até o fim do dia.
 - [CONCLUIDO] E2.8 Testar regressão A/X/Y → devolução X → B/X, entradas inválidas, elegibilidade, edição e número constante de consultas.
 
 ## Etapa 3 — Atomicidade e concorrência
@@ -61,7 +61,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E5.1 Reutilizar model resolvido pela rota e evitar cálculo repetido de recebimentos.
 - [CONCLUIDO] E5.2 Eliminar N+1 na agregação das chaves recebidas, com teste da quantidade de consultas.
 - [EM_ANDAMENTO] E5.3 Removida relação não usada da listagem e carga repetida de chaves na edição; revisão do custo das consultas da auditoria ainda pendente.
-- [EM_VALIDACAO] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação. Busca limitada a 20 por página e autorizada por permissão de criação/edição; testes HTTP e navegação no navegador pendentes.
+- [EM_VALIDACAO] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação. Autorização, paginação, elegibilidade e campos retornados validados por HTTP na entrega 13; navegação real e seleção entre páginas no navegador ainda pendentes.
 - [CONCLUIDO] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React no seletor. IDs do formulário permanecem selecionados ao mudar termo/página; objetos das chaves escolhidas ficam em cache no componente.
 - [CONCLUIDO] E5.6 Evitar busca inicial redundante, reiniciar na página 1 e tratar respostas antigas. Validado localmente com temporizadores e visitas controlados; navegação real no navegador pendente.
 - [EM_ANDAMENTO] E5.7 Busca no histórico preservada; filtros vazios removidos das consultas de seleção e listagem. Os índices atuais não atendem busca por substring; plano de execução com volume representativo pendente.
@@ -291,3 +291,25 @@ Estado: `[EM_VALIDACAO]` para E1.1/E1.2; instrumentação local implementada em 
 - Coletor é scoped por ciclo de requisição para não acumular consultas entre requisições em workers persistentes. Falha no logger não altera o resultado da operação.
 - `php -l` nos arquivos alterados, `./vendor/bin/pint --dirty` e `git diff --check` passaram. Não rodei testes nem medi overhead; MySQL não está disponível no ambiente para validar o runtime.
 - E1.3 (navegador), volume/privacidade operacional e calibragem da amostra permanecem pendentes; os tempos registrados são apenas do servidor e não substituem TTI.
+
+### Entrega 13 — Validação HTTP das opções e métricas
+
+Estado: `[CONCLUIDO]` no escopo dos testes HTTP e das correções locais descritas, em 15/10/2026. E5.4, E1.1 e E1.2 permanecem em validação pelas verificações no navegador e no ambiente operacional. Sem implantação ou alteração de schema/dependências nesta entrega.
+
+- Corrigido o filtro de mutuários nas duas rotas de opções: servidores e colaboradores seguem a elegibilidade das ações; discentes e externos exigem validade não nula e não expirada. Antes, validade nula permitia exibir discentes/externos que a gravação rejeitaria.
+- A paginação das opções desempata por ID, inclusive com nomes iguais. As listas iniciais de chaves disponíveis na criação/edição passam a selecionar apenas `id`, `number`, `room_id` e a identificação necessária da sala, sem observações da chave.
+- `BorrowOptionsTest` cobre as quatro rotas: requisições sem autenticação, permissões distintas de criação/edição, empréstimo inexistente, filtros inválidos, elegibilidade por tipo, busca por matrícula/sala, projeções mínimas e páginas de 20 resultados.
+- A regressão de disponibilidade confirma devolução parcial seguida de novo empréstimo, sem liberar a chave em outra consulta de criação. A edição continua exibindo suas próprias chaves vinculadas, inclusive as já devolvidas e emprestadas novamente.
+- O caso de igualdade da validade fixa o relógio na meia-noite, que a coluna `DATE` consegue armazenar. As primeiras tentativas com horário corrente/precisão de segundos revelaram a premissa incorreta da fixture; não foi alterada a semântica temporal do domínio para fazer o teste passar.
+- `BorrowRequestMetricsTest` valida requisições de escrita no middleware real: ID no cabeçalho correspondente ao log, contadores reiniciados, consultas fora da coleta desconsideradas, tamanho da resposta e status 422 para falha de validação.
+- O teste verifica uma lista fechada de campos nas métricas e ausência de dados privados enviados no corpo, termo de busca, mensagem de validação e bindings SQL. Também verifica que rotas fora de `borrows.*` não geram métricas e que falha no logger preserva a resposta da operação. Foi preservada a correção local já existente de inicialização do coletor no middleware.
+
+Validação realizada:
+
+- Versões confirmadas via Sail/Composer: PHP 8.5.11, Laravel 13.35.0, Inertia Laravel 3.5.1, Activitylog 5.1.1 e PHPUnit 11.5.57. Schema da coluna `employees.valid_until` conferido via Boost, somente leitura.
+- `./vendor/bin/sail bin phpunit tests/Feature/BorrowOptionsTest.php tests/Feature/BorrowRequestMetricsTest.php`: exit code 0, 11 testes, 182 assertions, duração de 80,916 s. Permanecem um aviso de depreciação do runtime e um do PHPUnit; não foram tratados como execução sem avisos.
+- `./vendor/bin/sail npm run test:frontend`: 7 testes aprovados, 0 falhas, duração de 524,02 ms. São as verificações locais de renderização e do efeito da busca; não substituem validação de interação no navegador.
+- `./vendor/bin/sail npm run build`: passou; permanece o aviso existente de carregamento futuro da configuração Vite.
+- `./vendor/bin/sail bin pint --dirty --format agent`: passou, ajustando a ordem dos imports dos testes novos. `git diff --check`: sem erros.
+- O PHPUnit foi executado diretamente pelo Sail porque o wrapper `artisan test` encaminha `--no-interaction` ao runner, que não aceita essa opção.
+- Não repetidos suíte completa, concorrência MySQL, navegador, distribuição da amostra de GETs, overhead da instrumentação ou medições em produção. Auditoria das transições (entrega 11) e validação das otimizações da listagem (entrega 8) seguem com as pendências registradas. Alterações preexistentes de ferramentas, dependências, ambiente e E2E no workspace foram preservadas.
