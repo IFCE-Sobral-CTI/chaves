@@ -45,6 +45,11 @@ class BorrowOptionsTest extends TestCase
         return $borrow;
     }
 
+    private function employee(): Employee
+    {
+        return Employee::factory()->create(['type' => Employee::EMPLOYEE]);
+    }
+
     public function test_options_require_authentication_with_401(): void
     {
         $borrow = $this->borrow($this->userWithRule('borrows.update'));
@@ -61,7 +66,8 @@ class BorrowOptionsTest extends TestCase
         $borrow = $this->borrow($user);
 
         foreach (['employees', 'keys'] as $resource) {
-            $this->actingAs($user)->getJson(route("borrows.options.$resource.create"))->assertOk();
+            $url = route("borrows.options.$resource.create", $resource === 'keys' ? ['employee_id' => $this->employee()->id] : []);
+            $this->actingAs($user)->getJson($url)->assertOk();
             $this->getJson(route("borrows.options.$resource.edit", $borrow))->assertForbidden();
         }
     }
@@ -73,7 +79,8 @@ class BorrowOptionsTest extends TestCase
 
         foreach (['employees', 'keys'] as $resource) {
             $this->actingAs($user)->getJson(route("borrows.options.$resource.edit", $borrow))->assertOk();
-            $this->getJson(route("borrows.options.$resource.create"))->assertForbidden();
+            $url = route("borrows.options.$resource.create", $resource === 'keys' ? ['employee_id' => $this->employee()->id] : []);
+            $this->getJson($url)->assertForbidden();
             $this->getJson(route("borrows.options.$resource.edit", ['borrow' => Borrow::max('id') + 1]))->assertNotFound();
         }
     }
@@ -131,7 +138,7 @@ class BorrowOptionsTest extends TestCase
         $receipt = Received::create(['borrow_id' => $borrow->id, 'user_id' => $user->id, 'receiver' => 'Recepção']);
         $receipt->keys()->attach($keys[0]->id);
         $this->borrow($user, [$keys[0]->id]);
-        $url = route('borrows.options.keys.create', ['term' => 'OptionsRoom']);
+        $url = route('borrows.options.keys.create', ['term' => 'OptionsRoom', 'employee_id' => $this->employee()->id]);
 
         $first = $this->actingAs($user)->getJson($url)->assertOk()
             ->assertJsonCount(20, 'data')->assertJsonPath('total', 21);
@@ -145,7 +152,7 @@ class BorrowOptionsTest extends TestCase
         }
         $this->getJson(route('borrows.options.keys.edit', ['borrow' => $borrow->id, 'term' => 'OptionsRoom']))
             ->assertOk()->assertJsonPath('total', 23);
-        $this->getJson(route('borrows.options.keys.create', ['term' => "OptionsRoom ' OR 1=1 --"]))
+        $this->getJson(route('borrows.options.keys.create', ['term' => "OptionsRoom ' OR 1=1 --", 'employee_id' => $this->employee()->id]))
             ->assertOk()->assertJsonCount(0, 'data');
     }
 
@@ -168,7 +175,39 @@ class BorrowOptionsTest extends TestCase
 
         $this->actingAs($user)->get(route('borrows.create'))->assertOk()
             ->assertInertia(fn ($page) => $page->component('Keys/Borrow/Create', false)
-                ->where('employees', [])->has('keys', 20)->missing('keys.0.observation')
-                ->missing('keys.0.description')->missing('keys.0.room.observation'));
+                ->where('employees', [])->where('keys', [])->where('keysLastPage', 1));
+    }
+
+    public function test_creation_key_options_filter_authorized_and_available_keys_before_pagination(): void
+    {
+        $user = $this->userWithRule('borrows.create');
+        $employee = Employee::factory()->create([
+            'type' => Employee::STUDENT,
+            'valid_until' => now()->addDay(),
+        ]);
+        $room = Room::factory()->create(['description' => 'RestrictedRoom']);
+        $keys = Key::factory()->count(22)->create(['room_id' => $room->id]);
+        $employee->borrowable_keys()->attach($keys->pluck('id'));
+        $this->borrow($user, [$keys[0]->id]);
+        $url = route('borrows.options.keys.create', ['employee_id' => $employee->id, 'term' => 'RestrictedRoom']);
+
+        $first = $this->actingAs($user)->getJson($url)->assertOk()
+            ->assertJsonCount(20, 'data')->assertJsonPath('total', 21);
+        $second = $this->getJson($url.'&page=2')->assertOk()->assertJsonCount(1, 'data');
+        $this->assertEqualsCanonicalizing($keys->slice(1)->pluck('id')->all(), collect($first->json('data'))
+            ->concat($second->json('data'))->pluck('id')->all());
+
+        $employee->update(['valid_until' => now()->subDay()]);
+        $this->getJson($url)->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('total', 0);
+    }
+
+    public function test_creation_key_options_require_a_valid_employee(): void
+    {
+        $user = $this->userWithRule('borrows.create');
+
+        $this->actingAs($user)->getJson(route('borrows.options.keys.create'))
+            ->assertUnprocessable()->assertJsonValidationErrors('employee_id');
+        $this->getJson(route('borrows.options.keys.create', ['employee_id' => 999999]))
+            ->assertUnprocessable()->assertJsonValidationErrors('employee_id');
     }
 }

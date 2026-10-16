@@ -6,6 +6,10 @@ import Search from "@/Pages/Keys/Borrow/Components/Search";
 import Button from "@/Components/Form/Button";
 
 function FormCreate({ data, setData, errors, processing, handleSubmit, employees, keys, keysLastPage, employeeSearch, keySearch}) {
+    const onChangeEmployee = (id) => {
+        if (String(id) === String(data.employee_id)) return;
+        setData({ ...data, employee_id: id, keys: [] });
+    };
     const onHandleChange = (event) => {
         setData(event.target.name, event.target.value);
     };
@@ -15,13 +19,13 @@ function FormCreate({ data, setData, errors, processing, handleSubmit, employees
     }
     return (
         <form onSubmit={handleSubmit} autoComplete="off">
-            <SelectEmployee data={employees} endpoint={employeeSearch} onChange={(id) => setData('employee_id', id)}  error={errors.employee_id} />
+            <SelectEmployee data={employees} endpoint={employeeSearch} onChange={onChangeEmployee} value={data.employee_id} error={errors.employee_id} />
             <div className="mb-4">
                 <label htmlFor="observation" className="font-light">Observações</label>
                 <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Observações sobre o empréstimo" />
                 <InputError message={errors.observation} />
             </div>
-            <Search values={data.keys} data={keys} lastPage={keysLastPage} endpoint={keySearch} onChange={onChangeKeys} error={errors.keys} />
+            {data.employee_id ? <Search key={data.employee_id} employeeId={data.employee_id} values={data.keys} data={keys} lastPage={keysLastPage} endpoint={keySearch} onChange={onChangeKeys} error={errors.keys} /> : <p className="font-light text-neutral-600">Selecione um mutuário para consultar as chaves disponíveis.</p>}
             <div className="flex items-center justify-center gap-4 mt-6">
                 <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">

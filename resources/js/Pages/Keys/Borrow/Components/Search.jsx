@@ -3,7 +3,7 @@ import Input from "@/Components/Form/Input";
 import InputError from "@/Components/InputError";
 import SearchItem from "@/Pages/Keys/Borrow/Components/SearchItem";
 
-export default function Search({ data, lastPage: initialLastPage = 1, endpoint, onChange, values = [], error = '' }) {
+export default function Search({ data, lastPage: initialLastPage = 1, endpoint, employeeId, onChange, values = [], error = '' }) {
     const [term, setTerm] = useState('');
     const [results, setResults] = useState(data);
     const [known, setKnown] = useState(data);
@@ -17,17 +17,18 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
     }, [data]);
 
     useEffect(() => {
-        if (!endpoint) return;
+        if (!endpoint || !employeeId) return;
         const controller = new AbortController();
         const timer = setTimeout(async () => {
             try {
-                const params = new URLSearchParams({ term, page: '1' });
+                const params = new URLSearchParams({ term, page: '1', employee_id: employeeId });
                 const response = await fetch(`${endpoint}?${params}`, { signal: controller.signal, headers: { Accept: 'application/json' } });
                 if (!response.ok) {
                     setResults([]);
                     return;
                 }
                 const result = await response.json();
+                if (controller.signal.aborted) return;
                 setResults(result.data);
                 setKnown(items => [...items, ...result.data].filter((item, index, all) => all.findIndex(other => other.id === item.id) === index));
                 setPage(result.current_page);
@@ -37,16 +38,18 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
             }
         }, 250);
         return () => { clearTimeout(timer); controller.abort(); moreController.current?.abort(); };
-    }, [term, endpoint]);
+    }, [term, endpoint, employeeId]);
 
     const loadMore = async () => {
-        const params = new URLSearchParams({ term, page: String(page + 1) });
+        const params = new URLSearchParams({ term, page: String(page + 1), employee_id: employeeId });
         moreController.current?.abort();
-        moreController.current = new AbortController();
+        const controller = new AbortController();
+        moreController.current = controller;
         try {
-            const response = await fetch(`${endpoint}?${params}`, { signal: moreController.current.signal, headers: { Accept: 'application/json' } });
+            const response = await fetch(`${endpoint}?${params}`, { signal: controller.signal, headers: { Accept: 'application/json' } });
             if (!response.ok) return;
             const result = await response.json();
+            if (controller.signal.aborted) return;
             setResults(items => [...items, ...result.data]);
             setKnown(items => [...items, ...result.data].filter((item, index, all) => all.findIndex(other => other.id === item.id) === index));
             setPage(result.current_page);

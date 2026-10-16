@@ -46,12 +46,12 @@ Atualizar os estados conforme o trabalho avançar. Registrar evidências de vali
 
 ## Etapa 3 — Opções de chaves no empréstimo
 
-- [PENDENTE] E3.1 Disponibilizar novas chaves somente após selecionar o mutuário.
-- [PENDENTE] E3.2 Enviar e validar o mutuário nas consultas de opções de chaves, preservando as permissões das rotas de criação e edição.
-- [PENDENTE] E3.3 Combinar autorização e disponibilidade antes de paginar, incluindo opções iniciais e pesquisas.
+- [EM_VALIDACAO] E3.1 Disponibilizar novas chaves somente após selecionar o mutuário. A tela inicia sem opções e consulta após a seleção; build pendente.
+- [EM_VALIDACAO] E3.2 Enviar e validar o mutuário nas consultas de opções de chaves, preservando as permissões das rotas de criação e edição. Autorização permanece na rota e há validação de existência; teste via Sail pendente.
+- [EM_VALIDACAO] E3.3 Combinar autorização e disponibilidade antes de paginar, incluindo opções iniciais e pesquisas. Filtragem implementada no endpoint; testes de autorização/validade/paginação escritos, aguardando execução via Sail.
 - [PENDENTE] E3.4 Retornar lista vazia e mostrar mensagem para discentes e externos sem validade vigente ou sem chaves autorizadas.
 - [PENDENTE] E3.5 Manter todas as chaves disponíveis para servidores e colaboradores.
-- [PENDENTE] E3.6 Limpar chaves selecionadas, busca e paginação ao trocar o mutuário na criação.
+- [EM_VALIDACAO] E3.6 Limpar chaves selecionadas, busca e paginação ao trocar o mutuário na criação. A seleção é limpa e o componente de busca remonta por mutuário; validação automatizada aguarda execução via Sail.
 - [PENDENTE] E3.7 Descartar respostas antigas após troca de mutuário para impedir apresentação de opções anteriores.
 - [PENDENTE] E3.8 Revalidar todas as chaves ao criar o empréstimo, inclusive em requisições manipuladas ou após mudança de permissões.
 - [PENDENTE] E3.9 Preservar projeções mínimas nos endpoints de opções, sem expor observações do mutuário.
@@ -97,5 +97,6 @@ Atualizar os estados conforme o trabalho avançar. Registrar evidências de vali
 - Playwright no container Sail confirmou criação, campos visíveis, máscara `(88) 99999-8888`, persistência como `88999998888`, pré-preenchimento no formulário de edição e busca pela observação. Nenhum erro JS ou HTTP 5xx nos fluxos testados.
 - Testes de cadastro, sincronização, validação de IDs e telefone foram escritos, mas não executados: `./vendor/bin/sail artisan test --compact tests/Feature/EmployeeProfileTest.php` não iniciou porque Docker/Podman está parado. `git diff --check` passou.
 - Nenhum commit ou push realizado nesta preparação.
+- E3.3/E3.6: `git diff --check` passou. Pint e `BorrowOptionsTest` não puderam ser executados porque Docker/Podman está parado; a verificação via Sail permanece pendente.
 - O workspace principal em `main` manteve as alterações locais que já existiam antes da criação do worktree.
 - Premissas funcionais e cuidados com histórico e telefones legados permanecem descritos no plano.

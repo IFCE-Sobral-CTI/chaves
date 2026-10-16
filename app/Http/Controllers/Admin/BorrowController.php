@@ -80,7 +80,9 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.create', Borrow::class);
 
-        return $this->keyOptions($request);
+        $filters = $request->validate(['employee_id' => ['required', 'integer', 'exists:employees,id']]);
+
+        return $this->keyOptions($request, employee: Employee::findOrFail($filters['employee_id']));
     }
 
     public function editKeyOptions(Borrow $borrow, Request $request): LengthAwarePaginator
@@ -90,7 +92,7 @@ class BorrowController extends Controller
         return $this->keyOptions($request, $borrow);
     }
 
-    private function keyOptions(Request $request, ?Borrow $borrow = null): LengthAwarePaginator
+    private function keyOptions(Request $request, ?Borrow $borrow = null, ?Employee $employee = null): LengthAwarePaginator
     {
         $filters = $request->validate([
             'term' => ['nullable', 'string', 'max:100'],
@@ -105,6 +107,14 @@ class BorrowController extends Controller
                 if ($borrow) {
                     $query->orWhereIn('keys.id', $borrow->keys()->select('keys.id'));
                 }
+            })
+            ->when($employee && in_array($employee->type, [Employee::STUDENT, Employee::EXTERNAL], true), function ($query) use ($employee) {
+                $validUntil = $employee->getRawOriginal('valid_until');
+                if (! $validUntil || substr($validUntil, 0, 10) < now()->toDateString()) {
+                    return $query->whereRaw('1 = 0');
+                }
+
+                return $query->whereHas('borrowable_keys', fn ($employees) => $employees->whereKey($employee->id));
             })
             ->when($term !== '', fn ($query) => $query->where(function ($query) use ($term) {
                 $query->where('number', 'like', "%{$term}%")
@@ -123,13 +133,10 @@ class BorrowController extends Controller
     {
         $this->authorize('borrows.create', Borrow::class);
 
-        $keys = Key::select('id', 'number', 'room_id')->with('room:id,description')
-            ->whereNotIn('id', Borrow::pendingKeyIds())->orderBy('number')->orderBy('id')->paginate(20);
-
         return Inertia::render('Keys/Borrow/Create', [
             'employees' => [],
-            'keys' => $keys->items(),
-            'keysLastPage' => $keys->lastPage(),
+            'keys' => [],
+            'keysLastPage' => 1,
         ]);
     }
 
