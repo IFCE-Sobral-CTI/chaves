@@ -37,10 +37,10 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 - [CONCLUIDO] E3.1 Extrair ações de aplicação para cada transição.
 - [CONCLUIDO] E3.2 Transacionar gravações, associações, encerramento e auditoria.
-- [EM_ANDAMENTO] E3.3 Documentar e aplicar ordem única de bloqueio das chaves e demais registros em todos os escritores. Aplicada às ações do fluxo; exclusões indiretas protegidas pelas FKs da entrega 5 após aplicação da migration. Confirmação operacional dos escritores segue em E3.6.
+- [CONCLUIDO] E3.3 Documentar e aplicar a ordem de bloqueio no código: chaves por ID crescente, empréstimo existente, mutuário e estado de recebimentos/pivots. Edição e cadastro de autorizações também bloqueiam chaves antes do mutuário; teste verifica a ordem SQL. O teste concorrente de edição obsoleta passou.
 - [CONCLUIDO] E3.4 Revalidar disponibilidade e elegibilidade dentro da transação após os bloqueios.
 - [CONCLUIDO] E3.5 Tratar conflitos e deadlocks com respostas previsíveis e tentativas limitadas.
-- [EM_ANDAMENTO] E3.6 Auditar scripts/imports e avaliar necessidade de restrição estrutural de ocupação. Auditoria estática na entrega 4 e proteção das exclusões na entrega 5; implantação da migration e confirmação de escritores externos ainda pendentes. Exclusividade de ocupação segue dependente do protocolo das ações.
+- [CONCLUIDO] E3.6 Auditar escritores do repositório e avaliar restrição estrutural. Nenhum script/import foi encontrado gravando diretamente os pivots; o comando de reparo usa `BorrowTransaction`. FKs restritivas estão aplicadas no MySQL local e protegem exclusões históricas. Não há escritor interno fora do protocolo que exija unicidade estrutural de ocupação. Integrações externas não acessíveis e produção ficam como validação operacional de E6.8.
 - [CONCLUIDO] E3.7 Testar disputa entre conexões MySQL independentes, devolução concorrente e rollback com falha injetada.
 
 ## Etapa 4 — Segurança e coerência

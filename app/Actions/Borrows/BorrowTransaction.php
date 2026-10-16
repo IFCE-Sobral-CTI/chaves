@@ -12,7 +12,8 @@ use Illuminate\Validation\ValidationException;
 class BorrowTransaction
 {
     /**
-     * Keys (ascending PK), borrow, then employee/receipts/pivots.
+     * Lock keys by ascending ID, then the existing borrow, employee and receipt/pivot state.
+     * New borrows have no borrow row to lock; their action locks the employee before insertion.
      * The initial key set is only a lock hint; current reads validate it again.
      */
     public function run(?int $borrowId, array $requestedIds, Closure $operation): mixed

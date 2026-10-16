@@ -10,7 +10,9 @@ use App\Models\Room;
 use App\Models\Rule;
 use App\Models\User;
 use App\Providers\AuthServiceProvider;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class EmployeeProfileTest extends TestCase
@@ -135,7 +137,7 @@ class EmployeeProfileTest extends TestCase
 
         $this->get(route('employees.edit', $employee))->assertOk()->assertInertia(fn ($page) => $page
             ->where('employee.borrowable_keys.0.id', $keys[0]->id)
-            ->where('keys.0.name', $keys[0]->number.' - '.$room->description));
+            ->where('keys', fn ($options) => collect($options)->contains(fn ($option) => $option['name'] === $keys[0]->number.' - '.$room->description)));
 
         $payload['type'] = Employee::EXTERNAL;
         $payload['borrowable_key_ids'] = [$keys[1]->id];
@@ -188,5 +190,39 @@ class EmployeeProfileTest extends TestCase
         $this->assertDatabaseMissing('employees', ['registry' => '987654324']);
         $this->assertDatabaseMissing('employees', ['registry' => '987654325']);
         $this->assertDatabaseMissing('employees', ['registry' => '987654326']);
+    }
+
+    public function test_employee_permission_updates_lock_keys_before_the_employee(): void
+    {
+        $user = $this->administrator();
+        $key = Key::factory()->create();
+        $employee = Employee::factory()->create([
+            'type' => Employee::STUDENT,
+            'valid_until' => '2027-12-31',
+        ]);
+        $employee->borrowable_keys()->attach($key->id);
+        $lockQueries = [];
+        DB::listen(function (QueryExecuted $query) use (&$lockQueries): void {
+            if (str_contains(strtolower($query->sql), 'for update')) {
+                $lockQueries[] = strtolower($query->sql);
+            }
+        });
+
+        $this->actingAs($user)->put(route('employees.update', $employee), [
+            'type' => Employee::STUDENT,
+            'registry' => $employee->registry,
+            'name' => $employee->name,
+            'usual_name' => '',
+            'occupation' => '',
+            'email' => $employee->email,
+            'alternative_email' => '',
+            'tel' => '',
+            'valid_until' => '2027-12-31',
+            'observation' => '',
+            'borrowable_key_ids' => [$key->id],
+        ])->assertRedirect();
+
+        $this->assertStringContainsString('from `keys`', $lockQueries[0]);
+        $this->assertStringContainsString('from `employees`', $lockQueries[1]);
     }
 }

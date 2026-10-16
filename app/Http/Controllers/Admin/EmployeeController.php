@@ -12,6 +12,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -66,6 +67,7 @@ class EmployeeController extends Controller
             unset($data['borrowable_key_ids']);
 
             $employee = DB::transaction(function () use ($data, $keyIds): Employee {
+                $this->lockBorrowableKeys($keyIds);
                 $employee = Employee::create($data);
                 $employee->borrowable_keys()->sync($keyIds);
 
@@ -73,6 +75,8 @@ class EmployeeController extends Controller
             });
 
             return redirect()->route('employees.show', $employee)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
             report($e);
 
@@ -128,14 +132,25 @@ class EmployeeController extends Controller
             $data = $request->validated();
             $keyIds = $data['borrowable_key_ids'];
             unset($data['borrowable_key_ids']);
+            $previousKeyIds = $employee->borrowable_keys()->pluck('keys.id')->map(fn ($id) => (int) $id)->all();
+            sort($previousKeyIds, SORT_NUMERIC);
 
-            DB::transaction(function () use ($employee, $data, $keyIds): void {
+            DB::transaction(function () use ($employee, $data, $keyIds, $previousKeyIds): void {
+                $lockIds = $this->lockBorrowableKeys([...$previousKeyIds, ...$keyIds]);
                 $lockedEmployee = Employee::whereKey($employee->id)->lockForUpdate()->firstOrFail();
+                $currentKeyIds = $lockedEmployee->borrowable_keys()->pluck('keys.id')->map(fn ($id) => (int) $id)->all();
+                sort($currentKeyIds, SORT_NUMERIC);
+                if ($currentKeyIds !== $previousKeyIds || array_diff($currentKeyIds, $lockIds)) {
+                    throw ValidationException::withMessages(['borrowable_key_ids' => 'As autorizações deste mutuário foram alteradas. Recarregue o cadastro e tente novamente.']);
+                }
+
                 $lockedEmployee->update($data);
                 $lockedEmployee->borrowable_keys()->sync($keyIds);
             });
 
             return redirect()->route('employees.show', $employee)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
             report($e);
 
@@ -159,5 +174,21 @@ class EmployeeController extends Controller
         } catch (Exception $e) {
             return $this->deletionFailed($e, 'employees.index');
         }
+    }
+
+    /** @param array<int, int|string> $keyIds
+     * @return array<int, int>
+     */
+    private function lockBorrowableKeys(array $keyIds): array
+    {
+        $keyIds = array_values(array_unique(array_map('intval', $keyIds)));
+        sort($keyIds, SORT_NUMERIC);
+        $lockedIds = Key::whereIn('id', $keyIds)->orderBy('id')->lockForUpdate()->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        if (count($lockedIds) !== count($keyIds)) {
+            throw ValidationException::withMessages(['borrowable_key_ids' => 'Uma das chaves autorizadas não está mais cadastrada. Recarregue o cadastro.']);
+        }
+
+        return $keyIds;
     }
 }
