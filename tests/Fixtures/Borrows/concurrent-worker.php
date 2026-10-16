@@ -3,6 +3,7 @@
 use App\Actions\Borrows\CreateBorrow;
 use App\Actions\Borrows\DeleteReceived;
 use App\Actions\Borrows\ReceiveKeys;
+use App\Actions\Borrows\UpdateBorrow;
 use App\Models\Borrow;
 use App\Models\Received;
 use App\Models\User;
@@ -58,6 +59,9 @@ try {
     match ($input['operation']) {
         'create' => app(CreateBorrow::class)->handle($user, ['employee_id' => $input['employee_id'], 'keys' => [$input['key_id']]]),
         'receive' => app(ReceiveKeys::class)->handle($borrow, $user, [$input['key_id']], 'Recepção'),
+        'update' => app(UpdateBorrow::class)->handle($borrow, $user, [
+            'employee_id' => $input['employee_id'], 'keys' => $input['keys'], 'observation' => $input['observation'],
+        ]),
         'delete-return' => app(DeleteReceived::class)->handle($borrow, Received::findOrFail($input['received_id']), $user),
         'delete-key' => DB::table('keys')->where('id', $input['key_id'])->delete(),
     };

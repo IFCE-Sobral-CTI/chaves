@@ -54,7 +54,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
 - [EM_ANDAMENTO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação por conjuntos implementada; diagnóstico e validação abrangente dos dados legados pendentes.
 - [CONCLUIDO] E4.9 Auditoria das operações atuais validada por HTTP: estados anterior/posterior, IDs, executor e preservação dos eventos após exclusão, além dos testes de rollback. Motivo será exigido caso seja criada uma operação administrativa explícita; não é pendência do fluxo comum. Evidências na entrega 15.
-- [EM_ANDAMENTO] E4.10 Testar autorização, vínculo, reenvio, edição e exclusão concorrentes. Matriz das sete permissões de empréstimo, bypass administrativo, recusas HTTP e exclusão de devolução por não administrador cobertos na entrega 19. Mantidos os casos anteriores de vínculo, reenvio e disputas com exclusão; disputas concorrentes de edição permanecem pendentes.
+- [CONCLUIDO] E4.10 Autorização, vínculo, reenvio e conflitos concorrentes validados localmente. Matriz das sete permissões e recusas HTTP na entrega 19; quatro disputas reais de edição com criação/devolução/outra edição na entrega 20, além dos casos anteriores de exclusão e reenvio. Validação operacional continua pendente nas etapas 1 e 6.
 
 ## Etapa 5 — Consultas e interface
 
@@ -393,3 +393,26 @@ Validação realizada:
 - `./vendor/bin/sail npm run test:frontend`: 17 testes aprovados, 0 falhas, 923,46 ms, incluindo os testes de telefone presentes no workspace. Houve avisos de porta WebSocket 24678 ocupada. `npm run build` via Sail passou; permanece o aviso existente do futuro carregador nativo da configuração Vite.
 - Pint (`--dirty --format agent`) e `git diff --check` passaram. O Pint também ordenou imports no teste paralelo `EmployeeProfileTest.php`; não alterou sua lógica. As demais alterações paralelas de mutuários foram preservadas.
 - Não repetidos navegador, suíte completa, concorrência entre conexões ou validação em produção. Sem migration, alteração de dependências ou reparo de dados nesta entrega. E4.10 permanece em andamento pelos cenários de edição concorrente.
+
+### Entrega 20 — Edição concorrente em MySQL
+
+- O worker de concorrência existente passou a executar `UpdateBorrow`. Mantidos os processos/conexões independentes, barreiras nos bloqueios das chaves, snapshot anterior do concorrente em `REPEATABLE READ` e guarda que exige exclusivamente o banco MySQL `testing`.
+- Acrescentados quatro cenários: edição reserva uma chave antes de uma criação concorrente; devolução vence e impede edição antiga de remover a chave recebida; edição substitui a chave e impede devolução antiga de recebê-la; duas edições disputam o mesmo empréstimo e a antiga não pode remover uma chave recém-adicionada que não estava no conjunto inicial de bloqueios.
+- Os casos verificam resultado de sucesso/conflito, campo de validação, vínculos finais, observação, recebimentos, encerramento e quantidade de eventos específicos de edição. O cenário de criação também verifica ausência de segundo empréstimo/ocupação da chave.
+- Nenhuma mudança no código da aplicação, schema, permissões ou interface foi necessária neste incremento. A execução usa somente fixtures no banco isolado de testes; não há reparo de dados locais ou operacionais.
+
+Validação realizada em 15/10/2026:
+
+- `./vendor/bin/sail bin phpunit tests/Feature/BorrowConcurrencyTest.php --filter='test_edit_reserving|test_edit_after_a_concurrent|test_return_after_a_concurrent|test_stale_edit'`: exit code 0, quatro testes, 54 assertions, duração de 3 min 59,590 s. Persistem uma depreciação do runtime e uma do PHPUnit.
+- Os quatro cenários passaram usando as ações reais, sem modificar a implementação para acomodar os testes. Confirmado isolamento `REPEATABLE-READ` no MySQL `testing`; fixtures com commits visíveis aos workers, sem `RefreshDatabase` envolvendo o cenário em transação invisível aos processos filhos.
+- `./vendor/bin/sail bin pint --dirty --format agent` e `git diff --check` passaram.
+- E4.10 concluído no escopo local do plano, somando os casos desta entrega às evidências anteriores de autorização, vínculo, reenvio e exclusões concorrentes. E4.8 continua dependendo da validação abrangente dos dados legados; não implica conclusão operacional da etapa 4.
+- Não repetidos os demais casos antigos da classe de concorrência, suíte completa, navegador ou build; somente testes e worker foram alterados. Não houve implantação nem execução de reparos fora do banco de testes.
+
+### Entrega 21 — Fechamento local da etapa 3
+
+- `BorrowTransaction` documenta a ordem de bloqueio; edição de empréstimo agora trava o mutuário antes do estado de recebimentos/pivots. Cadastro e edição de autorizações de chaves travam as linhas de chave em ordem crescente antes do mutuário e conferem alterações concorrentes antes de sincronizar.
+- Auditoria estática dos escritores do repositório: transições de empréstimo usam `BorrowTransaction`; `borrows:remove-duplicate` também usa esse protocolo; `borrows:diagnose` é somente leitura. Não foram encontrados scripts/imports que gravem diretamente nos pivots.
+- `./vendor/bin/sail artisan migrate:status --no-interaction` confirmou a migration `2026_10_15_000000_protect_borrow_history_from_cascading_deletes` aplicada ao banco MySQL local (batch 3). Isso protege referências históricas contra exclusões por cascata neste schema.
+- Testes afetados via Sail passaram: ordem SQL de bloqueio no endpoint de autorizações, sincronização existente, rollback de edição e edição concorrente obsoleta (4 testes, 39 assertions). Pint e `git diff --check` passaram.
+- E3.3 e E3.6 concluídos no escopo do código e do banco local. Não foi possível inspecionar integrações externas nem confirmar schema ou escritores em produção; esses itens permanecem no acompanhamento operacional E6.8.

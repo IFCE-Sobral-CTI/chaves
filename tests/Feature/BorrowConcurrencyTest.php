@@ -13,6 +13,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
@@ -192,6 +193,97 @@ class BorrowConcurrencyTest extends TestCase
         $this->assertNull($borrow->fresh()->devolution);
         $this->assertSame([$this->key->id], $borrow->receivedKeys());
         $this->assertEqualsCanonicalizing([$this->key->id, $otherKey->id], Borrow::pendingKeyIds()->pluck('key_id')->all());
+    }
+
+    public function test_edit_reserving_a_key_prevents_a_competing_creation(): void
+    {
+        $otherKey = Key::factory()->create();
+        $borrow = app(CreateBorrow::class)->handle($this->user, [
+            'employee_id' => $this->employee->id, 'keys' => [$otherKey->id],
+        ]);
+        $before = Borrow::count();
+
+        [$holder, $contender] = $this->race([
+            'operation' => 'update', 'borrow_id' => $borrow->id,
+            'keys' => [$this->key->id, $otherKey->id], 'observation' => 'Chave adicionada',
+        ], ['operation' => 'create']);
+
+        $this->assertSame('success', $holder['status']);
+        $this->assertSame('conflict', $contender['status']);
+        $this->assertArrayHasKey('keys', $contender['errors']);
+        $this->assertSame($before, Borrow::count());
+        $this->assertSame([$this->key->id, $otherKey->id], $borrow->keys()->orderBy('keys.id')->pluck('keys.id')->all());
+        $this->assertSame(1, DB::table('borrow_key')->where('key_id', $this->key->id)->count());
+        $this->assertSame('Chave adicionada', $borrow->fresh()->observation);
+        $this->assertSame(1, Activity::where('description', 'borrow_updated')->where('subject_id', $borrow->id)->count());
+    }
+
+    public function test_edit_after_a_concurrent_return_cannot_remove_the_returned_key(): void
+    {
+        $borrow = $this->borrow();
+        $otherKey = Key::factory()->create();
+        $observation = $borrow->observation;
+
+        [$holder, $contender] = $this->race([
+            'operation' => 'receive', 'borrow_id' => $borrow->id,
+        ], [
+            'operation' => 'update', 'borrow_id' => $borrow->id,
+            'keys' => [$otherKey->id], 'observation' => 'Edição obsoleta',
+        ]);
+
+        $this->assertSame('success', $holder['status']);
+        $this->assertSame('conflict', $contender['status']);
+        $this->assertArrayHasKey('keys', $contender['errors']);
+        $this->assertSame([$this->key->id], $borrow->keys()->pluck('keys.id')->all());
+        $this->assertSame([$this->key->id], $borrow->receivedKeys());
+        $this->assertSame(1, $borrow->received()->count());
+        $this->assertNotNull($borrow->fresh()->devolution);
+        $this->assertSame($observation, $borrow->fresh()->observation);
+        $this->assertSame(0, Activity::where('description', 'borrow_updated')->where('subject_id', $borrow->id)->count());
+    }
+
+    public function test_return_after_a_concurrent_edit_cannot_receive_a_removed_key(): void
+    {
+        $borrow = $this->borrow();
+        $otherKey = Key::factory()->create();
+
+        [$holder, $contender] = $this->race([
+            'operation' => 'update', 'borrow_id' => $borrow->id,
+            'keys' => [$otherKey->id], 'observation' => 'Chave substituída',
+        ], ['operation' => 'receive', 'borrow_id' => $borrow->id]);
+
+        $this->assertSame('success', $holder['status']);
+        $this->assertSame('conflict', $contender['status']);
+        $this->assertArrayHasKey('keys', $contender['errors']);
+        $this->assertSame([$otherKey->id], $borrow->keys()->pluck('keys.id')->all());
+        $this->assertSame([], $borrow->receivedKeys());
+        $this->assertSame(0, $borrow->received()->count());
+        $this->assertNull($borrow->fresh()->devolution);
+        $this->assertSame('Chave substituída', $borrow->fresh()->observation);
+        $this->assertSame(1, Activity::where('description', 'borrow_updated')->where('subject_id', $borrow->id)->count());
+    }
+
+    public function test_stale_edit_cannot_remove_a_key_added_by_another_edit(): void
+    {
+        $borrow = $this->borrow();
+        $otherKey = Key::factory()->create();
+
+        [$holder, $contender] = $this->race([
+            'operation' => 'update', 'borrow_id' => $borrow->id,
+            'keys' => [$this->key->id, $otherKey->id], 'observation' => 'Primeira edição',
+        ], [
+            'operation' => 'update', 'borrow_id' => $borrow->id,
+            'keys' => [$this->key->id], 'observation' => 'Edição obsoleta',
+        ]);
+
+        $this->assertSame('success', $holder['status']);
+        $this->assertSame('conflict', $contender['status']);
+        $this->assertArrayHasKey('keys', $contender['errors']);
+        $this->assertSame([$this->key->id, $otherKey->id], $borrow->keys()->orderBy('keys.id')->pluck('keys.id')->all());
+        $this->assertSame('Primeira edição', $borrow->fresh()->observation);
+        $this->assertNull($borrow->fresh()->devolution);
+        $this->assertSame(0, $borrow->received()->count());
+        $this->assertSame(1, Activity::where('description', 'borrow_updated')->where('subject_id', $borrow->id)->count());
     }
 
     public function test_reopening_and_lending_do_not_create_two_occupations(): void
