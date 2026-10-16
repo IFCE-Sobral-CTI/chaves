@@ -1,7 +1,7 @@
 # Acompanhamento da correção de empréstimos e devoluções
 
 Plano: [correcao-emprestimos-devolucoes](2026-10-14-correcao-emprestimos-devolucoes.md).  
-Última atualização: 15/10/2026.
+Última atualização: 16/10/2026.
 
 ## Estados
 
@@ -52,7 +52,7 @@ As tarefas são independentes de implantação. Código validado localmente não
 - [CONCLUIDO] E4.5 Definir e aplicar edição segura preservando o histórico.
 - [CONCLUIDO] E4.6 Substituir encerramento manual comum por transição coerente e correção administrativa explícita, se necessária. Encerramento manual removido; não foi criada operação administrativa de correção.
 - [CONCLUIDO] E4.7 Impedir reabertura por exclusão quando a chave já estiver emprestada em outro registro.
-- [EM_ANDAMENTO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação por conjuntos implementada; diagnóstico e validação abrangente dos dados legados pendentes.
+- [CONCLUIDO] E4.8 Determinar encerramento pelo conjunto pendente, inclusive em cenários legados. Comparação e transições cobertas por testes; diagnóstico local executado em 16/10/2026. As inconsistências encontradas foram registradas para reconciliação explícita em E6.1, sem alteração automática dos dados.
 - [CONCLUIDO] E4.9 Auditoria das operações atuais validada por HTTP: estados anterior/posterior, IDs, executor e preservação dos eventos após exclusão, além dos testes de rollback. Motivo será exigido caso seja criada uma operação administrativa explícita; não é pendência do fluxo comum. Evidências na entrega 15.
 - [CONCLUIDO] E4.10 Autorização, vínculo, reenvio e conflitos concorrentes validados localmente. Matriz das sete permissões e recusas HTTP na entrega 19; quatro disputas reais de edição com criação/devolução/outra edição na entrega 20, além dos casos anteriores de exclusão e reenvio. Validação operacional continua pendente nas etapas 1 e 6.
 
@@ -60,12 +60,12 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 - [CONCLUIDO] E5.1 Reutilizar model resolvido pela rota e evitar cálculo repetido de recebimentos.
 - [CONCLUIDO] E5.2 Eliminar N+1 na agregação das chaves recebidas, com teste da quantidade de consultas.
-- [EM_ANDAMENTO] E5.3 Removida relação não usada da listagem e carga repetida de chaves na edição; revisão do custo das consultas da auditoria ainda pendente.
-- [EM_VALIDACAO] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação. Autorização, paginação, elegibilidade e campos retornados validados por HTTP na entrega 13; navegação real e seleção entre páginas no navegador ainda pendentes.
+- [EM_VALIDACAO] E5.3 Removida relação não usada da listagem e carga repetida de chaves na edição. Revisão do custo das consultas de auditoria ainda requer volume representativo.
+- [EM_VALIDACAO] E5.4 Implementar seleção autorizada com campos mínimos, busca limitada e paginação. Autorização, paginação, elegibilidade, campos retornados e seleção entre páginas validados por testes; navegação real no navegador segue pendente por falta de credenciais E2E.
 - [CONCLUIDO] E5.5 Preservar seleção entre buscas e corrigir efeitos e IDs React no seletor. IDs do formulário permanecem selecionados ao mudar termo/página; objetos das chaves escolhidas ficam em cache no componente.
 - [CONCLUIDO] E5.6 Evitar busca inicial redundante, reiniciar na página 1 e tratar respostas antigas. Validado localmente com temporizadores e visitas controlados; navegação real no navegador pendente.
-- [EM_ANDAMENTO] E5.7 Busca no histórico preservada; filtros vazios removidos das consultas de seleção e listagem. Os índices atuais não atendem busca por substring; plano de execução com volume representativo pendente.
-- [PENDENTE] E5.8 Comparar tempo, queries e payload antes/depois; disponibilidade segue revalidada no banco.
+- [EM_VALIDACAO] E5.7 Busca no histórico preservada; filtros vazios removidos das consultas de seleção e listagem. Os índices atuais não atendem busca por substring; plano de execução com volume representativo pendente.
+- [PENDENTE] E5.8 Comparar tempo, queries e payload antes/depois com baseline e volume representativo; disponibilidade segue revalidada no banco.
 
 ## Etapa 6 — Dados, schema e implantação
 
@@ -416,3 +416,17 @@ Validação realizada em 15/10/2026:
 - `./vendor/bin/sail artisan migrate:status --no-interaction` confirmou a migration `2026_10_15_000000_protect_borrow_history_from_cascading_deletes` aplicada ao banco MySQL local (batch 3). Isso protege referências históricas contra exclusões por cascata neste schema.
 - Testes afetados via Sail passaram: ordem SQL de bloqueio no endpoint de autorizações, sincronização existente, rollback de edição e edição concorrente obsoleta (4 testes, 39 assertions). Pint e `git diff --check` passaram.
 - E3.3 e E3.6 concluídos no escopo do código e do banco local. Não foi possível inspecionar integrações externas nem confirmar schema ou escritores em produção; esses itens permanecem no acompanhamento operacional E6.8.
+
+### Entrega 22 — Fechamento local da etapa 4
+
+- E4.8 validado com comparação pelo conjunto de chaves pendentes. Os testes de diagnóstico cobrem empréstimo encerrado prematuramente e devolução completa sem encerramento, além de confirmar que o comando é somente leitura. O teste da edição impede manter aberto um empréstimo sem chaves pendentes.
+- `borrows:diagnose` executado no banco local em 16/10/2026. Resumo: 14 `empty_borrows` e 4 `closure_mismatches` (empréstimos 6, 9, 12 e 14, todos abertos sem chaves pendentes); demais cinco categorias zeradas. Nenhum dado foi alterado.
+- `php artisan test --compact tests/Feature/BorrowDiagnosisTest.php tests/Feature/BorrowTransactionTest.php`: exit code 0, 19 testes, 206 assertions. PHPUnit marcou os testes como deprecated e exibiu aviso sobre o schema XML.
+- E4.1–E4.10 concluídos localmente. Os 14 empréstimos sem vínculos, incluindo os quatro com divergência de encerramento, precisam de reconciliação em E6.1 antes de qualquer reparo. Diagnóstico ou estado calculado não foi usado para escolher ou alterar registros. Validação de produção permanece operacional.
+
+### Entrega 23 — Validação local da etapa 5
+
+- `BorrowOptionsTest.php` e `BorrowScopeTest.php` passaram: 16 testes e 182 assertions. A suíte frontend passou: 20 testes, sem falhas. PHPUnit sinalizou 16 testes como deprecated e o runtime mostrou aviso de schema XML; Vite registrou a porta WebSocket 24678 ocupada.
+- O banco local contém 15 empréstimos, 501 chaves e 1.001 mutuários. Esse volume não representa histórico operacional suficiente para comparar planos, p50/p95, quantidade de consultas e payload antes/depois.
+- Credenciais E2E não estão configuradas no container; navegação real e seleção através das páginas não foram verificadas no navegador. Os testes HTTP e de componentes continuam cobrindo autorização, paginação e preservação da seleção.
+- E5.3 e E5.7 permanecem em validação pela análise de consultas com volume representativo; E5.4 pela verificação no navegador; E5.8 ainda não executado. A etapa 5 não pode ser encerrada com a evidência local disponível. Sem mudanças de aplicação ou dados nesta entrega.
