@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
+import { readFile } from 'node:fs/promises';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
@@ -8,6 +9,8 @@ import react from '@vitejs/plugin-react';
 let server;
 let Search;
 let SearchItem;
+const createForm = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/FormCreate.jsx', import.meta.url), 'utf8');
+const searchSource = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/Search.jsx', import.meta.url), 'utf8');
 const keys = [
     { id: 11, number: 101, room: { description: 'Sala Norte' } },
     { id: 22, number: 202, room: { description: 'Sala Sul' } },
@@ -73,4 +76,19 @@ test('row activation forwards the key ID and its button cannot submit the form',
         assert.match(html, /<path /);
     }
     assert.deepEqual(calls, [11, 11]);
+});
+
+test('changing the borrower clears selected keys and remounts search state', () => {
+    assert.match(createForm, /setData\(\{ \.\.\.data, employee_id: id, keys: \[\] \}\)/);
+    assert.match(createForm, /<Search key=\{data\.employee_id\} employeeId=\{data\.employee_id\}/);
+});
+
+test('search discards responses aborted after a borrower change', () => {
+    assert.match(searchSource, /controller\.abort\(\)/);
+    assert.equal((searchSource.match(/if \(controller\.signal\.aborted\) return;/g) ?? []).length, 2);
+});
+
+test('search explains when no key is authorized and available', () => {
+    assert.match(searchSource, /role="status"/);
+    assert.match(searchSource, /confira a validade e as autorizações/);
 });

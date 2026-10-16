@@ -162,6 +162,9 @@ class BorrowOptionsTest extends TestCase
 
         foreach (['employees', 'keys'] as $resource) {
             foreach ([['term' => ['invalid'], 'page' => 0], ['term' => str_repeat('a', 101), 'page' => 'invalid']] as $filters) {
+                if ($resource === 'keys') {
+                    $filters['employee_id'] = $this->employee()->id;
+                }
                 $this->actingAs($user)->getJson(route("borrows.options.$resource.create", $filters))
                     ->assertUnprocessable()->assertJsonValidationErrors(['term', 'page']);
             }
@@ -199,6 +202,56 @@ class BorrowOptionsTest extends TestCase
 
         $employee->update(['valid_until' => now()->subDay()]);
         $this->getJson($url)->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('total', 0);
+    }
+
+    public function test_creation_key_options_are_empty_without_validity_or_authorized_keys(): void
+    {
+        $user = $this->userWithRule('borrows.create');
+
+        foreach ([
+            Employee::factory()->create(['type' => Employee::STUDENT, 'valid_until' => null]),
+            Employee::factory()->create(['type' => Employee::EXTERNAL, 'valid_until' => now()->addDay()]),
+        ] as $employee) {
+            $this->actingAs($user)
+                ->getJson(route('borrows.options.keys.create', ['employee_id' => $employee->id]))
+                ->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('total', 0);
+        }
+    }
+
+    public function test_creation_key_options_keep_all_available_keys_for_collaborators(): void
+    {
+        $user = $this->userWithRule('borrows.create');
+        $room = Room::factory()->create(['description' => 'CollaboratorRoom']);
+        $keys = Key::factory()->count(2)->create(['room_id' => $room->id]);
+        $this->borrow($user, [$keys[0]->id]);
+
+        foreach ([Employee::EMPLOYEE, Employee::COLLABORATOR] as $type) {
+            $employee = Employee::factory()->create(['type' => $type, 'valid_until' => null]);
+            $this->actingAs($user)
+                ->getJson(route('borrows.options.keys.create', ['employee_id' => $employee->id, 'term' => 'CollaboratorRoom']))
+                ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $keys[1]->id);
+        }
+    }
+
+    public function test_store_rejects_a_key_after_its_authorization_is_removed(): void
+    {
+        $user = $this->userWithRule('borrows.create');
+        $employee = Employee::factory()->create([
+            'type' => Employee::STUDENT,
+            'valid_until' => now()->addDay(),
+        ]);
+        $key = Key::factory()->create();
+        $employee->borrowable_keys()->attach($key->id);
+        $borrowCount = Borrow::count();
+
+        $this->actingAs($user)
+            ->getJson(route('borrows.options.keys.create', ['employee_id' => $employee->id]))
+            ->assertOk()->assertJsonFragment(['id' => $key->id]);
+        $employee->borrowable_keys()->detach($key->id);
+
+        $this->post(route('borrows.store'), ['employee_id' => $employee->id, 'keys' => [$key->id]])
+            ->assertSessionHasErrors('keys');
+        $this->assertDatabaseCount('borrows', $borrowCount);
     }
 
     public function test_creation_key_options_require_a_valid_employee(): void

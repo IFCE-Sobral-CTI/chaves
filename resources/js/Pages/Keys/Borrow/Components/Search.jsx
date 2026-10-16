@@ -9,6 +9,7 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
     const [known, setKnown] = useState(data);
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(initialLastPage);
+    const [empty, setEmpty] = useState(false);
     const moreController = useRef(null);
 
     useEffect(() => {
@@ -19,6 +20,7 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
     useEffect(() => {
         if (!endpoint || !employeeId) return;
         const controller = new AbortController();
+        setEmpty(false);
         const timer = setTimeout(async () => {
             try {
                 const params = new URLSearchParams({ term, page: '1', employee_id: employeeId });
@@ -30,6 +32,7 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
                 const result = await response.json();
                 if (controller.signal.aborted) return;
                 setResults(result.data);
+                setEmpty(result.total === 0);
                 setKnown(items => [...items, ...result.data].filter((item, index, all) => all.findIndex(other => other.id === item.id) === index));
                 setPage(result.current_page);
                 setLastPage(result.last_page);
@@ -103,6 +106,7 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
                                 {items}
                             </tbody>
                         </table>
+                        {empty && <p role="status" className="p-2 text-sm text-neutral-600">Nenhuma chave autorizada e disponível para este mutuário. Para discentes e externos, confira a validade e as autorizações.</p>}
                         {page < lastPage && <button type="button" className="w-full p-2 text-sm text-blue-700" onClick={loadMore}>Carregar mais chaves</button>}
                     </div>
                 </div>

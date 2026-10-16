@@ -46,15 +46,15 @@ Atualizar os estados conforme o trabalho avançar. Registrar evidências de vali
 
 ## Etapa 3 — Opções de chaves no empréstimo
 
-- [EM_VALIDACAO] E3.1 Disponibilizar novas chaves somente após selecionar o mutuário. A tela inicia sem opções e consulta após a seleção; build pendente.
-- [EM_VALIDACAO] E3.2 Enviar e validar o mutuário nas consultas de opções de chaves, preservando as permissões das rotas de criação e edição. Autorização permanece na rota e há validação de existência; teste via Sail pendente.
-- [EM_VALIDACAO] E3.3 Combinar autorização e disponibilidade antes de paginar, incluindo opções iniciais e pesquisas. Filtragem implementada no endpoint; testes de autorização/validade/paginação escritos, aguardando execução via Sail.
-- [PENDENTE] E3.4 Retornar lista vazia e mostrar mensagem para discentes e externos sem validade vigente ou sem chaves autorizadas.
-- [PENDENTE] E3.5 Manter todas as chaves disponíveis para servidores e colaboradores.
-- [EM_VALIDACAO] E3.6 Limpar chaves selecionadas, busca e paginação ao trocar o mutuário na criação. A seleção é limpa e o componente de busca remonta por mutuário; validação automatizada aguarda execução via Sail.
-- [PENDENTE] E3.7 Descartar respostas antigas após troca de mutuário para impedir apresentação de opções anteriores.
-- [PENDENTE] E3.8 Revalidar todas as chaves ao criar o empréstimo, inclusive em requisições manipuladas ou após mudança de permissões.
-- [PENDENTE] E3.9 Preservar projeções mínimas nos endpoints de opções, sem expor observações do mutuário.
+- [CONCLUIDO] E3.1 Disponibilizar novas chaves somente após selecionar o mutuário. A tela inicia sem opções e consulta após a seleção; build e teste frontend passaram.
+- [CONCLUIDO] E3.2 Enviar e validar o mutuário nas consultas de opções de chaves, preservando as permissões das rotas de criação e edição. Testes de autorização, validação e filtros passaram.
+- [CONCLUIDO] E3.3 Combinar autorização e disponibilidade antes de paginar, incluindo opções iniciais e pesquisas. Testes de autorização, validade, disponibilidade e paginação passaram.
+- [CONCLUIDO] E3.4 Retornar lista vazia e mostrar mensagem para discentes e externos sem validade vigente ou sem chaves autorizadas. Testes de endpoint e frontend passaram.
+- [CONCLUIDO] E3.5 Manter todas as chaves disponíveis para servidores e colaboradores. Teste para ambos os perfis passou.
+- [CONCLUIDO] E3.6 Limpar chaves selecionadas, busca e paginação ao trocar o mutuário na criação. Teste frontend confirmou a limpeza e remontagem do seletor.
+- [CONCLUIDO] E3.7 Descartar respostas antigas após troca de mutuário para impedir apresentação de opções anteriores. O seletor aborta as consultas no desmontar e ignora respostas abortadas; teste frontend passou.
+- [CONCLUIDO] E3.8 Revalidar todas as chaves ao criar o empréstimo, inclusive em requisições manipuladas ou após mudança de permissões. Teste confirmou rejeição após remoção da autorização.
+- [CONCLUIDO] E3.9 Preservar projeções mínimas nos endpoints de opções, sem expor observações do mutuário. Testes confirmaram os campos retornados.
 
 ## Etapa 4 — Edição do empréstimo e histórico
 
@@ -90,13 +90,13 @@ Atualizar os estados conforme o trabalho avançar. Registrar evidências de vali
 
 ## Evidências e pendências
 
-- Implementação parcial: migration de campos, perfil, telefone, busca e seleção de chaves autorizadas para discentes/externos, com validação, sincronização transacional e limpeza para servidores/colaboradores.
-- Filtragem de chaves e revalidação no fluxo de empréstimos, além do nome usual na seleção de mutuário do empréstimo, seguem pendentes.
+- Implementação parcial nas etapas globais: migration de campos, perfil, telefone, busca e seleção de chaves autorizadas para discentes/externos, com validação, sincronização transacional e limpeza para servidores/colaboradores.
+- A etapa 3 de opções de chaves foi concluída; as etapas 1, 2, 4, 5 e 6 ainda têm itens pendentes ou em validação.
 - Migration aplicada em banco MySQL 8.0 isolado; schema foi exercitado pelo cadastro e edição bem-sucedidos.
 - Build do frontend passou no Sail; permaneceu o aviso existente do Vite sobre `configLoader: 'native'`.
 - Playwright no container Sail confirmou criação, campos visíveis, máscara `(88) 99999-8888`, persistência como `88999998888`, pré-preenchimento no formulário de edição e busca pela observação. Nenhum erro JS ou HTTP 5xx nos fluxos testados.
 - Testes de cadastro, sincronização, validação de IDs e telefone foram escritos, mas não executados: `./vendor/bin/sail artisan test --compact tests/Feature/EmployeeProfileTest.php` não iniciou porque Docker/Podman está parado. `git diff --check` passou.
 - Nenhum commit ou push realizado nesta preparação.
-- E3.3/E3.6: `git diff --check` passou. Pint e `BorrowOptionsTest` não puderam ser executados porque Docker/Podman está parado; a verificação via Sail permanece pendente.
+- Etapa 3 concluída: `./vendor/bin/sail artisan test --compact tests/Feature/BorrowOptionsTest.php tests/Feature/BorrowAvailabilityTest.php` passou (19 testes, 207 assertions); `./vendor/bin/sail npm run test:frontend` passou (20 testes); Pint e `./vendor/bin/sail npm run build` passaram. O build manteve o aviso existente do Vite sobre `configLoader: 'native'`.
 - O workspace principal em `main` manteve as alterações locais que já existiam antes da criação do worktree.
 - Premissas funcionais e cuidados com histórico e telefones legados permanecem descritos no plano.
