@@ -3,6 +3,7 @@ import { after, before, test } from 'node:test';
 import { readFile } from 'node:fs/promises';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import vm from 'node:vm';
 import { createServer } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -18,6 +19,10 @@ const keys = [
     { id: 11, number: 101, room: { description: 'Sala Norte' } },
     { id: 22, number: 202, room: { description: 'Sala Sul' } },
 ];
+const employeeKeySearchEffect = searchSource.slice(
+    searchSource.indexOf('    useEffect(() => {\n        if (!endpoint || !employeeId) return;'),
+    searchSource.indexOf('    const loadMore ='),
+);
 
 before(async () => {
     server = await createServer({
@@ -91,6 +96,46 @@ test('changing the borrower clears selected keys and remounts search state', () 
 test('search discards responses aborted after a borrower change', () => {
     assert.match(searchSource, /controller\.abort\(\)/);
     assert.equal((searchSource.match(/if \(controller\.signal\.aborted\) return;/g) ?? []).length, 2);
+});
+
+test('key search ignores an old response after changing borrowers', async () => {
+    const requests = [];
+    const results = [];
+
+    function mount(employeeId) {
+        let timer;
+        let cleanup;
+        vm.runInNewContext(employeeKeySearchEffect, {
+            endpoint: '/keys', employeeId, term: '',
+            useEffect(callback) { cleanup = callback(); },
+            setEmpty() {},
+            setResults(value) { results.push(value); },
+            setKnown() {}, setPage() {}, setLastPage() {},
+            setTimeout(callback, delay) { assert.equal(delay, 250); timer = callback; return 1; },
+            clearTimeout() {},
+            fetch(url, { signal }) {
+                requests.push({ url, signal, resolve: null });
+                return new Promise(resolve => { requests.at(-1).resolve = resolve; });
+            },
+            URLSearchParams, AbortController, moreController: { current: null },
+        });
+        return { flush: () => timer(), cleanup: () => cleanup?.() };
+    }
+
+    const first = mount(101);
+    const oldResponse = first.flush();
+    assert.equal(new URL(requests[0].url, 'http://localhost').searchParams.get('employee_id'), '101');
+    first.cleanup();
+
+    const second = mount(202);
+    const currentResponse = second.flush();
+    assert.equal(new URL(requests[1].url, 'http://localhost').searchParams.get('employee_id'), '202');
+    requests[1].resolve({ ok: true, json: async () => ({ data: [{ id: 202 }], total: 1, current_page: 1, last_page: 1 }) });
+    await currentResponse;
+    requests[0].resolve({ ok: true, json: async () => ({ data: [{ id: 101 }], total: 1, current_page: 1, last_page: 1 }) });
+    await oldResponse;
+
+    assert.deepEqual(results, [[{ id: 202 }]]);
 });
 
 test('search explains when no key is authorized and available', () => {

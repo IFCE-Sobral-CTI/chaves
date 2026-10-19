@@ -13,6 +13,7 @@ use App\Providers\AuthServiceProvider;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 use Tests\TestCase;
 
 class EmployeeProfileTest extends TestCase
@@ -142,17 +143,17 @@ class EmployeeProfileTest extends TestCase
             'tel' => '',
             'valid_until' => '2027-12-31',
             'observation' => '',
-            'borrowable_key_ids' => [$keys[0]->id],
+            'borrowable_key_ids' => [$keys[0]->id, $keys[1]->id],
         ];
 
         $this->actingAs($user)->post(route('employees.store'), $payload)
             ->assertRedirect();
 
         $employee = Employee::where('registry', '987654323')->firstOrFail();
-        $this->assertSame([$keys[0]->id], $employee->borrowable_keys()->pluck('keys.id')->map(fn ($id) => (int) $id)->all());
+        $this->assertEqualsCanonicalizing([$keys[0]->id, $keys[1]->id], $employee->borrowable_keys()->pluck('keys.id')->map(fn ($id) => (int) $id)->all());
 
         $this->get(route('employees.edit', $employee))->assertOk()->assertInertia(fn ($page) => $page
-            ->where('employee.borrowable_keys.0.id', $keys[0]->id)
+            ->where('employee.borrowable_keys', fn ($authorizedKeys) => collect($authorizedKeys)->pluck('id')->sort()->values()->all() === collect([$keys[0]->id, $keys[1]->id])->sort()->values()->all())
             ->where('keys', fn ($options) => collect($options)->contains(fn ($option) => $option['name'] === $keys[0]->number.' - '.$room->description)));
 
         $payload['type'] = Employee::EXTERNAL;
@@ -171,6 +172,39 @@ class EmployeeProfileTest extends TestCase
         $payload['borrowable_key_ids'] = [];
         $this->post(route('employees.store'), $payload)->assertRedirect();
         $this->assertSame([], Employee::where('registry', '987654327')->firstOrFail()->borrowable_keys()->pluck('keys.id')->all());
+    }
+
+    public function test_employee_creation_rolls_back_when_authorization_sync_fails(): void
+    {
+        $user = $this->administrator();
+        $key = Key::factory()->create();
+        $activityCount = DB::table('activity_log')->count();
+        $failureInjected = false;
+        DB::listen(function (QueryExecuted $query) use (&$failureInjected): void {
+            if (! $failureInjected && str_contains($query->sql, 'insert into `borrowable_keys`')) {
+                $failureInjected = true;
+                throw new RuntimeException('Injected authorization sync failure.');
+            }
+        });
+
+        $this->actingAs($user)->post(route('employees.store'), [
+            'type' => Employee::STUDENT,
+            'registry' => '987654328',
+            'name' => 'Cadastro com falha',
+            'usual_name' => 'Nome Usual',
+            'occupation' => 'Estudante',
+            'email' => 'rollback@example.test',
+            'alternative_email' => '',
+            'tel' => '',
+            'valid_until' => '2027-12-31',
+            'observation' => '',
+            'borrowable_key_ids' => [$key->id],
+        ])->assertRedirect(route('employees.index'))->assertSessionHas('flash.status', 'danger');
+
+        $this->assertTrue($failureInjected);
+        $this->assertDatabaseMissing('employees', ['registry' => '987654328']);
+        $this->assertDatabaseMissing('borrowable_keys', ['key_id' => $key->id]);
+        $this->assertSame($activityCount, DB::table('activity_log')->count());
     }
 
     public function test_authorized_key_ids_must_exist_and_be_distinct(): void

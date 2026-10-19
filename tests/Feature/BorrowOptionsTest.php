@@ -274,22 +274,32 @@ class BorrowOptionsTest extends TestCase
             'valid_until' => now()->addDay(),
         ]);
         $room = Room::factory()->create(['description' => 'EditAuthorizationRoom']);
-        [$existingKey, $authorizedKey, $unauthorizedKey] = Key::factory()->count(3)->create(['room_id' => $room->id])->all();
+        $keys = Key::factory()->count(24)->create(['room_id' => $room->id]);
+        $existingKey = $keys[0];
+        $authorizedKeys = $keys->slice(1, 22);
+        $unauthorizedKey = $keys[23];
         $borrow = Borrow::factory()->create([
             'user_id' => $user->id,
             'employee_id' => $originalEmployee->id,
             'devolution' => null,
         ]);
         $borrow->keys()->attach($existingKey->id);
-        $targetEmployee->borrowable_keys()->attach($authorizedKey->id);
+        $targetEmployee->borrowable_keys()->attach($authorizedKeys->pluck('id'));
         $url = route('borrows.options.keys.edit', [
             'borrow' => $borrow->id,
             'employee_id' => $targetEmployee->id,
             'term' => 'EditAuthorizationRoom',
         ]);
 
-        $response = $this->actingAs($user)->getJson($url)->assertOk()->assertJsonPath('total', 2);
-        $this->assertEqualsCanonicalizing([$existingKey->id, $authorizedKey->id], collect($response->json('data'))->pluck('id')->all());
+        $firstPage = $this->actingAs($user)->getJson($url)->assertOk()
+            ->assertJsonCount(20, 'data')->assertJsonPath('total', 23)->assertJsonPath('last_page', 2);
+        $secondPage = $this->getJson($url.'&page=2')->assertOk()->assertJsonCount(3, 'data');
+        $this->assertEqualsCanonicalizing(
+            [$existingKey->id, ...$authorizedKeys->pluck('id')->all()],
+            collect($firstPage->json('data'))->concat($secondPage->json('data'))->pluck('id')->all(),
+        );
+        $this->assertNotContains($unauthorizedKey->id, collect($firstPage->json('data'))
+            ->concat($secondPage->json('data'))->pluck('id')->all());
 
         $targetEmployee->update(['valid_until' => now()->subDay()]);
         $response = $this->getJson($url)->assertOk()->assertJsonPath('total', 1);

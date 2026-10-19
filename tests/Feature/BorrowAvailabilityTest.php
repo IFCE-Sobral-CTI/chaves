@@ -132,7 +132,26 @@ class BorrowAvailabilityTest extends TestCase
         $this->assertSame($before, Borrow::count());
     }
 
-    public function test_valid_student_can_borrow_an_authorized_key(): void
+    public function test_valid_restricted_borrower_without_authorized_keys_cannot_borrow(): void
+    {
+        $user = $this->admin();
+        $employee = Employee::factory()->create([
+            'type' => Employee::EXTERNAL,
+            'valid_until' => now()->addDay(),
+        ]);
+        $key = Key::factory()->create();
+        $before = Borrow::count();
+
+        $this->actingAs($user)->post(route('borrows.store'), [
+            'employee_id' => $employee->id,
+            'keys' => [$key->id],
+        ])->assertSessionHasErrors('keys');
+
+        $this->assertSame($before, Borrow::count());
+        $this->assertDatabaseMissing('borrow_key', ['key_id' => $key->id]);
+    }
+
+    public function test_valid_student_can_borrow_and_describe_existing_loan_after_expiry(): void
     {
         $this->travelTo(now()->endOfDay());
         $user = $this->admin();
@@ -152,7 +171,12 @@ class BorrowAvailabilityTest extends TestCase
         $this->travelTo(now()->addDay()->startOfDay());
         $this->actingAs($user)->put(route('borrows.update', $borrow), [
             'employee_id' => $employee->id, 'keys' => [$key->id],
-        ])->assertSessionHasErrors('employee_id');
+            'observation' => 'Observação após vencimento',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame([$key->id], $borrow->fresh()->keys()->pluck('keys.id')->all());
+        $this->assertSame($employee->id, $borrow->fresh()->employee_id);
+        $this->assertSame('Observação após vencimento', $borrow->fresh()->observation);
     }
 
     public function test_update_ignores_own_borrow_but_rejects_other_occupations(): void

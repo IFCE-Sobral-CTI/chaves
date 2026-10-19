@@ -1,7 +1,7 @@
 # Plano de melhorias no cadastro e empréstimos de mutuários
 
 Data: 15/10/2026
-Status: implementação parcial; itens isolados do fluxo de empréstimo em andamento.
+Status: etapas 1–6 implementadas e validadas localmente; implantação não realizada.
 
 Acompanhamento: [tarefas e status](2026-10-15-melhorias-mutuarios-todo.md).
 Implementação isolada: worktree `/tmp/chaves-mutuarios`, branch `feature/mutuarios`.
@@ -97,23 +97,23 @@ Verificar os consumidores dos campos e das consultas antes de implementar. Relat
 
 ## Critérios de aceite e cobertura
 
-- [ ] Criar e editar mutuários com nome usual e função/ocupação, aceitando campos vazios.
-- [ ] Criar e editar discentes e externos com múltiplas chaves autorizadas e carregar a seleção salva.
-- [ ] Rejeitar IDs de chaves inexistentes e impedir gravação parcial do cadastro e das permissões.
-- [ ] Salvar perfil restrito sem chaves e impedir novos empréstimos para ele.
-- [ ] Exibir somente chaves autorizadas e disponíveis em todas as páginas de opções dos perfis restritos.
-- [ ] Exibir todas as chaves disponíveis para servidores e colaboradores.
-- [ ] Impedir novos empréstimos com validade ausente ou vencida nos perfis restritos.
-- [ ] Rejeitar envio manual de chave não autorizada e alterações de permissão ocorridas após carregar o formulário.
-- [ ] Limpar seleção e paginação ao trocar mutuário na criação, sem reaproveitar respostas antigas.
-- [ ] Preservar histórico, chaves devolvidas e possibilidade de devolução após retirada de autorização.
-- [ ] Permitir editar observações de empréstimo existente sem autorizar novas chaves indevidamente.
-- [ ] Validar todas as chaves para o novo mutuário quando houver troca na edição.
-- [ ] Formatar telefone fixo e celular, aceitar colagem e preservar números legados sem truncamento.
-- [ ] Encontrar mutuários por nome, matrícula, nome usual, função/ocupação e observações na gestão de mutuários.
-- [ ] Exibir observações na listagem e nome usual na seleção de mutuário do empréstimo.
-- [ ] Preservar controle de acesso e não expor observações nos endpoints de opções de empréstimo.
-- [ ] Executar os testes afetados e a formatação exigida para os arquivos modificados durante a implementação.
+- [x] Criar e editar mutuários com nome usual e função/ocupação, aceitando campos vazios.
+- [x] Criar e editar discentes e externos com múltiplas chaves autorizadas e carregar a seleção salva.
+- [x] Rejeitar IDs de chaves inexistentes e impedir gravação parcial do cadastro e das permissões.
+- [x] Salvar perfil restrito sem chaves e impedir novos empréstimos para ele.
+- [x] Exibir somente chaves autorizadas e disponíveis em todas as páginas de opções dos perfis restritos.
+- [x] Exibir todas as chaves disponíveis para servidores e colaboradores.
+- [x] Impedir novos empréstimos com validade ausente ou vencida nos perfis restritos.
+- [x] Rejeitar envio manual de chave não autorizada e alterações de permissão ocorridas após carregar o formulário.
+- [x] Limpar seleção e paginação ao trocar mutuário na criação, sem reaproveitar respostas antigas.
+- [x] Preservar histórico, chaves devolvidas e possibilidade de devolução após retirada de autorização.
+- [x] Permitir editar observações de empréstimo existente sem autorizar novas chaves indevidamente.
+- [x] Validar todas as chaves para o novo mutuário quando houver troca na edição.
+- [x] Formatar telefone fixo e celular, aceitar colagem e preservar números legados sem truncamento.
+- [x] Encontrar mutuários por nome, matrícula, nome usual, função/ocupação e observações na gestão de mutuários.
+- [x] Exibir observações na listagem e nome usual na seleção de mutuário do empréstimo.
+- [x] Preservar controle de acesso e não expor observações nos endpoints de opções de empréstimo.
+- [x] Executar os testes afetados e a formatação exigida para os arquivos modificados durante a implementação.
 
 ## Ordem de entrega
 
@@ -127,5 +127,5 @@ Verificar os consumidores dos campos e das consultas antes de implementar. Relat
 - Não conceder autorizações automaticamente a cadastros existentes.
 - Não alterar empréstimos históricos durante a migração.
 - Não criar dependências, novos relatórios ou um novo sistema de permissões.
-- A análise que fundamenta este plano foi estática; testes e validação visual serão realizados na implementação.
+- A análise inicial deste plano foi estática; testes e validação visual da implementação estão registrados no acompanhamento.
 - As premissas acima orientam a implementação e podem ser ajustadas antes de iniciá-la.

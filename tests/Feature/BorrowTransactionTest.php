@@ -288,6 +288,32 @@ class BorrowTransactionTest extends TestCase
         $this->assertSame($before, Borrow::count());
     }
 
+    public function test_authorization_is_rechecked_if_revoked_after_preflight(): void
+    {
+        $this->employee->update(['type' => Employee::STUDENT, 'valid_until' => now()->addDay()]);
+        $this->employee->borrowable_keys()->attach($this->key->id);
+        $revoked = false;
+        DB::listen(function (QueryExecuted $query) use (&$revoked): void {
+            if (! $revoked && str_contains($query->sql, 'from `borrowable_keys`')) {
+                $revoked = true;
+                DB::table('borrowable_keys')
+                    ->where('employee_id', $this->employee->id)
+                    ->where('key_id', $this->key->id)
+                    ->delete();
+            }
+        });
+        $before = Borrow::count();
+
+        $this->actingAs($this->user)->post(route('borrows.store'), [
+            'employee_id' => $this->employee->id,
+            'keys' => [$this->key->id],
+        ])->assertSessionHasErrors('keys');
+
+        $this->assertTrue($revoked);
+        $this->assertSame($before, Borrow::count());
+        $this->assertDatabaseMissing('borrow_key', ['key_id' => $this->key->id]);
+    }
+
     public function test_edit_cannot_remove_returned_keys_or_manually_close_borrow(): void
     {
         $borrow = $this->borrow();
