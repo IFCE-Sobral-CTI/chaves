@@ -42,8 +42,18 @@ class StoreBorrowRequest extends FormRequest
             }
 
             $employee = Employee::findOrFail($this->input('employee_id'));
+            $keyIdsToValidate = $keyIds;
+            if ($borrow !== null && (int) $borrow->employee_id === (int) $employee->id) {
+                $existingKeyIds = $borrow->keys()->pluck('keys.id')->map(fn ($id) => (int) $id)->all();
+                $keyIdsToValidate = array_values(array_diff(array_map('intval', $keyIds), $existingKeyIds));
+            }
+
+            if ($keyIdsToValidate === []) {
+                return;
+            }
+
             try {
-                app(EnsureBorrowerEligible::class)->handle($employee, $keyIds);
+                app(EnsureBorrowerEligible::class)->handle($employee, $keyIdsToValidate);
             } catch (ValidationException $exception) {
                 foreach ($exception->errors() as $field => $messages) {
                     foreach ($messages as $message) {

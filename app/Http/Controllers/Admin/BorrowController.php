@@ -88,8 +88,9 @@ class BorrowController extends Controller
     public function editKeyOptions(Borrow $borrow, Request $request): LengthAwarePaginator
     {
         $this->authorize('borrows.update', $borrow);
+        $filters = $request->validate(['employee_id' => ['required', 'integer', 'exists:employees,id']]);
 
-        return $this->keyOptions($request, $borrow);
+        return $this->keyOptions($request, $borrow, Employee::findOrFail($filters['employee_id']));
     }
 
     private function keyOptions(Request $request, ?Borrow $borrow = null, ?Employee $employee = null): LengthAwarePaginator
@@ -108,13 +109,20 @@ class BorrowController extends Controller
                     $query->orWhereIn('keys.id', $borrow->keys()->select('keys.id'));
                 }
             })
-            ->when($employee && in_array($employee->type, [Employee::STUDENT, Employee::EXTERNAL], true), function ($query) use ($employee) {
+            ->when($employee && in_array($employee->type, [Employee::STUDENT, Employee::EXTERNAL], true), function ($query) use ($employee, $borrow) {
                 $validUntil = $employee->getRawOriginal('valid_until');
                 if (! $validUntil || substr($validUntil, 0, 10) < now()->toDateString()) {
-                    return $query->whereRaw('1 = 0');
+                    return $borrow
+                        ? $query->whereIn('keys.id', $borrow->keys()->select('keys.id'))
+                        : $query->whereRaw('1 = 0');
                 }
 
-                return $query->whereHas('borrowable_keys', fn ($employees) => $employees->whereKey($employee->id));
+                return $query->where(function ($query) use ($employee, $borrow) {
+                    $query->whereHas('borrowable_keys', fn ($employees) => $employees->whereKey($employee->id));
+                    if ($borrow) {
+                        $query->orWhereIn('keys.id', $borrow->keys()->select('keys.id'));
+                    }
+                });
             })
             ->when($term !== '', fn ($query) => $query->where(function ($query) use ($term) {
                 $query->where('number', 'like', "%{$term}%")
@@ -194,14 +202,13 @@ class BorrowController extends Controller
      *
      * @throws AuthorizationException
      */
-    public function edit(Borrow $borrow): Response
+    public function edit(Borrow $borrow, Request $request): Response
     {
         $this->authorize('borrows.update', $borrow);
 
         $borrow->load(['employee', 'keys.room']);
         $borrowKeys = $borrow->keys->pluck('id')->toArray();
-        $availableKeys = Key::select('id', 'number', 'room_id')->with('room:id,description')
-            ->whereNotIn('id', Borrow::pendingKeyIds())->orderBy('number')->orderBy('id')->paginate(20);
+        $availableKeys = $this->keyOptions($request, $borrow, $borrow->employee);
 
         return Inertia::render('Keys/Borrow/Edit', [
             'borrow' => $borrow,

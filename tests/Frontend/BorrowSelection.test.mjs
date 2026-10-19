@@ -10,6 +10,7 @@ let server;
 let Search;
 let SearchItem;
 const createForm = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/FormCreate.jsx', import.meta.url), 'utf8');
+const editForm = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/FormEdit.jsx', import.meta.url), 'utf8');
 const searchSource = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/Search.jsx', import.meta.url), 'utf8');
 const keys = [
     { id: 11, number: 101, room: { description: 'Sala Norte' } },
@@ -81,6 +82,8 @@ test('row activation forwards the key ID and its button cannot submit the form',
 test('changing the borrower clears selected keys and remounts search state', () => {
     assert.match(createForm, /setData\(\{ \.\.\.data, employee_id: id, keys: \[\] \}\)/);
     assert.match(createForm, /<Search key=\{data\.employee_id\} employeeId=\{data\.employee_id\}/);
+    assert.match(editForm, /<Search[^>]*employeeId=\{data\.employee_id\}/);
+    assert.match(searchSource, /employee_id: employeeId/);
 });
 
 test('search discards responses aborted after a borrower change', () => {

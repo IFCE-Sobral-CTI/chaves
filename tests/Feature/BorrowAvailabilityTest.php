@@ -172,6 +172,132 @@ class BorrowAvailabilityTest extends TestCase
         $this->assertSame([$x->id], $a->keys()->pluck('keys.id')->all());
     }
 
+    public function test_edit_keeps_existing_keys_and_allows_observation_updates_after_eligibility_is_removed(): void
+    {
+        $user = $this->admin();
+        $employee = Employee::factory()->create([
+            'type' => Employee::STUDENT,
+            'valid_until' => now()->addDay(),
+        ]);
+        [$permissionRemovedKey, $expiredKey] = Key::factory()->count(2)->create()->all();
+        $employee->borrowable_keys()->sync([$permissionRemovedKey->id, $expiredKey->id]);
+        $withoutPermission = $this->openBorrow($user, $employee, [$permissionRemovedKey->id]);
+        $withoutValidity = $this->openBorrow($user, $employee, [$expiredKey->id]);
+        $employee->borrowable_keys()->detach($permissionRemovedKey->id);
+        $employee->update(['valid_until' => now()->subDay()]);
+
+        $this->actingAs($user)->get(route('borrows.edit', $withoutPermission))
+            ->assertOk()->assertInertia(fn ($page) => $page->component('Keys/Borrow/Edit', false)
+            ->where('keys', fn ($keys) => collect($keys)->pluck('id')->contains($permissionRemovedKey->id)));
+        $this->actingAs($user)->put(route('borrows.update', $withoutPermission), [
+            'employee_id' => $employee->id,
+            'keys' => [$permissionRemovedKey->id],
+            'observation' => 'Observação corrigida',
+        ])->assertSessionHasNoErrors();
+        $this->put(route('borrows.update', $withoutValidity), [
+            'employee_id' => $employee->id,
+            'keys' => [$expiredKey->id],
+            'observation' => 'Outra observação corrigida',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('Observação corrigida', $withoutPermission->fresh()->observation);
+        $this->assertSame('Outra observação corrigida', $withoutValidity->fresh()->observation);
+        $this->assertSame([$permissionRemovedKey->id], $withoutPermission->keys()->pluck('keys.id')->all());
+        $this->assertSame([$expiredKey->id], $withoutValidity->keys()->pluck('keys.id')->all());
+    }
+
+    public function test_same_borrower_must_be_currently_eligible_for_new_keys(): void
+    {
+        $user = $this->admin();
+        $employee = Employee::factory()->create([
+            'type' => Employee::STUDENT,
+            'valid_until' => now()->addDay(),
+        ]);
+        [$existingKey, $newKey] = Key::factory()->count(2)->create()->all();
+        $employee->borrowable_keys()->attach($existingKey->id);
+        $borrow = $this->openBorrow($user, $employee, [$existingKey->id]);
+
+        $this->actingAs($user)->put(route('borrows.update', $borrow), [
+            'employee_id' => $employee->id,
+            'keys' => [$existingKey->id, $newKey->id],
+        ])->assertSessionHasErrors('keys');
+
+        $employee->borrowable_keys()->attach($newKey->id);
+        $employee->update(['valid_until' => now()->subDay()]);
+        $this->put(route('borrows.update', $borrow), [
+            'employee_id' => $employee->id,
+            'keys' => [$existingKey->id, $newKey->id],
+        ])->assertSessionHasErrors('employee_id');
+
+        $employee->update(['valid_until' => now()->addDay()]);
+        $this->put(route('borrows.update', $borrow), [
+            'employee_id' => $employee->id,
+            'keys' => [$existingKey->id, $newKey->id],
+        ])->assertSessionHasNoErrors();
+
+        $this->assertEqualsCanonicalizing([$existingKey->id, $newKey->id], $borrow->fresh()->keys->pluck('id')->all());
+    }
+
+    public function test_changing_borrower_validates_all_keys_and_preserves_return_history(): void
+    {
+        $user = $this->admin();
+        $previousEmployee = Employee::factory()->create(['type' => Employee::EMPLOYEE]);
+        $newEmployee = Employee::factory()->create([
+            'type' => Employee::EXTERNAL,
+            'valid_until' => now()->addDay(),
+        ]);
+        [$returnedKey, $pendingKey] = Key::factory()->count(2)->create()->all();
+        $borrow = $this->openBorrow($user, $previousEmployee, [$returnedKey->id, $pendingKey->id]);
+        $receipt = Received::create([
+            'borrow_id' => $borrow->id,
+            'user_id' => $user->id,
+            'receiver' => 'Recepção',
+        ]);
+        $receipt->keys()->attach($returnedKey->id);
+        $newEmployee->borrowable_keys()->attach($pendingKey->id);
+
+        $this->actingAs($user)->put(route('borrows.update', $borrow), [
+            'employee_id' => $newEmployee->id,
+            'keys' => [$returnedKey->id, $pendingKey->id],
+        ])->assertSessionHasErrors('keys');
+
+        $newEmployee->borrowable_keys()->attach($returnedKey->id);
+        $this->put(route('borrows.update', $borrow), [
+            'employee_id' => $newEmployee->id,
+            'keys' => [$returnedKey->id, $pendingKey->id],
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame($newEmployee->id, $borrow->fresh()->employee_id);
+        $this->assertDatabaseHas('key_received', ['received_id' => $receipt->id, 'key_id' => $returnedKey->id]);
+        $this->assertDatabaseHas('borrow_key', ['borrow_id' => $borrow->id, 'key_id' => $returnedKey->id]);
+        $this->put(route('borrows.update', $borrow), [
+            'employee_id' => $newEmployee->id,
+            'keys' => [$pendingKey->id],
+        ])->assertSessionHasErrors('keys');
+    }
+
+    public function test_return_remains_available_after_borrower_eligibility_is_removed(): void
+    {
+        $user = $this->admin();
+        $employee = Employee::factory()->create([
+            'type' => Employee::STUDENT,
+            'valid_until' => now()->addDay(),
+        ]);
+        $key = Key::factory()->create();
+        $employee->borrowable_keys()->attach($key->id);
+        $borrow = $this->openBorrow($user, $employee, [$key->id]);
+        $employee->borrowable_keys()->detach($key->id);
+        $employee->update(['valid_until' => now()->subDay()]);
+
+        $this->actingAs($user)->post(route('borrows.receive', $borrow), [
+            'returned_by' => 'Recepção',
+            'keys' => [$key->id],
+        ])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('key_received', ['key_id' => $key->id]);
+        $this->assertNotNull($borrow->fresh()->devolution);
+    }
+
     public function test_preflight_and_transaction_validation_use_constant_queries_for_one_or_five_keys(): void
     {
         $user = $this->admin();

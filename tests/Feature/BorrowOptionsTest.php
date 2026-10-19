@@ -78,7 +78,10 @@ class BorrowOptionsTest extends TestCase
         $borrow = $this->borrow($user);
 
         foreach (['employees', 'keys'] as $resource) {
-            $this->actingAs($user)->getJson(route("borrows.options.$resource.edit", $borrow))->assertOk();
+            $editRoute = $resource === 'keys'
+                ? ['borrow' => $borrow->id, 'employee_id' => $borrow->employee_id]
+                : ['borrow' => $borrow->id];
+            $this->actingAs($user)->getJson(route("borrows.options.$resource.edit", $editRoute))->assertOk();
             $url = route("borrows.options.$resource.create", $resource === 'keys' ? ['employee_id' => $this->employee()->id] : []);
             $this->getJson($url)->assertForbidden();
             $this->getJson(route("borrows.options.$resource.edit", ['borrow' => Borrow::max('id') + 1]))->assertNotFound();
@@ -150,7 +153,7 @@ class BorrowOptionsTest extends TestCase
             $this->assertSame(['id', 'number', 'room_id', 'room'], array_keys($row));
             $this->assertSame(['id', 'description'], array_keys($row['room']));
         }
-        $this->getJson(route('borrows.options.keys.edit', ['borrow' => $borrow->id, 'term' => 'OptionsRoom']))
+        $this->getJson(route('borrows.options.keys.edit', ['borrow' => $borrow->id, 'employee_id' => $borrow->employee_id, 'term' => 'OptionsRoom']))
             ->assertOk()->assertJsonPath('total', 23);
         $this->getJson(route('borrows.options.keys.create', ['term' => "OptionsRoom ' OR 1=1 --", 'employee_id' => $this->employee()->id]))
             ->assertOk()->assertJsonCount(0, 'data');
@@ -231,6 +234,37 @@ class BorrowOptionsTest extends TestCase
                 ->getJson(route('borrows.options.keys.create', ['employee_id' => $employee->id, 'term' => 'CollaboratorRoom']))
                 ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $keys[1]->id);
         }
+    }
+
+    public function test_edit_key_options_keep_existing_keys_and_filter_new_keys_for_selected_borrower(): void
+    {
+        $user = $this->userWithRule('borrows.update');
+        $originalEmployee = Employee::factory()->create(['type' => Employee::EMPLOYEE]);
+        $targetEmployee = Employee::factory()->create([
+            'type' => Employee::STUDENT,
+            'valid_until' => now()->addDay(),
+        ]);
+        $room = Room::factory()->create(['description' => 'EditAuthorizationRoom']);
+        [$existingKey, $authorizedKey, $unauthorizedKey] = Key::factory()->count(3)->create(['room_id' => $room->id])->all();
+        $borrow = Borrow::factory()->create([
+            'user_id' => $user->id,
+            'employee_id' => $originalEmployee->id,
+            'devolution' => null,
+        ]);
+        $borrow->keys()->attach($existingKey->id);
+        $targetEmployee->borrowable_keys()->attach($authorizedKey->id);
+        $url = route('borrows.options.keys.edit', [
+            'borrow' => $borrow->id,
+            'employee_id' => $targetEmployee->id,
+            'term' => 'EditAuthorizationRoom',
+        ]);
+
+        $response = $this->actingAs($user)->getJson($url)->assertOk()->assertJsonPath('total', 2);
+        $this->assertEqualsCanonicalizing([$existingKey->id, $authorizedKey->id], collect($response->json('data'))->pluck('id')->all());
+
+        $targetEmployee->update(['valid_until' => now()->subDay()]);
+        $response = $this->getJson($url)->assertOk()->assertJsonPath('total', 1);
+        $this->assertSame([$existingKey->id], collect($response->json('data'))->pluck('id')->all());
     }
 
     public function test_store_rejects_a_key_after_its_authorization_is_removed(): void

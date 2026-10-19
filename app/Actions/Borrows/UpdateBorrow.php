@@ -30,7 +30,12 @@ class UpdateBorrow
             if ($current->getRawOriginal('devolution') !== null && (array_diff($newIds, $oldIds) || array_diff($oldIds, $newIds))) {
                 throw ValidationException::withMessages(['keys' => 'Não é possível alterar as chaves de um empréstimo encerrado.']);
             }
-            $this->eligibility->handle($employee, $newIds, lock: true);
+            $keysToValidate = $oldEmployeeId === (int) $employee->id
+                ? array_values(array_diff($newIds, $oldIds))
+                : $newIds;
+            if ($keysToValidate !== []) {
+                $this->eligibility->handle($employee, $keysToValidate, lock: true);
+            }
             $this->state->ensureAvailable(array_values(array_diff($newIds, $receivedIds)), $current->id);
             $current->update(Arr::only($data, ['employee_id', 'observation']));
             $current->keys()->sync($newIds);

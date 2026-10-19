@@ -23,7 +23,7 @@ export default function FormEdit({ data, employees, keys, keysLastPage, employee
                 <InputError message={errors.observation} />
             </div>
             <p className="mb-4 text-sm text-neutral-600">O encerramento é atualizado ao registrar ou excluir uma devolução.</p>
-            <Search data={keys} lastPage={keysLastPage} endpoint={keySearch} onChange={onChangeKeys} values={data.keys} error={errors.keys} />
+            <Search data={keys} lastPage={keysLastPage} endpoint={keySearch} employeeId={data.employee_id} onChange={onChangeKeys} values={data.keys} error={errors.keys} />
             <div className="flex items-center justify-center gap-4 mt-6">
                 <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
