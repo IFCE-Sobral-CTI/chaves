@@ -119,7 +119,7 @@ function Show({ borrow, received, can }) {
                         <span>Editar</span>
                     </Button>}
                     {can.delete && <DeleteModal url={route('borrows.destroy', borrow.id)} />}
-                    {(can.receive && (!borrow.devolution)) && <Receive keys={borrow.keys} borrow={borrow} received={received} />}
+                    {can.receive && !borrow.devolution && borrow.keys.some(key => !received.includes(key.id)) && <Receive keys={borrow.keys} borrow={borrow} received={received} />}
                 </Panel>
             </AuthenticatedLayout>
         </>

@@ -10,6 +10,7 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
     const [loadingMore, setLoadingMore] = useState(false);
     const [selected, setSelected] = useState(() => data.find(item => String(item.id) === String(value)) ?? {id: null, registry: null, name: null});
     const ref = useRef(null);
+    const searchInputRef = useRef(null);
     const listRef = useRef(null);
     const loadMoreRef = useRef(null);
     const loadingMoreRef = useRef(false);
@@ -18,6 +19,10 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
     useEffect(() => {
         setList(data);
     }, [data]);
+
+    useEffect(() => {
+        if (toggle) searchInputRef.current?.focus();
+    }, [toggle]);
 
     useEffect(() => {
         if (!toggle || !endpoint) return;
@@ -131,7 +136,7 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
             <InputError message={error} />
             <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} ref={ref}>
                 <div className="">
-                        <input id={inputId} type="text" value={term} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
+                        <input ref={searchInputRef} id={inputId} type="text" value={term} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
                 </div>
                 <div ref={listRef} className="max-h-32 p-1 shadow-md rounded-b-lg border-b border-l border-r border-neutral-400 bg-white overflow-auto scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-ful">
                     <ul>
