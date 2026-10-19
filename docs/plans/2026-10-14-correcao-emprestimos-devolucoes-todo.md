@@ -69,16 +69,16 @@ As tarefas são independentes de implantação. Código validado localmente não
 
 ## Etapa 6 — Dados, schema e implantação
 
-- [PENDENTE] E6.1 Reconciliar conflitos com confirmação física da recepção, sem escolha automática do registro correto.
+- [BLOQUEADO] E6.1 Reconciliar conflitos com confirmação física da recepção, sem escolha automática do registro correto. O diagnóstico local encontrou 14 empréstimos sem vínculos e quatro divergências de encerramento; não há acesso aos registros nem confirmação física do ambiente operacional.
 - [EM_ANDAMENTO] E6.2 Reparo explícito de pivots duplicados implementado com simulação, transação, motivo, administrador e reexecução segura (entrega 18). Reparos que mudam devoluções, encerramento ou ocupação física continuam pendentes de reconciliação e definição explícita.
-- [PENDENTE] E6.3 Unicidade aprovada pelo domínio em 15/10/2026 para `(borrow_id, key_id)` e `(received_id, key_id)`. Implementar após limpeza dos dados e testar migrations com volume representativo; não eliminar duplicatas automaticamente.
+- [BLOQUEADO] E6.3 Unicidade aprovada pelo domínio em 15/10/2026 para `(borrow_id, key_id)` e `(received_id, key_id)`. Implementar após reconciliação/limpeza e testar migrations com volume representativo; não eliminar duplicatas automaticamente.
 - [CONCLUIDO] E6.4 Remoção de `borrow_key.received` autorizada em 15/10/2026 após verificação de uso. Nenhum consumidor encontrado no código/integrações versionadas nem em triggers, views ou rotinas do banco local. Migration de remoção validada e aplicada localmente; campo retirado do `$fillable`. Evidências na entrega 17. Integrações externas não acessíveis não puderam ser inspecionadas; implantação em produção não realizada.
-- [EM_ANDAMENTO] E6.5 Entregar incrementos revisáveis e executar formatação e testes afetados em cada entrega.
+- [CONCLUIDO] E6.5 Entregar incrementos revisáveis e executar formatação e testes afetados em cada entrega; validações locais registradas nas entregas anteriores e nesta entrega.
 - [EM_VALIDACAO] E6.6 Executar suíte completa e build quando necessário antes de publicar o conjunto. Build passou; suíte executada com 38 falhas fora dos testes de empréstimos, detalhadas na entrega 2.
-- [PENDENTE] E6.7 Confirmar backup/restauração e estratégia para evitar escritores de versões incompatíveis.
-- [PENDENTE] E6.8 Implantar em janela apropriada e observar erros, conflitos, deadlocks e latência.
+- [BLOQUEADO] E6.7 Confirmar backup/restauração e estratégia para evitar escritores de versões incompatíveis; depende de acesso à infraestrutura e ao procedimento operacional.
+- [BLOQUEADO] E6.8 Implantar em janela apropriada e observar erros, conflitos, deadlocks e latência; depende de acesso e janela de implantação no ambiente operacional.
 - [EM_ANDAMENTO] E6.9 Preparar reversão segura do código e reconciliação específica dos reparos de dados. Para a entrega 5, preservar FKs restritivas ao reverter código; executar o `down` reabre o risco das cascatas e de perda do responsável final. Estratégia operacional completa ainda pendente.
-- [PENDENTE] E6.10 Verificar metas de desempenho e observar período representativo de atendimento.
+- [BLOQUEADO] E6.10 Verificar metas de desempenho e observar período representativo de atendimento após implantação.
 
 ## Registro das entregas
 
@@ -430,3 +430,11 @@ Validação realizada em 15/10/2026:
 - O banco local contém 15 empréstimos, 501 chaves e 1.001 mutuários. Esse volume não representa histórico operacional suficiente para comparar planos, p50/p95, quantidade de consultas e payload antes/depois.
 - Credenciais E2E não estão configuradas no container; navegação real e seleção através das páginas não foram verificadas no navegador. Os testes HTTP e de componentes continuam cobrindo autorização, paginação e preservação da seleção.
 - E5.3 e E5.7 permanecem em validação pela análise de consultas com volume representativo; E5.4 pela verificação no navegador; E5.8 ainda não executado. A etapa 5 não pode ser encerrada com a evidência local disponível. Sem mudanças de aplicação ou dados nesta entrega.
+
+### Entrega 24 — Verificações locais da etapa 6
+
+- `migrate:status` confirmou todas as 30 migrations aplicadas no MySQL local. Isso não confirma o schema de produção.
+- `borrows:diagnose` repetido no banco local: zero duplicidades de pivots, zero devoluções duplicadas, zero recebimentos vazios, zero chaves devolvidas fora do empréstimo e zero ocupações duplas. Persistem 14 `empty_borrows` e quatro `closure_mismatches` (IDs 6, 9, 12 e 14). Nenhum reparo foi aplicado.
+- `RemoveDuplicateBorrowPivotTest.php`, `RemoveLegacyBorrowReceivedTest.php`, `BorrowHistoryDeletionTest.php` e `BorrowDiagnosisTest.php` passaram: 18 testes, 366 assertions; depreciações PHPUnit/runtime permanecem.
+- `npm run build` passou em 906 ms. Permanece o aviso existente sobre o carregador nativo da configuração Vite. A última suíte completa registrada teve 38 falhas fora dos testes de empréstimos e não está aprovada.
+- E6.5 concluído no processo local. E6.1, E6.3, E6.7, E6.8 e E6.10 dependem de confirmação física ou acesso operacional; E6.9 ainda precisa de estratégia operacional de reversão. E6.2 permanece limitada ao reparo explícito de pivots duplicados; divergências de encerramento e empréstimos vazios não foram alterados. A etapa 6 não pode ser concluída com segurança até essas dependências serem resolvidas.
