@@ -10,6 +10,10 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(initialLastPage);
     const [empty, setEmpty] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const listRef = useRef(null);
+    const loadMoreRef = useRef(null);
+    const loadingMoreRef = useRef(false);
     const moreController = useRef(null);
 
     useEffect(() => {
@@ -44,6 +48,10 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
     }, [term, endpoint, employeeId]);
 
     const loadMore = async () => {
+        if (loadingMoreRef.current || page >= lastPage) return;
+
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
         const params = new URLSearchParams({ term, page: String(page + 1), employee_id: employeeId });
         moreController.current?.abort();
         const controller = new AbortController();
@@ -59,8 +67,24 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
             setLastPage(result.last_page);
         } catch (error) {
             if (error.name !== 'AbortError') setResults([]);
+        } finally {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
         }
     };
+
+    useEffect(() => {
+        const root = listRef.current;
+        const target = loadMoreRef.current;
+        if (!root || !target || page >= lastPage || loadingMore) return;
+
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) loadMore();
+        }, { root });
+
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, [page, lastPage, loadingMore, term, endpoint, employeeId]);
 
     const list = results.filter(item => !values.some(id => String(id) === String(item.id)));
 
@@ -93,7 +117,7 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
                         handleChange={onHandleChange}
                         placeholder={'Pesquise sua chave'}
                     />
-                    <div className="p-2 overflow-auto border rounded-lg max-h-96 border-neutral-400 scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
+                    <div ref={listRef} className="p-2 overflow-auto border rounded-lg max-h-96 border-neutral-400 scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full">
                         <table className="table w-full table-auto">
                             <thead>
                                 <tr className="">
@@ -107,7 +131,7 @@ export default function Search({ data, lastPage: initialLastPage = 1, endpoint, 
                             </tbody>
                         </table>
                         {empty && <p role="status" className="p-2 text-sm text-neutral-600">Nenhuma chave autorizada e disponível para este mutuário. Para discentes e externos, confira a validade e as autorizações.</p>}
-                        {page < lastPage && <button type="button" className="w-full p-2 text-sm text-blue-700" onClick={loadMore}>Carregar mais chaves</button>}
+                        {page < lastPage && <div ref={loadMoreRef} className="p-2 text-center text-sm text-neutral-500">{loadingMore ? 'Carregando chaves...' : null}</div>}
                     </div>
                 </div>
                 <div className="flex-1 border rounded-lg border-neutral-400">

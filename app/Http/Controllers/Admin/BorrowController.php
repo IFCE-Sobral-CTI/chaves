@@ -46,7 +46,12 @@ class BorrowController extends Controller
 
     public function createEmployeeOptions(Request $request): LengthAwarePaginator
     {
-        $this->authorize('borrows.create', Borrow::class);
+        abort_unless(
+            $request->user()->can('borrows.create')
+            || $request->user()->can('rooms.create')
+            || $request->user()->can('rooms.update'),
+            403,
+        );
 
         return $this->employeeOptions($request);
     }
@@ -63,15 +68,17 @@ class BorrowController extends Controller
         $filters = $request->validate([
             'term' => ['nullable', 'string', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
+            'employee_type' => ['nullable', 'integer', 'in:'.Employee::EMPLOYEE],
         ]);
         $term = $filters['term'] ?? '';
 
         return Employee::query()->select('id', 'registry', 'name', 'usual_name')
-            ->where(fn (Builder $query): Builder => $query
-                ->whereIn('type', [Employee::EMPLOYEE, Employee::COLLABORATOR])
-                ->orWhere(fn (Builder $restricted): Builder => $restricted
-                    ->whereIn('type', [Employee::STUDENT, Employee::EXTERNAL])
-                    ->where('valid_until', '>=', now()->toDateString())))
+            ->when(isset($filters['employee_type']), fn ($query) => $query->where('type', $filters['employee_type']), fn ($query) => $query
+                ->where(fn (Builder $query): Builder => $query
+                    ->whereIn('type', [Employee::EMPLOYEE, Employee::COLLABORATOR])
+                    ->orWhere(fn (Builder $restricted): Builder => $restricted
+                        ->whereIn('type', [Employee::STUDENT, Employee::EXTERNAL])
+                        ->where('valid_until', '>=', now()->toDateString()))))
             ->when($term !== '', fn ($query) => $query->where(fn ($query) => $query
                 ->where('name', 'like', "%{$term}%")
                 ->orWhere('usual_name', 'like', "%{$term}%")

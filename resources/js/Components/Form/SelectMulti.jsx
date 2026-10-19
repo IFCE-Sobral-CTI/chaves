@@ -50,7 +50,8 @@ function SelectMulti({ data, onChange, value, error, label, name, descriptionId 
         setSelected([...selected, value.pop()]);
     }
 
-    const handleUnselect = (value) => {
+    const handleUnselect = (event, value) => {
+        event.stopPropagation();
         setSelected(selected => selected.filter(item => item.id !== value));
         toggleHandle();
     }
@@ -80,14 +81,14 @@ function SelectMulti({ data, onChange, value, error, label, name, descriptionId 
     return (
         <div className="relative mb-4 w-full" ref={ref}>
             <span className="font-light">{label}</span>
-            <div className="flex min-h-11 items-center gap-2 rounded-lg border border-neutral-400 p-2">
+            <div className="flex min-h-11 items-center gap-2 rounded-lg border border-neutral-400 p-2" onClick={() => setToggle(true)}>
                 <div className="flex flex-1 gap-2">
                     {selected.length > 0
                     ?selected.map((item) => {
                         return (
                             <div className="inline-flex items-center justify-between gap-2 text-sm font-light rounded-md text-neutral-700 bg-neutral-200" key={item.id}>
                                 <span className="pl-2">{item.name}</span>
-                                <button type="button" onClick={() => handleUnselect(item.id)} aria-label={`Remover ${item.name}`} className="rounded-r-md border-l border-neutral-400 px-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
+                                <button type="button" onClick={(event) => handleUnselect(event, item.id)} aria-label={`Remover ${item.name}`} className="rounded-r-md border-l border-neutral-400 px-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-4 h-4" viewBox="0 0 16 16">
                                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
                                     </svg>
@@ -97,7 +98,7 @@ function SelectMulti({ data, onChange, value, error, label, name, descriptionId 
                     })
                     :<span className="text-neutral-500">Nenhuma chave autorizada selecionada</span>}
                 </div>
-                <button type="button" onClick={toggleHandle} aria-expanded={toggle} aria-controls={`${inputId}-options`} aria-describedby={describedBy} className="flex shrink-0 items-center justify-center rounded p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600" aria-label={toggle ? 'Fechar opções de chaves autorizadas' : `Adicionar ${label.toLowerCase()}`}>
+                <button type="button" onClick={(event) => { event.stopPropagation(); toggleHandle(); }} aria-expanded={toggle} aria-controls={`${inputId}-options`} aria-describedby={describedBy} className="flex shrink-0 items-center justify-center rounded p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600" aria-label={toggle ? 'Fechar opções de chaves autorizadas' : `Adicionar ${label.toLowerCase()}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
                         <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
                     </svg>

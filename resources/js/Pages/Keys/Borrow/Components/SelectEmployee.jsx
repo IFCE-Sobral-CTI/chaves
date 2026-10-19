@@ -7,8 +7,12 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
     const [list, setList] = useState(data);
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [selected, setSelected] = useState(() => data.find(item => String(item.id) === String(value)) ?? {id: null, registry: null, name: null});
     const ref = useRef(null);
+    const listRef = useRef(null);
+    const loadMoreRef = useRef(null);
+    const loadingMoreRef = useRef(false);
     const moreController = useRef(null);
 
     useEffect(() => {
@@ -52,6 +56,10 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
     }
 
     const loadMore = async () => {
+        if (loadingMoreRef.current || page >= lastPage) return;
+
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
         const params = new URLSearchParams({ term, page: String(page + 1) });
         moreController.current?.abort();
         moreController.current = new AbortController();
@@ -64,8 +72,24 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
             setLastPage(result.last_page);
         } catch (error) {
             if (error.name !== 'AbortError') setList([]);
+        } finally {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
         }
     };
+
+    useEffect(() => {
+        const root = listRef.current;
+        const target = loadMoreRef.current;
+        if (!toggle || !root || !target || page >= lastPage || loadingMore) return;
+
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) loadMore();
+        }, { root });
+
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, [toggle, page, lastPage, loadingMore, term, endpoint]);
 
     const items = list.map((item) => {
         if (selected?.id !== item.id)
@@ -109,11 +133,11 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
                 <div className="">
                         <input id={inputId} type="text" value={term} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
                 </div>
-                <div className="max-h-32 p-1 shadow-md rounded-b-lg border-b border-l border-r border-neutral-400 bg-white overflow-auto scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-ful">
+                <div ref={listRef} className="max-h-32 p-1 shadow-md rounded-b-lg border-b border-l border-r border-neutral-400 bg-white overflow-auto scrollbar-thumb-gray-400 scrollbar-track-gray-100 scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-ful">
                     <ul>
                         {items}
+                        {page < lastPage && <li ref={loadMoreRef} className="p-2 text-center text-sm text-neutral-500">{loadingMore ? 'Carregando mutuários...' : null}</li>}
                     </ul>
-                    {page < lastPage && <button type="button" className="w-full p-2 text-sm text-blue-700" onClick={loadMore}>Carregar mais mutuários</button>}
                 </div>
             </div>
         </div>

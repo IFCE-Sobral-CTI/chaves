@@ -10,7 +10,7 @@ import Select from "@/Components/Form/Select";
 import Search from "./Components/Search";
 import SelectBlock from "./Components/SelectBlock";
 
-function Create({ blocks, employees }) {
+function Create({ blocks, employeeOptions }) {
     const { data, setData, post, processing, errors } = useForm({
         description: "",
         observation: "",
@@ -48,7 +48,7 @@ function Create({ blocks, employees }) {
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Digite a descrição da página" />
                             <InputError message={errors.observation} />
                         </div>
-                        <Search data={employees} onChange={onChangeEmployees} />
+                        <Search endpoint={employeeOptions} onChange={onChangeEmployees} />
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">

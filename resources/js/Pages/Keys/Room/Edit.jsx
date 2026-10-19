@@ -10,7 +10,7 @@ import Textarea from "@/Components/Form/Textarea";
 import Search from "./Components/Search";
 import SelectBlock from "./Components/SelectBlock";
 
-function Edit({ room, blocks, employees }) {
+function Edit({ room, blocks, employeeOptions }) {
     const { data, setData, put, processing, errors } = useForm({
         description: room.description,
         observation: room.observation,
@@ -48,7 +48,7 @@ function Edit({ room, blocks, employees }) {
                             <Textarea value={data.observation} name={'observation'} handleChange={onHandleChange} required={false} placeholder="Digite a descrição da página" />
                             <InputError message={errors.observation} />
                         </div>
-                        <Search data={employees} onChange={onChangeEmployees} values={data.employees} />
+                        <Search endpoint={employeeOptions} onChange={onChangeEmployees} values={data.employees} selectedEmployees={room.employees} />
                         <div className="flex items-center justify-center gap-4 mt-6">
                             <Button type={'submit'} processing={processing} color={'green'} className={"gap-2"}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="w-5 h-5" viewBox="0 0 16 16">
