@@ -71,7 +71,7 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
         if (selected?.id !== item.id)
             return (
                 <li key={item.id}>
-                    <button type="button" className="w-full px-2 py-1 text-left rounded-lg transition cursor-pointer font-light hover:bg-neutral-100" onClick={handleSelect} value={item.id}>{item.registry} - {item.name}</button>
+                    <button type="button" className="w-full px-2 py-1 text-left rounded-lg transition cursor-pointer font-light hover:bg-neutral-100" onClick={handleSelect} value={item.id}>{item.registry} - {item.name}{item.usual_name ? ` (${item.usual_name})` : ''}</button>
                 </li>
             );
     });
@@ -95,7 +95,7 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
             <div className="flex border border-neutral-400 rounded-lg p-2" onClick={toggleHandle}>
                 <div className="flex-1">
                     {selected?.id != null
-                    ?<span className="text-neutral-700 font-normal">{selected.registry} - {selected.name}</span>
+                    ?<span className="text-neutral-700 font-normal">{selected.registry} - {selected.name}{selected.usual_name ? ` (${selected.usual_name})` : ''}</span>
                     :<span className="text-neutral-500">Nenhum mutuário selecionado</span>}
                 </div>
                 <div className="flex justify-center items-center">

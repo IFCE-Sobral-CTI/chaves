@@ -95,6 +95,10 @@ class BorrowOptionsTest extends TestCase
         $employees = Employee::factory()->count(21)->create([
             'name' => 'OptionsEmployee Available', 'type' => Employee::EMPLOYEE, 'valid_until' => null,
         ]);
+        $employees[0]->update([
+            'usual_name' => 'ApelidoOptionsEmployee',
+            'observation' => 'Observação privada OptionsEmployee',
+        ]);
         foreach ([Employee::EMPLOYEE, Employee::COLLABORATOR] as $type) {
             $employees->push(Employee::factory()->create([
                 'name' => 'OptionsEmployee Legacy', 'type' => $type, 'valid_until' => now()->subDay(),
@@ -123,10 +127,13 @@ class BorrowOptionsTest extends TestCase
         $this->assertEqualsCanonicalizing($employees->pluck('id')->all(), $rows->pluck('id')->all());
         $this->assertSame(26, $rows->pluck('id')->unique()->count());
         foreach ($rows as $row) {
-            $this->assertSame(['id', 'registry', 'name'], array_keys($row));
+            $this->assertSame(['id', 'registry', 'name', 'usual_name'], array_keys($row));
         }
         $this->getJson(route('borrows.options.employees.create', ['term' => $employees->first()->registry]))
             ->assertOk()->assertJsonFragment(['id' => $employees->first()->id]);
+        $this->getJson(route('borrows.options.employees.create', ['term' => 'ApelidoOptionsEmployee']))
+            ->assertOk()->assertJsonFragment(['id' => $employees->first()->id, 'usual_name' => 'ApelidoOptionsEmployee'])
+            ->assertJsonMissingPath('data.0.observation');
         $this->getJson(route('borrows.options.employees.create', ['term' => "OptionsEmployee ' OR 1=1 --"]))
             ->assertOk()->assertJsonCount(0, 'data');
     }
@@ -157,6 +164,28 @@ class BorrowOptionsTest extends TestCase
             ->assertOk()->assertJsonPath('total', 23);
         $this->getJson(route('borrows.options.keys.create', ['term' => "OptionsRoom ' OR 1=1 --", 'employee_id' => $this->employee()->id]))
             ->assertOk()->assertJsonCount(0, 'data');
+    }
+
+    public function test_edit_form_includes_usual_name_but_not_observation_in_selected_borrower(): void
+    {
+        $user = $this->userWithRule('borrows.update');
+        $employee = Employee::factory()->create([
+            'name' => 'Nome Completo',
+            'usual_name' => 'Nome Usual',
+            'observation' => 'Informação privada',
+            'type' => Employee::EMPLOYEE,
+        ]);
+        $borrow = Borrow::factory()->create([
+            'user_id' => $user->id,
+            'employee_id' => $employee->id,
+            'devolution' => null,
+        ]);
+
+        $this->actingAs($user)->get(route('borrows.edit', $borrow))
+            ->assertOk()->assertInertia(fn ($page) => $page
+            ->where('employees.0.name', 'Nome Completo')
+            ->where('employees.0.usual_name', 'Nome Usual')
+            ->missing('employees.0.observation'));
     }
 
     public function test_options_return_422_for_invalid_filters(): void

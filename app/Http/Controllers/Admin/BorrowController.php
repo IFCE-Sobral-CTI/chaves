@@ -66,13 +66,16 @@ class BorrowController extends Controller
         ]);
         $term = $filters['term'] ?? '';
 
-        return Employee::query()->select('id', 'registry', 'name')
+        return Employee::query()->select('id', 'registry', 'name', 'usual_name')
             ->where(fn (Builder $query): Builder => $query
                 ->whereIn('type', [Employee::EMPLOYEE, Employee::COLLABORATOR])
                 ->orWhere(fn (Builder $restricted): Builder => $restricted
                     ->whereIn('type', [Employee::STUDENT, Employee::EXTERNAL])
                     ->where('valid_until', '>=', now()->toDateString())))
-            ->when($term !== '', fn ($query) => $query->where(fn ($query) => $query->where('name', 'like', "%{$term}%")->orWhere('registry', 'like', "%{$term}%")))
+            ->when($term !== '', fn ($query) => $query->where(fn ($query) => $query
+                ->where('name', 'like', "%{$term}%")
+                ->orWhere('usual_name', 'like', "%{$term}%")
+                ->orWhere('registry', 'like', "%{$term}%")))
             ->orderBy('name')->orderBy('id')->paginate(20);
     }
 
@@ -212,7 +215,7 @@ class BorrowController extends Controller
 
         return Inertia::render('Keys/Borrow/Edit', [
             'borrow' => $borrow,
-            'employees' => Employee::select('id', 'registry', 'name')->whereKey($borrow->employee_id)->get(),
+            'employees' => Employee::select('id', 'registry', 'name', 'usual_name')->whereKey($borrow->employee_id)->get(),
             'borrowKeys' => $borrowKeys,
             'keys' => collect($availableKeys->items())->merge($borrow->keys)->unique('id')->values(),
             'keysLastPage' => $availableKeys->lastPage(),

@@ -78,12 +78,13 @@ class EmployeeProfileTest extends TestCase
         $user = $this->administrator();
         $employee = Employee::factory()->create([
             'name' => 'Pessoa Exemplo',
+            'registry' => '987654320',
             'usual_name' => 'Apelido Pesquisa',
             'occupation' => 'Ocupação Pesquisa',
             'observation' => 'Nota Pesquisa',
         ]);
 
-        foreach (['Apelido Pesquisa', 'Ocupação Pesquisa', 'Nota Pesquisa'] as $term) {
+        foreach (['Pessoa Exemplo', '987654320', 'Apelido Pesquisa', 'Ocupação Pesquisa', 'Nota Pesquisa'] as $term) {
             $this->actingAs($user)->get(route('employees.index', ['term' => $term]))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page
@@ -92,6 +93,21 @@ class EmployeeProfileTest extends TestCase
                     ->where('employees.data.0.occupation', 'Ocupação Pesquisa')
                     ->where('employees.data.0.observation', 'Nota Pesquisa'));
         }
+    }
+
+    public function test_employee_listing_keeps_access_control_and_pagination(): void
+    {
+        $user = $this->administrator();
+        Employee::factory()->count(config('app.pagination') + 1)->create(['name' => 'PaginatedEmployee']);
+
+        $this->actingAs($user)->get(route('employees.index', ['term' => 'PaginatedEmployee']))->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('employees.data', config('app.pagination'))
+                ->where('employees.total', config('app.pagination') + 1));
+
+        $permission = Permission::factory()->create();
+        $unauthorizedUser = User::factory()->create(['permission_id' => $permission->id]);
+        $this->actingAs($unauthorizedUser)->get(route('employees.index'))->assertForbidden();
     }
 
     public function test_phone_with_no_digits_is_rejected_instead_of_silently_cleared(): void

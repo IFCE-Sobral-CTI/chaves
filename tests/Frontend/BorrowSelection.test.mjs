@@ -11,6 +11,8 @@ let Search;
 let SearchItem;
 const createForm = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/FormCreate.jsx', import.meta.url), 'utf8');
 const editForm = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/FormEdit.jsx', import.meta.url), 'utf8');
+const employeeSelector = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/SelectEmployee.jsx', import.meta.url), 'utf8');
+const borrowController = await readFile(new URL('../../app/Http/Controllers/Admin/BorrowController.php', import.meta.url), 'utf8');
 const searchSource = await readFile(new URL('../../resources/js/Pages/Keys/Borrow/Components/Search.jsx', import.meta.url), 'utf8');
 const keys = [
     { id: 11, number: 101, room: { description: 'Sala Norte' } },
@@ -94,4 +96,10 @@ test('search discards responses aborted after a borrower change', () => {
 test('search explains when no key is authorized and available', () => {
     assert.match(searchSource, /role="status"/);
     assert.match(searchSource, /confira a validade e as autorizações/);
+});
+
+test('borrower selector displays the usual name alongside the full name', () => {
+    assert.match(borrowController, /orWhere\('usual_name'/);
+    assert.match(employeeSelector, /item\.usual_name \? ` \(\$\{item\.usual_name\}\)`/);
+    assert.match(employeeSelector, /selected\.usual_name \? ` \(\$\{selected\.usual_name\}\)`/);
 });
