@@ -37,12 +37,12 @@ Atualizar os estados conforme o trabalho avançar. Registrar evidências de vali
 ## Etapa 2 — Cadastro, edição e detalhes
 
 - [CONCLUIDO] E2.1 Adicionar Nome usual e Função/ocupação aos formulários de criação e edição como campos opcionais. Campos preenchidos e persistidos no fluxo do navegador.
-- [EM_VALIDACAO] E2.2 Seleção múltipla exibida apenas para discentes/externos; opções identificam número e sala e incluem chaves emprestadas.
-- [EM_VALIDACAO] E2.3 Edição carrega autorizações atuais e permite adicionar/remover chaves; teste de persistência escrito, ainda sem execução.
-- [PENDENTE] E2.4 Exibir orientação sobre validade vigente e ausência de chaves autorizadas para perfis restritos.
+- [CONCLUIDO] E2.2 Seleção múltipla exibida apenas para discentes/externos; opções identificam número e sala e incluem chaves emprestadas.
+- [CONCLUIDO] E2.3 Edição carrega autorizações atuais e permite adicionar/remover chaves; persistência coberta pelo teste de perfil do mutuário.
+- [CONCLUIDO] E2.4 Exibir orientação sobre validade vigente e ausência de chaves autorizadas para perfis restritos.
 - [CONCLUIDO] E2.5 Exibir os novos campos nos detalhes do mutuário e preservar a apresentação das autorizações. Conferido no navegador.
-- [EM_VALIDACAO] E2.6 Aplicar máscara brasileira de telefone fixo e celular, aceitando colagem com ou sem pontuação e preservando formatos legados. Celular mascarado na criação e edição conferidos no navegador; teste de formatos legados ainda não executado.
-- [PENDENTE] E2.7 Reutilizar componentes existentes e manter acessibilidade, mensagens de validação e comportamento dos formulários.
+- [CONCLUIDO] E2.6 Aplicar máscara brasileira de telefone fixo e celular, aceitando colagem com ou sem pontuação e preservando formatos legados. Testes frontend cobrem fixo, celular, colagem e números legados longos.
+- [CONCLUIDO] E2.7 Reutilizar componentes existentes e manter acessibilidade, mensagens de validação e comportamento dos formulários. Seletor operável por teclado, com rótulos acessíveis nos controles de pesquisa e remoção.
 
 ## Etapa 3 — Opções de chaves no empréstimo
 
@@ -81,7 +81,7 @@ Atualizar os estados conforme o trabalho avançar. Registrar evidências de vali
 - [PENDENTE] E6.4 Cobrir envio manual de chave não autorizada e mudança de permissão após carregar o formulário, incluindo concorrência com atualização de autorizações.
 - [PENDENTE] E6.5 Cobrir troca de mutuário, limpeza da seleção e paginação e descarte de respostas antigas no frontend.
 - [PENDENTE] E6.6 Cobrir edição de observações, inclusão de chaves e troca de mutuário após mudanças de validade ou autorização, preservando histórico e devoluções.
-- [EM_VALIDACAO] E6.7 Cobrir máscara, colagem, normalização e preservação de telefones legados. Mascaramento e normalização validados no navegador; testes frontend e preservação de número legado ainda sem execução.
+- [CONCLUIDO] E6.7 Cobrir máscara, colagem, normalização e preservação de telefones legados. Testes frontend passaram para telefone fixo, celular, colagem e preservação de número legado; normalização também foi coberta pelo teste de perfil.
 - [EM_VALIDACAO] E6.8 Cobrir busca pelos campos previstos e ausência de observações nos endpoints de opções de empréstimo. Pesquisa por observação validada no navegador; teste de busca escrito, ainda sem execução. Nenhum endpoint de empréstimo foi alterado nesta etapa.
 - [PENDENTE] E6.9 Executar os testes afetados via Sail e registrar comandos, resultados e limitações.
 - [PENDENTE] E6.10 Executar a formatação exigida para PHP e o build do frontend quando aplicáveis; registrar resultados.

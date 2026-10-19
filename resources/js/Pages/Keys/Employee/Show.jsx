@@ -78,7 +78,7 @@ function Show({ employee, can, keys }) {
                         <div className="text-sm font-light">Chaves autorizadas</div>
                         <div className="">
                             {employee.borrowable_keys.map((it, i) => {
-                                return <span className="px-1 mr-1 text-sm font-normal text-white rounded-md bg-sky-500" title={it.room.description} key={i}>{it.number}</span>
+                                return <span className="px-1 mr-1 text-sm font-normal text-white rounded-md bg-sky-500" key={i}>{it.number} - {it.room.description}</span>
                             })}
                         </div>
                     </div>

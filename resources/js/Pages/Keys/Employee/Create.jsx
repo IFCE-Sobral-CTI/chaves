@@ -73,6 +73,9 @@ function Create({ employeeType, keys }) {
                         </div>
                         {[3, 4].includes(Number(data.type)) && (
                             <div className="mt-4">
+                                <p className="mb-2 text-sm text-neutral-600" id="borrowable-keys-help">
+                                    Discentes e externos precisam de validade vigente e de autorização para cada chave antes de fazer empréstimos. Sem chaves autorizadas, não poderão retirar chaves.
+                                </p>
                                 <SelectMulti
                                     data={keys}
                                     value={data.borrowable_key_ids}
@@ -80,6 +83,7 @@ function Create({ employeeType, keys }) {
                                     error={errors.borrowable_key_ids ?? errors['borrowable_key_ids.0']}
                                     label="Chaves autorizadas"
                                     name="borrowable_key_ids"
+                                    descriptionId="borrowable-keys-help"
                                 />
                             </div>
                         )}
