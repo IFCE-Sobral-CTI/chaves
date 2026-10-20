@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\RuleController;
 use App\Http\Controllers\Admin\UserController;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 
@@ -66,7 +67,7 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('reports/employees', [ReportController::class, 'employees'])->name('reports.employees');
     Route::get('reports/staff', [ReportController::class, 'staff'])->name('reports.staff');
     Route::get('reports/turnaround', [ReportController::class, 'turnaround'])->name('reports.turnaround');
-    Route::redirect('reports/index', 'reports')->name('reports.index.legacy');
+    Route::get('reports/index', fn (): RedirectResponse => to_route('reports.index'))->name('reports.index.legacy');
 
     Route::resource('activities', ActivityController::class)->only(['index', 'show', 'destroy']);
 });

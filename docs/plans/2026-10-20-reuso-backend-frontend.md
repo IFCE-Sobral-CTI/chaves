@@ -1,7 +1,7 @@
 # Plano de execução: reuso de código no backend e frontend
 
 Data: 20/10/2026.
-Status: oito etapas implementadas e verificações automatizadas concluídas; validação em navegador pendente.
+Status: oito etapas implementadas; validação automatizada e em navegador concluída.
 Método: Ponytail full. Implementação distribuída entre três subagentes GPT-6-Luna, conforme alternativa autorizada pelo usuário, com integração, revisão e validação pelo agente principal.
 
 ## Objetivo e limites
@@ -13,7 +13,7 @@ Reduzir duplicação que já causa divergência ou exige corrigir vários arquiv
 - Manter as propriedades de coleção usadas pelas páginas (`blocks`, `employees`, `borrows` etc.). Padronizar metadados não exige renomeá-las para uma propriedade genérica.
 - Manter consultas e regras de negócio explícitas por domínio. Evitar controller CRUD genérico, repositório genérico, gerador de formulário ou sistema de tabelas configurável.
 - Tratar correções de comportamento identificadas como critérios explícitos, especialmente paginação da busca e seleção do grupo na edição de regra.
-- As evidências da análise inicial são estáticas; os resultados reais da implementação estão registrados ao final. Validação em navegador permanece pendente.
+- As evidências da análise inicial são estáticas; os resultados reais da implementação e da validação em navegador estão registrados ao final.
 
 ## Evidências e oportunidades
 
@@ -172,7 +172,7 @@ Durante a implementação, ler a skill `testing-best-practices` antes de alterar
 
 Executar E2E apenas nos fluxos atingidos pelas mudanças de busca, seleção ou envio, usando `tests/e2e/borrow-create.spec.js` quando pertinente. Conferir no navegador teclado, seleção inicial, feedback de erro e navegação nas páginas alteradas. Os comandos executados e seus resultados estão registrados abaixo.
 
-As caixas de implementação indicam código extraído e consumidores migrados. As verificações automatizadas estão concluídas; os critérios que exigem interação em navegador ainda precisam de confirmação e estão registrados separadamente.
+As caixas de implementação indicam código extraído e consumidores migrados. As verificações automatizadas e os cenários de interação em navegador foram concluídos, conforme evidências abaixo.
 
 ## Estado de execução
 
@@ -214,10 +214,26 @@ As caixas de implementação indicam código extraído e consumidores migrados. 
 
 Os 46 testes backend concluíram com código de saída zero e avisos de depreciação preexistentes: `PDO::MYSQL_ATTR_SSL_CA` em PHP 8.5 (`config/database.php:62`) e schema antigo do `phpunit.xml`. O build também informa um aviso preexistente sobre carregamento futuro da configuração Vite. Os testes frontend existentes podem informar conflito da porta WebSocket 24678, sem falha nas asserções. Essas configurações não foram alteradas neste trabalho.
 
-## Verificações pendentes e ambiente
+## Validação em navegador e ambiente
 
-- [ ] Confirmar visualmente os formulários e as seleções iniciais, navegação de retorno e paginação nas páginas alteradas.
-- [ ] Confirmar no navegador o teclado, Escape, clique externo e retorno de foco do seletor local.
-- [ ] Executar E2E autenticado dos fluxos afetados quando houver Chromium e credenciais disponíveis. A checagem do ambiente confirmou ausência de ambos; nenhum navegador ou dependência foi instalado.
+- [x] Conferir capturas dos formulários, seleções iniciais e validar navegação de retorno e paginação nas páginas alteradas.
+- [x] Confirmar no Chromium teclado, Escape, clique externo e retorno de foco do seletor local nos quatro consumidores.
+- [x] Instalar Chromium e bibliotecas de sistema no Sail; automatizar criação do administrador e autenticação de teste.
+- [x] Executar os cenários E2E das dez listagens, busca a partir da página 7, histórico, resposta antiga, formulários, badges, cinco relatórios/CSV e URL legada.
+
+O navegador encontrou dois defeitos corrigidos: o dashboard calculava atraso usando a data formatada, e a URL legada dos relatórios redirecionava para um caminho inexistente. O dashboard agora reutiliza `Borrow.situation`; a rota legada redireciona pela rota nomeada. Os testes backend correspondentes passaram: seis testes de HomeController (91 asserções) e um teste de redirecionamento (duas asserções).
+
+A inspeção das capturas também corrigiu o título da edição de regras (antes “Editar Usuário”) e as descrições ausentes nos breadcrumbs de regras e permissões. A suíte completa passou com 26 testes (incluindo autenticação), e os 31 testes frontend passaram novamente. Build de produção, Pint e `git diff --check` concluíram sem erros. Permanecem os avisos preexistentes de depreciação PHP/PHPUnit, configuração Vite e porta WebSocket dos testes frontend.
+
+Para reproduzir após recriar o container:
+
+```bash
+./vendor/bin/sail exec -u root laravel.test npx playwright install-deps chromium
+./vendor/bin/sail npx playwright install chromium
+./vendor/bin/sail npm run build
+./vendor/bin/sail npm run test:e2e -- --project=chromium
+```
+
+A suíte usa servidor próprio em `127.0.0.1:18082`, administrador de teste e cookies ignorados pelo Git. O setup recusa configuração em cache ou banco diferente de `testing` antes de executar `migrate:fresh`. Cada execução recria esse banco; não executar simultaneamente com testes PHP que também o utilizem. O relatório HTML fica em `playwright-report/index.html`, e capturas/traces em `test-results/`. A cobertura atual usa Chromium desktop; outros navegadores e dispositivos móveis não foram executados.
 
 O Sail foi iniciado para os testes. Outro projeto ocupa a porta 5173; o container da aplicação usa temporariamente `VITE_PORT=15173`, sem alteração do `.env`. As portas originais dos serviços auxiliares foram restauradas após a integração. Nenhuma alteração de schema da aplicação ou nova dependência faz parte desta entrega; os testes de banco foram executados em `testing`.

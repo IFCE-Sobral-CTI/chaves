@@ -18,8 +18,8 @@ function Edit({ rule, groups }) {
 
     return (
         <>
-            <Head title="Editar Usuário" />
-            <AuthenticatedLayout titleChildren={'Editar Usuário'} breadcrumbs={[{ label: 'Usuários', url: route('rules.index') }, { label: rule.name, url: route('rules.show', rule.id) }, { label: 'Editar'}]}>
+            <Head title="Editar Regra" />
+            <AuthenticatedLayout titleChildren={'Editar Regra'} breadcrumbs={[{ label: 'Regras', url: route('rules.index') }, { label: rule.description, url: route('rules.show', rule.id) }, { label: 'Editar'}]}>
                 <Panel>
                     <Form data={data} setData={setData} handleSubmit={handleSubmit} processing={processing} errors={errors} backUrl={route('rules.show', rule.id)} groups={groups} />
                 </Panel>

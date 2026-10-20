@@ -57,6 +57,13 @@ class ReportControllerTest extends TestCase
         ]);
     }
 
+    public function test_legacy_report_redirects_to_the_current_hub(): void
+    {
+        $this->actingAs($this->createUserWithReportsAccess())
+            ->get(route('reports.index.legacy'))
+            ->assertRedirectToRoute('reports.index');
+    }
+
     public function test_hub_requires_authorization()
     {
         $user = $this->createUserWithoutReportsAccess();

@@ -124,6 +124,31 @@ class HomeControllerTest extends TestCase
             );
     }
 
+    public function test_recent_borrow_situations_match_the_model_including_the_24_hour_boundary(): void
+    {
+        $this->travelTo('2026-10-20 12:00:00');
+        $user = $this->createUserWithBorrowViewAny();
+        (new AuthServiceProvider($this->app))->boot(new Rule);
+        $employee = Employee::factory()->create();
+        $borrows = Borrow::factory()->count(4)->sequence(
+            ['created_at' => now()->subHours(2), 'devolution' => null],
+            ['created_at' => now()->subHours(24), 'devolution' => null],
+            ['created_at' => now()->subHours(25), 'devolution' => null],
+            ['created_at' => now()->subHours(26), 'devolution' => now()],
+        )->create(['employee_id' => $employee->id, 'user_id' => $user->id]);
+
+        $this->actingAs($user)->get(route('admin'))->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('recentBorrows.0.id', $borrows[3]->id)
+                ->where('recentBorrows.0.situation', 'devolvido')
+                ->where('recentBorrows.1.id', $borrows[2]->id)
+                ->where('recentBorrows.1.situation', 'atrasado')
+                ->where('recentBorrows.2.id', $borrows[1]->id)
+                ->where('recentBorrows.2.situation', 'aberto')
+                ->where('recentBorrows.3.id', $borrows[0]->id)
+                ->where('recentBorrows.3.situation', 'aberto'));
+    }
+
     public function test_overdue_borrows_count_only_open_older_than_24h()
     {
         $user = $this->createUserWithoutBorrowViewAny();

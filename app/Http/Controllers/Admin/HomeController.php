@@ -39,7 +39,7 @@ class HomeController extends Controller
                         'created_at' => $borrow->created_at,
                         'employee' => ['name' => $borrow->employee->name],
                         'keys_count' => $borrow->keys_count,
-                        'situation' => $this->situation($borrow),
+                        'situation' => $borrow->situation,
                     ];
                 });
 
@@ -103,18 +103,5 @@ class HomeController extends Controller
                 'borrowView' => $request->user()->can('borrows.view'),
             ],
         ]);
-    }
-
-    private function situation(Borrow $borrow): string
-    {
-        if ($borrow->devolution !== null) {
-            return 'devolvido';
-        }
-
-        if ($borrow->created_at < now()->subDay()) {
-            return 'atrasado';
-        }
-
-        return 'aberto';
     }
 }

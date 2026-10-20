@@ -17,7 +17,7 @@ function Edit({ permission }) {
     return (
         <>
             <Head title="Editar Permissão" />
-            <AuthenticatedLayout titleChildren={'Editar Permissão'} breadcrumbs={[{ label: 'Permissões', url: route('permissions.index') }, { label: permission.name, url: route('permissions.show', permission.id) }, { label: 'Editar'}]}>
+            <AuthenticatedLayout titleChildren={'Editar Permissão'} breadcrumbs={[{ label: 'Permissões', url: route('permissions.index') }, { label: permission.description, url: route('permissions.show', permission.id) }, { label: 'Editar'}]}>
                 <Panel>
                     <Form data={data} setData={setData} handleSubmit={handleSubmit} processing={processing} errors={errors} backUrl={route('permissions.show', permission.id)} />
                 </Panel>

@@ -3,6 +3,7 @@
 /public/hot
 /playwright-report
 /test-results
+/tests/e2e/.auth
 /public/storage
 /storage/*.key
 /vendor
