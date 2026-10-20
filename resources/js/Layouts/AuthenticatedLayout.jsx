@@ -13,7 +13,17 @@ export default function AuthenticatedLayout({breadcrumbs, children, titleChildre
     const [alert, setAlert] = useState(false);
     const [message, setMessage] = useState(flash?.flash?.message);
     const [type, setType] = useState(flash?.flash?.status);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(() =>
+        typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+    );
+
+    useEffect(() => {
+        const desktopBreakpoint = window.matchMedia('(min-width: 1024px)');
+        const handleBreakpointChange = (event) => setSidebarOpen(event.matches);
+
+        desktopBreakpoint.addEventListener('change', handleBreakpointChange);
+        return () => desktopBreakpoint.removeEventListener('change', handleBreakpointChange);
+    }, []);
 
     useEffect(() => {
         if (flash?.flash) {
@@ -30,7 +40,7 @@ export default function AuthenticatedLayout({breadcrumbs, children, titleChildre
             </AlertContext.Provider>
             <Head title='Dashboard' />
             <div className="flex flex-col min-h-screen max-w-screen bg-neutral-100">
-                <Navbar onToggleSidebar={() => setSidebarOpen(prev => !prev)} />
+                <Navbar sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(prev => !prev)} />
                 <div className="flex flex-1">
                     <Sidebar can={authorizations} sidebarOpen={sidebarOpen} />
                     <main className="flex flex-col gap-2 md:gap-4 w-full px-0.5 md:pr-2 py-2 md:py-4">

@@ -105,7 +105,12 @@ function SelectMulti({ data, onChange, value, error, label, name, descriptionId 
                 </button>
             </div>
             <InputError message={error} id={errorId} />
-            <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')}>
+            <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                    setToggle(false);
+                    setTerm('');
+                }
+            }}>
                 <div className="">
                     <input id={inputId} type="text" value={term} ref={inputRef} onChange={e => setTerm(e.target.value)} className="mt-0.5 w-full rounded-t-lg border-neutral-400 focus:border-neutral-500 focus:ring-0" placeholder="Digite para pesquisar chaves" aria-label={`Pesquisar ${label.toLowerCase()}`} aria-invalid={Boolean(error)} aria-describedby={describedBy} />
                 </div>

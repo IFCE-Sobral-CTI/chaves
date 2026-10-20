@@ -134,7 +134,12 @@ function SelectEmployee({ data, endpoint, onChange, value, error }) {
                 </div>
             </div>
             <InputError message={error} />
-            <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} ref={ref}>
+            <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} ref={ref} onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                    setToggle(false);
+                    setTerm('');
+                }
+            }}>
                 <div className="">
                         <input ref={searchInputRef} id={inputId} type="text" value={term} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
                 </div>

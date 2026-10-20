@@ -1,5 +1,5 @@
 import InputError from "@/Components/InputError";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 function SelectEmployee({ data, onChange, error, value }) {
     const [toggle, setToggle] = useState(false);
@@ -7,12 +7,7 @@ function SelectEmployee({ data, onChange, error, value }) {
     const [list, setList] = useState([]);
     const [selected, setSelected] = useState({id: null, registry: null, name: null});
     const ref = useRef(null);
-
-    const inputRef = useCallback((inputElement) => {
-        if (inputElement) {
-            inputElement.focus();
-        }
-    });
+    const inputRef = useRef(null);
 
     useEffect(() => {
         if (value) {
@@ -23,6 +18,10 @@ function SelectEmployee({ data, onChange, error, value }) {
     useEffect(() => {
         onChange(selected.id);
     }, [selected]);
+
+    useEffect(() => {
+        if (toggle) inputRef.current?.focus();
+    }, [toggle]);
 
     useEffect(() => {
         const debounce = setTimeout(() => {
@@ -82,7 +81,12 @@ function SelectEmployee({ data, onChange, error, value }) {
                 </div>
             </div>
             <InputError message={error} />
-            <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} ref={ref}>
+            <div className={'absolute z-50 w-full transition ' + (toggle? 'block': 'hidden')} ref={ref} onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                    setToggle(false);
+                    setTerm('');
+                }
+            }}>
                 <div className="">
                     <input id={inputId} type="text" value={term} ref={inputRef} onChange={e => setTerm(e.target.value)} className="w-full rounded-t-lg mt-0.5 border-neutral-400 focus:ring-0 focus:border-neutral-500" placeholder="Digite sua pesquisa" />
                 </div>

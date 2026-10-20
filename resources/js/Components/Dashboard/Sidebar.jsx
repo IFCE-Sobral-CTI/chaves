@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "@inertiajs/react";
 
 function Sidebar({ can, sidebarOpen }) {
-    const [width, setWidth] = useState(window.innerWidth);
-
     const [accessCollapse] = useState(
         route().current('users.*') ||
         route().current('permissions.*') ||
@@ -18,21 +16,11 @@ function Sidebar({ can, sidebarOpen }) {
         setChevronAccess(!chevronAccess);
     }
 
-    useEffect(() => {
-        const handleResize = () => setWidth(window.innerWidth);
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    const isMobile = width < 1024;
-    const visible = isMobile ? sidebarOpen : true;
-
     return (
         <>
             <nav
                 id="sidebar"
-                className={"mr-2 p-2 " + (visible ? '' : 'hidden!')}
+                className={"mr-2 p-2 " + (sidebarOpen ? '' : 'hidden!')}
             >
                 <div className="flex flex-col w-48 gap-3 md:w-64">
                     <Link
