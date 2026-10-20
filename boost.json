@@ -1,7 +1,8 @@
 {
     "agents": [
         "codex",
-        "opencode"
+        "opencode",
+        "antigravity"
     ],
     "cloud": false,
     "guidelines": true,
