@@ -2,13 +2,14 @@ import Panel from "@/Components/Dashboard/Panel";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import Button from "@/Components/Form/Button";
 import { useForm } from "@inertiajs/react";
-import Input from "@/Components/Form/Input";
+import DateRangeFields from "@/Pages/Reports/Components/DateRangeFields";
 import InputError from "@/Components/InputError";
 import Pagination from "@/Components/Dashboard/Pagination";
 import Select from "@/Components/Form/Select";
 import SelectEmployee from "@/Pages/Keys/Report/Components/SelectEmployee";
 import ReportSummary from "@/Pages/Reports/Components/ReportSummary";
 import ExportButtons from "@/Pages/Reports/Components/ExportButtons";
+import BorrowSituationBadge from "@/Components/Dashboard/BorrowSituationBadge";
 
 function Index({ errors, borrows, count, filter, filters, users, employees, blocks, rooms, keys, summary }) {
     const { data, setData, get, processing } = useForm({
@@ -29,21 +30,6 @@ function Index({ errors, borrows, count, filter, filters, users, employees, bloc
     const handleSubmit = (e) => {
         e.preventDefault();
         get(route('reports.borrows'), { data });
-    };
-
-    const situationBadge = (situation) => {
-        const classes = {
-            devolvido: 'px-2 py-0.5 text-xs text-white rounded bg-green-500',
-            aberto: 'px-2 py-0.5 text-xs text-white rounded bg-yellow-500',
-            atrasado: 'px-2 py-0.5 text-xs text-white rounded bg-red-500',
-        };
-        const labels = {
-            devolvido: 'Devolvido',
-            aberto: 'Aberto',
-            atrasado: 'Atrasado',
-        };
-
-        return <span className={classes[situation] ?? 'px-2 py-0.5 text-xs text-white rounded bg-neutral-400'}>{labels[situation] ?? situation}</span>;
     };
 
     const list = borrows.data.map((borrow) => {
@@ -78,7 +64,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees, bloc
                         ))}
                     </div>
                 </td>
-                <td className="px-2 py-3 font-light">{situationBadge(borrow.situation)}</td>
+                <td className="px-2 py-3 font-light"><BorrowSituationBadge situation={borrow.situation} /></td>
             </tr>
         );
     });
@@ -91,16 +77,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees, bloc
                         <div className="p-3 border border-neutral-300 rounded-lg">
                             <div className="text-sm font-medium text-neutral-600 mb-2">Por data</div>
                             <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <label htmlFor="start" className="text-xs font-light">Início</label>
-                                    <Input value={data.start} type="date" name="start" handleChange={onHandleChange} />
-                                    <InputError message={errors.start} />
-                                </div>
-                                <div className="flex-1">
-                                    <label htmlFor="end" className="text-xs font-light">Final</label>
-                                    <Input value={data.end} type="date" name="end" handleChange={onHandleChange} />
-                                    <InputError message={errors.end} />
-                                </div>
+                                <DateRangeFields data={data} onChange={onHandleChange} errors={errors} />
                             </div>
                         </div>
 
@@ -192,7 +169,7 @@ function Index({ errors, borrows, count, filter, filters, users, employees, bloc
 
             <div className="flex items-center justify-between print:hidden">
                 <ReportSummary summary={summary} />
-                <ExportButtons routeName="reports.borrows" params={data} />
+                <ExportButtons routeName="reports.borrows" params={filters} />
             </div>
 
             <Panel>

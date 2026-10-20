@@ -1,13 +1,12 @@
+import PeriodFilterForm from "@/Pages/Reports/Components/PeriodFilterForm";
 import Panel from "@/Components/Dashboard/Panel";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import Pagination from "@/Components/Dashboard/Pagination";
 import ExportButtons from "@/Pages/Reports/Components/ExportButtons";
 import { useForm } from "@inertiajs/react";
-import Input from "@/Components/Form/Input";
-import Button from "@/Components/Form/Button";
 
 function Index({ staff, count, filters }) {
-    const { data, setData, get, processing } = useForm({
+    const { data, setData, get, processing, errors } = useForm({
         start: filters.start ?? '',
         end: filters.end ?? '',
     });
@@ -32,29 +31,14 @@ function Index({ staff, count, filters }) {
     return (
         <AuthenticatedLayout titleChildren="Produtividade por Recepcionista" breadcrumbs={[{ label: 'Relatórios', url: route('reports.index') }, { label: 'Produtividade', url: route('reports.staff') }]}>
             <Panel>
-                <form onSubmit={handleSubmit} className="flex items-end gap-4">
-                    <div className="flex-1">
-                        <label htmlFor="start" className="text-xs font-light">Início</label>
-                        <Input value={data.start} type="date" name="start" handleChange={onHandleChange} />
-                    </div>
-                    <div className="flex-1">
-                        <label htmlFor="end" className="text-xs font-light">Final</label>
-                        <Input value={data.end} type="date" name="end" handleChange={onHandleChange} />
-                    </div>
-                    <div className="flex items-end gap-2">
-                        {(filters.start || filters.end) && (
-                            <Button href={route('reports.staff')} className="gap-2 py-2.5" processing={processing} color="red">Limpar</Button>
-                        )}
-                        <Button type="submit" className="gap-2 py-2.5" processing={processing}>Buscar</Button>
-                    </div>
-                </form>
+                <PeriodFilterForm data={data} onChange={onHandleChange} onSubmit={handleSubmit} processing={processing} errors={errors} filters={filters} clearUrl={route('reports.staff')} />
             </Panel>
 
             <div className="flex items-center justify-between print:hidden mb-4">
                 <div className="text-sm text-neutral-600">
                     Total: <strong>{count}</strong> registros
                 </div>
-                <ExportButtons routeName="reports.staff" params={data} />
+                <ExportButtons routeName="reports.staff" params={filters} />
             </div>
 
             <Panel>

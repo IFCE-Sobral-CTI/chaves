@@ -206,6 +206,26 @@ class ReportControllerTest extends TestCase
         );
     }
 
+    public function test_borrow_situation_changes_only_after_the_24_hour_boundary(): void
+    {
+        $this->travelTo('2026-10-20 12:00:00');
+        $user = $this->createUserWithReportsAccess();
+        $employee = Employee::factory()->create();
+        $base = [
+            'employee_id' => $employee->id,
+            'user_id' => $user->id,
+            'devolution' => null,
+        ];
+
+        $beforeBoundary = Borrow::factory()->create($base + ['created_at' => now()->subHours(24)->addSecond()]);
+        $atBoundary = Borrow::factory()->create($base + ['created_at' => now()->subHours(24)]);
+        $afterBoundary = Borrow::factory()->create($base + ['created_at' => now()->subHours(24)->subSecond()]);
+
+        $this->assertSame('aberto', $beforeBoundary->fresh()->situation);
+        $this->assertSame('aberto', $atBoundary->fresh()->situation);
+        $this->assertSame('atrasado', $afterBoundary->fresh()->situation);
+    }
+
     public function test_borrows_filter_by_situation()
     {
         $user = $this->createUserWithReportsAccess();

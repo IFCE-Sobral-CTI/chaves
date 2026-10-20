@@ -3,15 +3,18 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
+use App\Support\SearchResult;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 /**
- * @method static search(mixed $term)
+ * @method static array search(\Illuminate\Http\Request $request)
  *
  * @property string description
  */
@@ -49,15 +52,13 @@ class Permission extends Model
         return $this->hasMany(User::class);
     }
 
-    public function scopeSearch($query, $term): array
+    public function scopeSearch(Builder $query, Request $request): array
     {
+        $term = $request->term;
         $query->where('description', 'like', "%{$term}%");
 
         $paginator = $query->orderBy('description', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $term]);
 
-        return [
-            'count' => $paginator->total(),
-            'data' => $paginator,
-        ];
+        return SearchResult::make($paginator, 'permissions', $term);
     }
 }

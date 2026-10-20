@@ -177,9 +177,7 @@ class BorrowController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (Exception $e) {
-            report($e);
-
-            return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'borrows.index');
         }
     }
 
@@ -245,9 +243,7 @@ class BorrowController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (Exception $e) {
-            report($e);
-
-            return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'borrows.index');
         }
     }
 
@@ -288,9 +284,7 @@ class BorrowController extends Controller
         } catch (ValidationException $e) {
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         } catch (Exception $e) {
-            report($e);
-
-            return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'borrows.show', ['borrow' => $borrow]);
         }
     }
 
@@ -310,9 +304,7 @@ class BorrowController extends Controller
         } catch (ValidationException $e) {
             return to_route('borrows.show', $borrow)->with('flash', ['status' => 'danger', 'message' => $e->getMessage()]);
         } catch (Exception $e) {
-            report($e);
-
-            return to_route('borrows.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'borrows.index');
         }
     }
 }

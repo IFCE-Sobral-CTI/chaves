@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
+use App\Support\SearchResult;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -50,7 +51,7 @@ class Room extends Model
         return $this->belongsToMany(Employee::class);
     }
 
-    public function scopeSearch($query, Request $request)
+    public function scopeSearch(Builder $query, Request $request): array
     {
         $query->with('block')
             ->where(function (Builder $q) use ($request) {
@@ -65,11 +66,6 @@ class Room extends Model
 
         $paginator = $query->orderBy('description', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $request->term, 'page' => $request->page]);
 
-        return [
-            'count' => $paginator->total(),
-            'rooms' => $paginator,
-            'page' => $request->page ?? 1,
-            'termSearch' => $request->term,
-        ];
+        return SearchResult::make($paginator, 'rooms', $request->term);
     }
 }

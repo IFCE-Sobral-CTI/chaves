@@ -78,9 +78,7 @@ class EmployeeController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'employees.index');
         }
     }
 
@@ -152,9 +150,7 @@ class EmployeeController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('employees.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'employees.index');
         }
     }
 

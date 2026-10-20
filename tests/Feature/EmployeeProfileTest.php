@@ -13,6 +13,7 @@ use App\Providers\AuthServiceProvider;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -74,6 +75,43 @@ class EmployeeProfileTest extends TestCase
         ]);
     }
 
+    public function test_employee_update_allows_its_own_identifiers_and_rejects_identifiers_owned_by_another_employee(): void
+    {
+        $user = $this->administrator();
+        $employee = Employee::factory()->create([
+            'name' => 'Mutuário existente',
+            'registry' => '987654330',
+            'email' => 'existente@example.test',
+            'alternative_email' => 'alternativo@example.test',
+        ]);
+        $otherEmployee = Employee::factory()->create([
+            'name' => 'Outro mutuário',
+            'registry' => '987654331',
+            'email' => 'outro@example.test',
+            'alternative_email' => 'outro-alternativo@example.test',
+        ]);
+        $payload = [
+            'type' => Employee::EMPLOYEE,
+            'registry' => $employee->registry,
+            'name' => $employee->name,
+            'email' => $employee->email,
+            'alternative_email' => $employee->alternative_email,
+            'tel' => '',
+            'valid_until' => '',
+            'observation' => '',
+        ];
+
+        $this->actingAs($user)->put(route('employees.update', $employee), $payload)->assertRedirect();
+
+        foreach (['registry', 'email', 'alternative_email'] as $attribute) {
+            $this->from(route('employees.edit', $employee))
+                ->put(route('employees.update', $employee), array_replace($payload, [
+                    $attribute => $otherEmployee->{$attribute},
+                ]))
+                ->assertSessionHasErrors($attribute);
+        }
+    }
+
     public function test_employee_search_matches_usual_name_occupation_and_observation(): void
     {
         $user = $this->administrator();
@@ -105,6 +143,13 @@ class EmployeeProfileTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->has('employees.data', config('app.pagination'))
                 ->where('employees.total', config('app.pagination') + 1));
+
+        $this->actingAs($user)->get(route('employees.index', ['term' => 'PaginatedEmployee', 'page' => 2]))->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('page', 2)
+                ->where('termSearch', 'PaginatedEmployee')
+                ->where('employees.current_page', 2)
+                ->has('employees.data', 1));
 
         $permission = Permission::factory()->create();
         $unauthorizedUser = User::factory()->create(['permission_id' => $permission->id]);
@@ -186,6 +231,7 @@ class EmployeeProfileTest extends TestCase
                 throw new RuntimeException('Injected authorization sync failure.');
             }
         });
+        Exceptions::fake();
 
         $this->actingAs($user)->post(route('employees.store'), [
             'type' => Employee::STUDENT,
@@ -201,6 +247,7 @@ class EmployeeProfileTest extends TestCase
             'borrowable_key_ids' => [$key->id],
         ])->assertRedirect(route('employees.index'))->assertSessionHas('flash.status', 'danger');
 
+        Exceptions::assertReportedCount(1);
         $this->assertTrue($failureInjected);
         $this->assertDatabaseMissing('employees', ['registry' => '987654328']);
         $this->assertDatabaseMissing('borrowable_keys', ['key_id' => $key->id]);

@@ -1,12 +1,11 @@
+import PeriodFilterForm from "@/Pages/Reports/Components/PeriodFilterForm";
 import Panel from "@/Components/Dashboard/Panel";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import ExportButtons from "@/Pages/Reports/Components/ExportButtons";
 import { useForm } from "@inertiajs/react";
-import Input from "@/Components/Form/Input";
-import Button from "@/Components/Form/Button";
 
 function Index({ turnaround, summary, filters }) {
-    const { data, setData, get, processing } = useForm({
+    const { data, setData, get, processing, errors } = useForm({
         start: filters.start ?? '',
         end: filters.end ?? '',
     });
@@ -34,22 +33,7 @@ function Index({ turnaround, summary, filters }) {
     return (
         <AuthenticatedLayout titleChildren="Tempo Médio de Devolução" breadcrumbs={[{ label: 'Relatórios', url: route('reports.index') }, { label: 'Turnaround', url: route('reports.turnaround') }]}>
             <Panel>
-                <form onSubmit={handleSubmit} className="flex items-end gap-4">
-                    <div className="flex-1">
-                        <label htmlFor="start" className="text-xs font-light">Início</label>
-                        <Input value={data.start} type="date" name="start" handleChange={onHandleChange} />
-                    </div>
-                    <div className="flex-1">
-                        <label htmlFor="end" className="text-xs font-light">Final</label>
-                        <Input value={data.end} type="date" name="end" handleChange={onHandleChange} />
-                    </div>
-                    <div className="flex items-end gap-2">
-                        {(filters.start || filters.end) && (
-                            <Button href={route('reports.turnaround')} className="gap-2 py-2.5" processing={processing} color="red">Limpar</Button>
-                        )}
-                        <Button type="submit" className="gap-2 py-2.5" processing={processing}>Buscar</Button>
-                    </div>
-                </form>
+                <PeriodFilterForm data={data} onChange={onHandleChange} onSubmit={handleSubmit} processing={processing} errors={errors} filters={filters} clearUrl={route('reports.turnaround')} />
             </Panel>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
@@ -71,7 +55,7 @@ function Index({ turnaround, summary, filters }) {
                 <div className="text-sm text-neutral-600">
                     Em atraso: <strong>{summary.overdue}</strong>
                 </div>
-                <ExportButtons routeName="reports.turnaround" params={data} />
+                <ExportButtons routeName="reports.turnaround" params={filters} />
             </div>
 
             <Panel>

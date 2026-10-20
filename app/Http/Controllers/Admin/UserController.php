@@ -27,18 +27,12 @@ class UserController extends Controller
     {
         $this->authorize('users.viewAny', User::class);
 
-        $result = User::search($request->term);
-
-        return Inertia::render('User/Index', [
-            'users' => $result['data'],
-            'count' => $result['count'],
-            'page' => $request->page ?? 1,
-            'termSearch' => $request->term,
+        return Inertia::render('User/Index', array_merge(User::search($request), [
             'can' => [
                 'create' => $request->user()->can('users.create'),
                 'view' => $request->user()->can('users.view'),
             ],
-        ]);
+        ]));
     }
 
     /**
@@ -72,9 +66,7 @@ class UserController extends Controller
 
             return redirect()->route('users.show', $user)->with('flash', ['status' => 'success', 'message' => 'Registro salvo com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('users.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'users.index');
         }
     }
 
@@ -158,9 +150,7 @@ class UserController extends Controller
 
             return redirect()->route('users.show', $user)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso!']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('users.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'users.index');
         }
     }
 
@@ -181,9 +171,7 @@ class UserController extends Controller
 
             return redirect()->route('users.show', $user)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso!']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('users.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'users.index');
         }
     }
 

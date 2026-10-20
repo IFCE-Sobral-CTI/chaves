@@ -1,45 +1,14 @@
 import Pagination from "@/Components/Dashboard/Pagination";
 import Panel from "@/Components/Dashboard/Panel";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { router } from '@inertiajs/react';
 import { Link } from "@inertiajs/react";
-import React, { useEffect, useState } from "react";
+import React from "react";
+import useIndexSearch from "@/Components/Dashboard/useIndexSearch";
+import employeeTypeLabel from "./employeeTypeLabel";
 
 function Index({ employees, count, page, termSearch, can }) {
-    const [term, setTerm] = useState(termSearch?? '');
-    const [currentPage, setCurrentPage] = useState(page);
-
-    useEffect(() => {
-        const debounce = setTimeout(() => {
-            setCurrentPage(1);
-            router.get(route(route().current()), {term: term, page: currentPage}, {preserveState: true, replace: true});
-        }, 300);
-
-        return () => clearTimeout(debounce);
-    }, [term]);
-
-    const employeeType = (type) => {
-        let name = '';
-
-        switch (type) {
-            case 1:
-                name = 'Servidor';
-                break;
-            case 2:
-                name = 'Colaborador';
-                break;
-            case 3:
-                name = 'Discente';
-                break;
-            case 4:
-                name = 'Externo';
-                break;
-        };
-
-        return (
-            <span>{name}</span>
-        );
-    };
+    const { term, setTerm } = useIndexSearch(route(route().current()), termSearch);
+    const currentPage = page;
 
     const table = employees.data.map((item, index) => {
         return (
@@ -61,7 +30,7 @@ function Index({ employees, count, page, termSearch, can }) {
                 </td>
                 <td className="hidden px-1 py-3 font-light md:table-cell">
                     <Link href={can.view? route('employees.show', item.id): route('employees.index', {term: term, page: currentPage})}>
-                        {employeeType(item.type)}
+                        {employeeTypeLabel(item.type)}
                     </Link>
                 </td>
                 <td className="hidden px-1 py-3 font-light md:table-cell">

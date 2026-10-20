@@ -65,9 +65,7 @@ class RoomController extends Controller
 
             return redirect()->route('rooms.show', $room)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('rooms.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'rooms.index');
         }
     }
 
@@ -136,9 +134,7 @@ class RoomController extends Controller
 
             return redirect()->route('rooms.show', $room)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('rooms.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'rooms.index');
         }
     }
 

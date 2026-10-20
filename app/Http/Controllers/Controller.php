@@ -23,8 +23,13 @@ class Controller extends BaseController
             ]);
         }
 
+        return $this->operationFailed($exception, $route);
+    }
+
+    protected function operationFailed(Exception $exception, string $route, array $parameters = []): RedirectResponse
+    {
         report($exception);
 
-        return to_route($route)->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+        return to_route($route, $parameters)->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
     }
 }

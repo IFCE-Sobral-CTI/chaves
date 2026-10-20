@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
+use App\Support\SearchResult;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -59,7 +60,7 @@ class Key extends Model
             ->pendingKeyIds());
     }
 
-    public function scopeSearch($query, Request $request): array
+    public function scopeSearch(Builder $query, Request $request): array
     {
         $query->with('room')
             ->where(function (Builder $q) use ($request) {
@@ -78,12 +79,7 @@ class Key extends Model
 
         $paginator = $query->orderBy('number', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $request->term, 'page' => $request->page]);
 
-        return [
-            'count' => $paginator->total(),
-            'keys' => $paginator,
-            'page' => $request->page ?? 1,
-            'termSearch' => $request->term,
-        ];
+        return SearchResult::make($paginator, 'keys', $request->term);
     }
 
     public function borrowable_keys(): BelongsToMany

@@ -5,12 +5,12 @@ import ChartCard from "@/Components/Dashboard/ChartCard";
 import EmployeeTypePie from "@/Components/Dashboard/EmployeeTypePie";
 import ExportButtons from "@/Pages/Reports/Components/ExportButtons";
 import { useForm } from "@inertiajs/react";
-import Input from "@/Components/Form/Input";
+import DateRangeFields from "@/Pages/Reports/Components/DateRangeFields";
 import Select from "@/Components/Form/Select";
 import Button from "@/Components/Form/Button";
 
 function Index({ employees, count, chart, filters }) {
-    const { data, setData, get, processing } = useForm({
+    const { data, setData, get, processing, errors } = useForm({
         start: filters.start ?? '',
         end: filters.end ?? '',
         type: filters.type ?? '',
@@ -40,14 +40,7 @@ function Index({ employees, count, chart, filters }) {
         <AuthenticatedLayout titleChildren="Uso por Mutuário" breadcrumbs={[{ label: 'Relatórios', url: route('reports.index') }, { label: 'Uso por Mutuário', url: route('reports.employees') }]}>
             <Panel>
                 <form onSubmit={handleSubmit} className="flex items-end gap-4">
-                    <div className="flex-1">
-                        <label htmlFor="start" className="text-xs font-light">Início</label>
-                        <Input value={data.start} type="date" name="start" handleChange={onHandleChange} />
-                    </div>
-                    <div className="flex-1">
-                        <label htmlFor="end" className="text-xs font-light">Final</label>
-                        <Input value={data.end} type="date" name="end" handleChange={onHandleChange} />
-                    </div>
+                    <DateRangeFields data={data} onChange={onHandleChange} errors={errors} />
                     <div className="flex-1">
                         <label htmlFor="type" className="text-xs font-light">Tipo</label>
                         <Select value={data.type} name="type" handleChange={onHandleChange}>
@@ -71,7 +64,7 @@ function Index({ employees, count, chart, filters }) {
                 <div className="text-sm text-neutral-600">
                     Total: <strong>{count}</strong> registros
                 </div>
-                <ExportButtons routeName="reports.employees" params={data} />
+                <ExportButtons routeName="reports.employees" params={filters} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

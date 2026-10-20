@@ -61,9 +61,7 @@ class GroupController extends Controller
 
             return redirect()->route('groups.show', $group)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('groups.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'groups.index');
         }
     }
 
@@ -113,9 +111,7 @@ class GroupController extends Controller
 
             return redirect()->route('groups.show', $group)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('groups.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'groups.index');
         }
     }
 
@@ -133,9 +129,7 @@ class GroupController extends Controller
 
             return redirect()->route('groups.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('groups.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'groups.index');
         }
     }
 }

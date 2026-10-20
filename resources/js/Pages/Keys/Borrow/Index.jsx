@@ -1,47 +1,14 @@
 import Pagination from "@/Components/Dashboard/Pagination";
 import Panel from "@/Components/Dashboard/Panel";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { router } from '@inertiajs/react';
 import { Link } from "@inertiajs/react";
-import moment from "moment/moment";
-import React, { useEffect, useState } from "react";
+import React from "react";
+import useIndexSearch from "@/Components/Dashboard/useIndexSearch";
+import BorrowSituationBadge from "@/Components/Dashboard/BorrowSituationBadge";
 
 function Index({ borrows, count, page, termSearch, can }) {
-    const [term, setTerm] = useState(termSearch?? '');
+    const { term, setTerm } = useIndexSearch(route('borrows.index'), termSearch);
     const currentPage = page;
-
-    useEffect(() => {
-        if (term === (termSearch ?? '')) return;
-
-        let cancelToken;
-        const debounce = setTimeout(() => {
-            router.get(route('borrows.index'), {term, page: 1}, {
-                preserveState: true,
-                replace: true,
-                onCancelToken: token => { cancelToken = token; },
-            });
-        }, 300);
-
-        return () => {
-            clearTimeout(debounce);
-            cancelToken?.cancel();
-        };
-    }, [term, termSearch]);
-
-    const status = (created_at, devolution) => {
-        let start = moment(created_at, "DD/MM/YYYY hh:mm:ss");
-        let end = moment(created_at, "DD/MM/YYYY hh:mm:ss").add(1, 'd');
-        let now = moment();
-
-        if (devolution)
-            return <span className="px-2 py-1 text-xs text-white rounded-lg bg-green">Devolvido</span>
-
-        if (now.isBetween(start, end) && !devolution)
-            return <span className="px-2 py-1 text-xs text-white bg-yellow-500 rounded-lg">Aberto</span>
-
-        if (now.isAfter(end) && !devolution)
-            return <span className="px-2 py-1 text-xs text-white bg-red-500 rounded-lg">Atrasado</span>
-    }
 
     const table = borrows.data.map((item, index) => {
         return (
@@ -70,7 +37,7 @@ function Index({ borrows, count, page, termSearch, can }) {
                 </td>
                 <td className="px-1 py-3 font-light">
                     <Link href={can.view? route('borrows.show', item.id): route('borrows.index', {term: term, page: currentPage})}>
-                        {status(item.created_at, item.devolution)}
+                        <BorrowSituationBadge situation={item.situation} className="px-2 py-1 rounded-lg" />
                     </Link>
                 </td>
                 <td className="flex items-center justify-end py-3 pr-2 text-neutral-400">

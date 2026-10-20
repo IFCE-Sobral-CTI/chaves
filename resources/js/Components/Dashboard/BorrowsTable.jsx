@@ -1,17 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-
-const situationClasses = {
-    aberto: 'bg-yellow-500',
-    atrasado: 'bg-red-500',
-    devolvido: 'bg-green-500',
-};
-
-const situationLabels = {
-    aberto: 'Aberto',
-    atrasado: 'Atrasado',
-    devolvido: 'Devolvido',
-};
+import BorrowSituationBadge from '@/Components/Dashboard/BorrowSituationBadge';
 
 export default function BorrowsTable({ title, rows, canView, emptyMessage }) {
     if (!rows || rows.length === 0) {
@@ -51,9 +40,7 @@ export default function BorrowsTable({ title, rows, canView, emptyMessage }) {
                                 </td>
                                 <td className="py-2 pr-2 text-gray-600">{item.keys_count}</td>
                                 <td className="py-2 pr-2">
-                                    <span className={`inline-block px-2 py-0.5 text-xs text-white rounded ${situationClasses[item.situation] || 'bg-gray-400'}`}>
-                                        {situationLabels[item.situation] || item.situation}
-                                    </span>
+                                    <BorrowSituationBadge situation={item.situation} />
                                 </td>
                                 <td className="py-2 text-right">
                                     <Link href={href} className="text-neutral-400 hover:text-neutral-600">

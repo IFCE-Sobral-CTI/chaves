@@ -40,9 +40,10 @@ function components(node, type) {
 
 function page(can, closed = false) {
     const key = { id: 11, number: 101, room: { description: 'Sala' } };
+    const pendingKey = { id: 12, number: 102, room: { description: 'Outra sala' } };
     const borrow = {
         id: 1, employee: { name: 'Mutuário' }, user: { name: 'Operador' },
-        keys: [key], devolution: closed ? '15/10/2026 12:00:00' : null,
+        keys: closed ? [key] : [key, pendingKey], devolution: closed ? '15/10/2026 12:00:00' : null,
         received: [{ id: 7, receiver: 'Recepção', user: { name: 'Operador' }, keys: [key] }],
     };
     return Show({ borrow, received: [11], can });

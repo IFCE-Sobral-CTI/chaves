@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
+use App\Support\SearchResult;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -43,11 +44,6 @@ class Group extends Model
 
         $paginator = $query->orderBy('description', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $request->term ?? '', 'page' => $request->page ?? 1]);
 
-        return [
-            'count' => $paginator->total(),
-            'groups' => $paginator,
-            'termSearch' => $request->term,
-            'page' => $request->page ?? 1,
-        ];
+        return SearchResult::make($paginator, 'groups', $request->term);
     }
 }

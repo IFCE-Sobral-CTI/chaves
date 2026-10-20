@@ -4,31 +4,9 @@ import { Head } from "@inertiajs/react";
 import Panel from "@/Components/Dashboard/Panel";
 import Button from "@/Components/Form/Button";
 import DeleteModal from "@/Components/Dashboard/DeleteModal";
+import employeeTypeLabel from "./employeeTypeLabel";
 
 function Show({ employee, can, keys }) {
-    const employeeType = (type) => {
-        let name = '';
-
-        switch (type) {
-            case 1:
-                name = 'Servidor';
-                break;
-            case 2:
-                name = 'Colaborador';
-                break;
-            case 3:
-                name = 'Discente';
-                break;
-            case 4:
-                name = 'Externo';
-                break;
-        };
-
-        return (
-            <span>{name}</span>
-        );
-    };
-
     return (
         <>
             <Head title="Detalhes da Mutuário" />
@@ -36,7 +14,7 @@ function Show({ employee, can, keys }) {
                 <Panel className={'flex flex-col gap-4'}>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Vínculo</div>
-                        <div className="">{employeeType(employee.type)}</div>
+                        <div className="">{employeeTypeLabel(employee.type)}</div>
                     </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-light">Matricula</div>

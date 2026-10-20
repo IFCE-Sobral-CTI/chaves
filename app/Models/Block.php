@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
+use App\Support\SearchResult;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +12,7 @@ use Illuminate\Http\Request;
 use Spatie\Activitylog\Support\LogOptions;
 
 /**
- * @method search(string $term)
+ * @method static array search(\Illuminate\Http\Request $request)
  *
  * @property string description
  */
@@ -53,9 +54,6 @@ class Block extends Model
             ->paginate(config('app.pagination'))
             ->appends(['term' => $request->term]);
 
-        return [
-            'count' => $paginator->total(),
-            'data' => $paginator,
-        ];
+        return SearchResult::make($paginator, 'blocks', $request->term);
     }
 }

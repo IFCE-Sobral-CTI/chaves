@@ -27,19 +27,13 @@ class PermissionController extends Controller
     {
         $this->authorize('permissions.viewAny', Permission::class);
 
-        $result = Permission::search($request->term);
-
-        return Inertia::render('Permission/Index', [
-            'permissions' => $result['data'],
-            'count' => $result['count'],
-            'page' => $request->page ?? 1,
-            'termSearch' => $request->term,
+        return Inertia::render('Permission/Index', array_merge(Permission::search($request), [
             'can' => [
                 'viewAny' => $request->user()->can('permissions.viewAny'),
                 'view' => $request->user()->can('permissions.view'),
                 'create' => $request->user()->can('permissions.create'),
             ],
-        ]);
+        ]));
     }
 
     /**
@@ -70,9 +64,7 @@ class PermissionController extends Controller
 
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'success', 'message' => 'Registro salvo com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('permissions.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'permissions.index');
         }
     }
 
@@ -125,9 +117,7 @@ class PermissionController extends Controller
 
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('permissions.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'permissions.index');
         }
     }
 
@@ -192,9 +182,7 @@ class PermissionController extends Controller
 
             return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('permissions.show', $permission)->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'permissions.show', ['permission' => $permission]);
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
+use App\Support\SearchResult;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 /**
- * @method search(string $term)
+ * @method static array search(\Illuminate\Http\Request $request)
  *
  * @property string name
  * @property string email
@@ -93,10 +94,7 @@ class Employee extends Model
         return $this->belongsToMany(Room::class);
     }
 
-    /**
-     * @return array
-     */
-    public function scopeSearch(Builder $query, Request $request)
+    public function scopeSearch(Builder $query, Request $request): array
     {
         $query->with(['borrowable_keys' => ['room']])
             ->where(function (Builder $q) use ($request) {
@@ -109,12 +107,7 @@ class Employee extends Model
 
         $paginator = $query->orderBy('name', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $request->term]);
 
-        return [
-            'count' => $paginator->total(),
-            'employees' => $paginator,
-            'page' => $request->page ?? 1,
-            'termSearch' => $request->term,
-        ];
+        return SearchResult::make($paginator, 'employees', $request->term);
     }
 
     public function borrowable_keys(): BelongsToMany

@@ -5,11 +5,14 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
+use App\Support\SearchResult;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\Models\Concerns\CausesActivity;
@@ -93,11 +96,9 @@ class User extends Authenticatable
         return (bool) $this->permission?->rules()->hasControl($rule);
     }
 
-    /**
-     * @param  string  $term
-     */
-    public function scopeSearch($query, $term = ''): array
+    public function scopeSearch(Builder $query, Request $request): array
     {
+        $term = $request->term ?? '';
         $query->with('permission')
             ->where(function ($q) use ($term) {
                 $q->where('name', 'like', "%{$term}%")
@@ -106,9 +107,6 @@ class User extends Authenticatable
 
         $paginator = $query->orderBy('name', 'ASC')->paginate(config('app.pagination'))->appends(['term' => $term]);
 
-        return [
-            'count' => $paginator->total(),
-            'data' => $paginator,
-        ];
+        return SearchResult::make($paginator, 'users', $term);
     }
 }

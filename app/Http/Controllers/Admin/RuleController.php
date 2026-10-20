@@ -25,19 +25,13 @@ class RuleController extends Controller
     {
         $this->authorize('rules.viewAny', Rule::class);
 
-        $result = Rule::search($request->term);
-
-        return Inertia::render('Rule/Index', [
-            'rules' => $result['data'],
-            'count' => $result['count'],
-            'page' => $request->page ?? 1,
-            'termSearch' => $request->term,
+        return Inertia::render('Rule/Index', array_merge(Rule::search($request), [
             'can' => [
                 'viewAny' => $request->user()->can('rules.viewAny'),
                 'view' => $request->user()->can('rules.view'),
                 'create' => $request->user()->can('rules.create'),
             ],
-        ]);
+        ]));
     }
 
     /**
@@ -70,9 +64,7 @@ class RuleController extends Controller
 
             return redirect()->route('rules.show', $rule)->with('flash', ['status' => 'success', 'message' => 'Registro salvo com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('rules.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'rules.index');
         }
     }
 
@@ -128,9 +120,7 @@ class RuleController extends Controller
 
             return redirect()->route('rules.show', $rule)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('rules.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'rules.index');
         }
     }
 
@@ -148,9 +138,7 @@ class RuleController extends Controller
 
             return redirect()->route('rules.index')->with('flash', ['status' => 'success', 'message' => 'Registro apagado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return redirect()->route('rules.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'rules.index');
         }
     }
 }

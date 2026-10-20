@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\CreatedAndUpdatedTimezone;
+use App\Support\SearchResult;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +17,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 /**
- * @method static search(Request $request)[]
+ * @method static array search(Request $request)
  * @method dataChart(): array
  * @method dataChart2(): array
  * @method reportByDate(Request $request): array
@@ -136,12 +137,7 @@ class Borrow extends Model
 
         $paginator = $query->orderBy('id', 'desc')->paginate(config('app.pagination'))->appends(['term' => $request->term]);
 
-        return [
-            'count' => $paginator->total(),
-            'borrows' => $paginator,
-            'page' => $request->page ?? 1,
-            'termSearch' => $request->term,
-        ];
+        return SearchResult::make($paginator, 'borrows', $request->term);
     }
 
     /**

@@ -24,18 +24,12 @@ class BlockController extends Controller
     {
         $this->authorize('blocks.viewAny', Block::class);
 
-        $result = Block::search($request);
-
-        return Inertia::render('Keys/Block/Index', [
-            'blocks' => $result['data'],
-            'count' => $result['count'],
-            'page' => $request->page ?? 1,
-            'termSearch' => $request->term,
+        return Inertia::render('Keys/Block/Index', array_merge(Block::search($request), [
             'can' => [
                 'create' => $request->user()->can('blocks.create'),
                 'view' => $request->user()->can('blocks.view'),
             ],
-        ]);
+        ]));
     }
 
     /**
@@ -64,9 +58,7 @@ class BlockController extends Controller
 
             return to_route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro criado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'blocks.index');
         }
     }
 
@@ -116,9 +108,7 @@ class BlockController extends Controller
 
             return to_route('blocks.show', $block)->with('flash', ['status' => 'success', 'message' => 'Registro atualizado com sucesso.']);
         } catch (Exception $e) {
-            report($e);
-
-            return to_route('blocks.index')->with('flash', ['status' => 'danger', 'message' => 'Ocorreu um erro ao processar a solicitação.']);
+            return $this->operationFailed($e, 'blocks.index');
         }
     }
 

@@ -1,23 +1,14 @@
 import Pagination from "@/Components/Dashboard/Pagination";
 import Panel from "@/Components/Dashboard/Panel";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { router } from '@inertiajs/react';
 import { Link } from "@inertiajs/react";
-import React, { useEffect, useState } from "react";
+import React from "react";
+import useIndexSearch from "@/Components/Dashboard/useIndexSearch";
 import Description from "./Components/Description";
 
 function Index({ activities, count, page, termSearch, can }) {
-    const [term, setTerm] = useState(termSearch?? '');
-    const [currentPage, setCurrentPage] = useState(page);
-
-    useEffect(() => {
-        const debounce = setTimeout(() => {
-            setCurrentPage(1);
-            router.get(route(route().current()), {term: term, page: currentPage}, {preserveState: true, replace: true});
-        }, 300);
-
-        return () => clearTimeout(debounce);
-    }, [term]);
+    const { term, setTerm } = useIndexSearch(route(route().current()), termSearch);
+    const currentPage = page;
 
     const table = activities.data.map((item, index) => {
         return (
